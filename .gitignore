@@ -1,0 +1,7 @@
+node_modules/
+.playwright-mcp/
+renders/
+screenshots/
+opencode.json
+.DS_Store
+*.log

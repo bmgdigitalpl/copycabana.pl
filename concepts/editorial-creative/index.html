@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CopyCabana Concept 03 - Editorial Creative</title>
+  <meta name="description" content="Editorial Creative: bardziej designerski koncept strony głównej CopyCabana.">
+  <link rel="icon" href="../../images/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            donkerblauw: '#063A60',
+            blauw: '#00456F',
+            geel: '#FFED00',
+            wit: '#F5F5F5',
+            lichtgrijs: '#D9DDE1',
+            magenta: '#D51A70',
+            groen: '#7FBF45',
+            paars: '#6B3FA0',
+          },
+          fontFamily: {
+            heading: ['Space Grotesk', 'sans-serif'],
+            body: ['IBM Plex Sans', 'sans-serif'],
+            logo: ['Caveat', 'cursive'],
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="stylesheet" href="../../css/custom.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="concept-editorial bg-wit text-slate-900">
+  <header class="bg-wit">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+      <a href="index.html" class="font-logo text-3xl text-magenta no-underline">CopyCabana</a>
+      <nav class="hidden items-center gap-6 md:flex">
+        <a href="#oferta" class="editorial-nav">Oferta</a>
+        <a href="#historia" class="editorial-nav">Historia</a>
+        <a href="#kontakt" class="editorial-nav">Kontakt</a>
+        <a href="../corporate-premium/index.html" class="editorial-nav-muted">01</a>
+        <a href="../dynamic-local-service/index.html" class="editorial-nav-muted">02</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="editorial-stage py-8 sm:py-12 lg:py-16">
+      <div class="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+        <div class="stage-copy">
+          <p class="stage-kicker">CopyCabana | Katowice</p>
+          <h1 class="mt-5 max-w-3xl font-heading text-5xl font-bold leading-none text-donkerblauw sm:text-6xl">Profesjonalny druk offsetowy i cyfrowy</h1>
+          <p class="stage-lead">Od wizytówek po billboardy. Kompleksowa obsługa poligraficzna w Katowicach dla klientów indywidualnych, firm i agencji reklamowych.</p>
+          <div class="stage-links">
+            <a href="#oferta" class="btn-geel inline-block">Zobacz produkty</a>
+            <a href="#kontakt" class="editorial-link">Skontaktuj się</a>
+          </div>
+        </div>
+
+        <div class="stage-grid">
+          <article class="tile tile-yellow"><strong>Druk cyfrowy</strong><p>Małe i średnie nakłady, szybkie realizacje, bieżące zamówienia.</p></article>
+          <article class="tile tile-navy"><img src="../../images/carousel-6.jpg" alt="CopyCabana - drukarnia w Katowicach"></article>
+          <article class="tile tile-magenta"><strong>Offset + format</strong><p>Duże nakłady, wielki format, reklama i oprawa prac.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="oferta" class="capabilities-section py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-12 max-w-3xl">
+          <p class="stage-kicker text-paars">Capabilities</p>
+          <h2 class="font-heading text-4xl font-bold text-donkerblauw">Zakres usług pokazany bardziej jak system możliwości</h2>
+        </div>
+
+        <div class="capabilities-grid">
+          <article class="capability capability-wide capability-dark"><span>01</span><h3>Druk cyfrowy</h3><p>Profesjonalny druk do codziennych zamówień, małych nakładów i szybkich realizacji.</p></article>
+          <article class="capability"><span>02</span><h3>Druk offsetowy</h3><p>Najlepsza cena przy dużych nakładach i powtarzalnej jakości.</p></article>
+          <article class="capability capability-photo"><img src="../../images/produkty/product-06.png" alt="Banery CopyCabana"></article>
+          <article class="capability capability-accent"><span>03</span><h3>Wielki format</h3><p>Banery, billboardy, rollupy i nośniki reklamowe na Śląsku.</p></article>
+          <article class="capability"><span>04</span><h3>Oprawa prac</h3><p>Twarda i miękka oprawa prac dyplomowych w 24h.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="product-wall bg-white py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-12 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-2xl">
+            <p class="stage-kicker">Selected work</p>
+            <h2 class="font-heading text-4xl font-bold text-donkerblauw">Wybrane produkty i kierunki realizacji</h2>
+          </div>
+          <p class="max-w-xl text-base leading-7 text-slate-600">To nie jest klasyczny katalog. Ta sekcja ma pokazać charakter oferty i różnorodność zleceń, nie tylko listę usług.</p>
+        </div>
+
+        <div class="wall-grid">
+          <article class="wall-card wall-card-large"><img src="../../images/produkty/product-02.png" alt="Wizytówki"><div><h3>Wizytówki</h3><p>Profesjonalne wizytówki dla Twojej firmy.</p></div></article>
+          <article class="wall-card"><img src="../../images/produkty/product-03.png" alt="Ulotki"><div><h3>Ulotki</h3><p>Ulotki reklamowe w różnych formatach.</p></div></article>
+          <article class="wall-card"><img src="../../images/produkty/product-04.png" alt="Plakaty"><div><h3>Plakaty</h3><p>Plakaty od A3 do B1.</p></div></article>
+          <article class="wall-card wall-card-text"><div><span>Rollupy</span><p>Systemy wystawiennicze i grafiki do prezentacji marki.</p></div></article>
+          <article class="wall-card"><img src="../../images/produkty/product-09.png" alt="Fototapety"><div><h3>Fototapety</h3><p>Fototapety na wymiar do wnętrz i biur.</p></div></article>
+          <article class="wall-card wall-card-quote"><div><p>"Jakość, szybkość i elastyczność" to rdzeń komunikacji marki i główny filtr dla tego konceptu.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="historia" class="story-section py-20">
+      <div class="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
+        <div class="story-lead-block">
+          <p class="stage-kicker">Od 2002 roku</p>
+          <h2 class="font-heading text-4xl font-bold text-donkerblauw">Drukarnia w Katowicach, która wyrosła z punktu ksero</h2>
+        </div>
+        <div class="story-columns">
+          <p>Działając od 2002 roku - początkowo jako niewielki punkt ksero - na przestrzeni lat nabyliśmy dużo doświadczenia w branży, dzięki czemu klienci zawsze są zadowoleni z efektów naszej pracy.</p>
+          <p>Nastawienie na stały rozwój i poznawanie najnowszych technik poligraficznych pozwoliło nam poszerzyć ofertę o druk offsetowy. Obecnie obsługujemy klientów indywidualnych, firmy i agencje reklamowe.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="principles-section bg-donkerblauw py-20 text-white">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="principles-grid">
+          <article><span>Jakość</span><p>Nowoczesny sprzęt i wysoki standard gotowych realizacji.</p></article>
+          <article><span>Szybkość</span><p>Terminowe wykonanie, od prac dyplomowych po większe projekty reklamowe.</p></article>
+          <article><span>Elastyczność</span><p>Dopasowanie do potrzeb klienta i skali projektu.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="diploma-editorial py-20">
+      <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
+        <div>
+          <p class="stage-kicker">24h</p>
+          <h2 class="font-heading text-4xl font-bold text-donkerblauw">Druk i oprawa prac dyplomowych w 24h</h2>
+          <p class="mt-5 max-w-2xl text-base leading-8 text-slate-700">Duży wybór opraw twardych i miękkich. Wyślij pracę mailem i zapłać przy odbiorze. Ten use case zostaje w tym koncepcie, ale jako mocny moduł wtórny, a nie jedyny motyw strony.</p>
+        </div>
+        <div class="diploma-editorial-box">
+          <div><strong>Wyślij plik</strong><span>Mailowo lub przez szybki kontakt.</span></div>
+          <div><strong>Odbierz w centrum</strong><span>Katowice, ul. Bankowa 11.</span></div>
+          <div><strong>Zapłać wygodnie</strong><span>Karta, BLIK lub gotówka.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kontakt" class="editorial-contact bg-white py-20">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="editorial-contact-box">
+          <div>
+            <p class="stage-kicker text-geel">Kontakt</p>
+            <h2 class="font-heading text-4xl font-bold text-white">Porozmawiajmy o Twoim projekcie</h2>
+            <p class="mt-4 max-w-2xl text-base leading-7 text-white/72">Pomożemy dobrać najlepsze rozwiązanie dla Twojego projektu - od prostych wydruków po pełne realizacje reklamowe.</p>
+          </div>
+          <div class="editorial-contact-links">
+            <a href="tel:502293849" class="editorial-pill no-underline">502 293 849</a>
+            <a href="mailto:biuro@copycabana.pl" class="editorial-pill no-underline">biuro@copycabana.pl</a>
+            <a href="../../kontakt.html" class="btn-geel inline-block">Napisz do nas</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="editorial-footer py-10">
+    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+      <p class="text-sm text-slate-500">CopyCabana - kompleksowa obsługa poligraficzna w Katowicach.</p>
+      <div class="footer-nav">
+        <a href="../corporate-premium/index.html">01 Corporate</a>
+        <a href="../dynamic-local-service/index.html">02 Dynamic</a>
+        <a href="../../produkty.html">Produkty</a>
+      </div>
+    </div>
+  </footer>
+  <script src="../presentation-mode.js"></script>
+</body>
+</html>

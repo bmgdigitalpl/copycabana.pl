@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CopyCabana Concepts</title>
+  <link rel="icon" href="../images/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            donkerblauw: '#063A60',
+            blauw: '#00456F',
+            geel: '#FFED00',
+            wit: '#F5F5F5',
+            lichtgrijs: '#D9DDE1',
+            magenta: '#D51A70',
+            groen: '#7FBF45',
+            paars: '#6B3FA0',
+          },
+          fontFamily: {
+            body: ['Inter', 'sans-serif'],
+            logo: ['Caveat', 'cursive'],
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="stylesheet" href="../css/custom.css">
+</head>
+<body class="bg-wit text-slate-800" style="font-family: Inter, sans-serif;">
+  <main class="min-h-screen bg-[linear-gradient(180deg,rgba(6,58,96,0.04),rgba(6,58,96,0))] px-4 py-16 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-12 text-center">
+        <a href="../index.html" class="font-logo text-4xl text-donkerblauw no-underline">CopyCabana</a>
+        <h1 class="mt-4 text-4xl font-light text-donkerblauw">Koncepcje layoutu</h1>
+        <p class="mx-auto mt-4 max-w-2xl text-slate-600">Cztery kierunki wizualne na tej samej palecie kolorystycznej. Kazdy wariant ma osobny podfolder i wlasne style startowe.</p>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <a href="classic-print-shop/index.html" class="rounded-[28px] border border-lichtgrijs bg-white p-8 no-underline shadow-[0_20px_60px_rgba(6,58,96,0.08)]">
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-groen">Concept 00</p>
+          <h2 class="mt-4 text-2xl font-semibold text-donkerblauw">Classic Print Shop</h2>
+          <p class="mt-3 leading-7 text-slate-600">Pierwotny, klasyczny kierunek z karuzela, szeroka siatka produktow i tradycyjnym ukladem drukarni.</p>
+        </a>
+        <a href="corporate-premium/index.html" class="rounded-[28px] border border-lichtgrijs bg-white p-8 no-underline shadow-[0_20px_60px_rgba(6,58,96,0.08)]">
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-blauw">Concept 01</p>
+          <h2 class="mt-4 text-2xl font-semibold text-donkerblauw">Corporate Premium</h2>
+          <p class="mt-3 leading-7 text-slate-600">Najbardziej uporzadkowany i wiarygodny kierunek. Mocny nacisk na profesjonalizm i zaufanie.</p>
+        </a>
+        <a href="dynamic-local-service/index.html" class="rounded-[28px] border border-lichtgrijs bg-white p-8 no-underline shadow-[0_20px_60px_rgba(6,58,96,0.08)]">
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-magenta">Concept 02</p>
+          <h2 class="mt-4 text-2xl font-semibold text-donkerblauw">Dynamic Local Service</h2>
+          <p class="mt-3 leading-7 text-slate-600">Bardziej sprzedazowy i bezposredni. Zaprojektowany pod szybka decyzje i lokalna wygode.</p>
+        </a>
+        <a href="editorial-creative/index.html" class="rounded-[28px] border border-lichtgrijs bg-white p-8 no-underline shadow-[0_20px_60px_rgba(6,58,96,0.08)]">
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-paars">Concept 03</p>
+          <h2 class="mt-4 text-2xl font-semibold text-donkerblauw">Editorial Creative</h2>
+          <p class="mt-3 leading-7 text-slate-600">Najbardziej charakterystyczny wizualnie kierunek. Bardziej designerski i mniej klasyczny.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

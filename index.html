@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drukarnia Katowice — CopyCabana</title>
+  <meta name="description" content="Druk offsetowy i cyfrowy w centrum Katowic. Plakaty, rollupy, banery, wizytówki i więcej. CopyCabana — Twoja drukarnia na Śląsku.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="images/favicon.png" type="image/png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Swiper -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            donkerblauw: '#063A60',
+            blauw: '#00456F',
+            geel: '#FFED00',
+            wit: '#F5F5F5',
+            lichtgrijs: '#D9DDE1',
+            magenta: '#D51A70',
+            groen: '#7FBF45',
+            paars: '#6B3FA0',
+          },
+          fontFamily: {
+            heading: ['Montserrat', 'sans-serif'],
+            body: ['Montserrat', 'sans-serif'],
+            logo: ['Caveat', 'cursive'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/custom.css">
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "CopyCabana",
+    "image": "https://www.copycabana.pl/images/logo-new.png",
+    "url": "https://www.copycabana.pl/",
+    "telephone": ["502293849","504939094"],
+    "email": "biuro@copycabana.pl",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Bankowa 11",
+      "addressLocality": "Katowice",
+      "postalCode": "40-007",
+      "addressCountry": "PL"
+    },
+    "openingHoursSpecification": [
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "16:00" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "15:00" }
+    ]
+  }
+  </script>
+</head>
+<body x-data="{ mobileNav: false }">
+
+  <!-- ========== NAVBAR ========== -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-donkerblauw/95 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <!-- Logo -->
+      <a href="index.html" class="font-logo text-2xl text-geel no-underline">CopyCabana</a>
+
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="index.html" class="nav-link text-white text-sm no-underline">Home</a>
+        <a href="produkty.html" class="nav-link text-white text-sm no-underline">Produkty</a>
+        <a href="o-nas.html" class="nav-link text-white text-sm no-underline">O nas</a>
+        <a href="kontakt.html" class="nav-link text-white text-sm no-underline">Kontakt</a>
+        <a href="koszyk.html" class="nav-link text-white text-sm no-underline relative">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge absolute -top-2 -right-3 bg-magenta text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" style="display:none">0</span>
+        </a>
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <button @click="mobileNav = true" class="md:hidden text-white text-xl bg-transparent border-none cursor-pointer">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========== MOBILE NAV ========== -->
+  <div class="mobile-nav-overlay" :class="{ 'open': mobileNav }" @click="mobileNav = false"></div>
+  <div class="mobile-nav" :class="{ 'open': mobileNav }">
+    <button @click="mobileNav = false" class="close-btn"><i class="fas fa-times"></i></button>
+    <div class="mt-12">
+      <a href="index.html">Home</a>
+      <a href="produkty.html">Produkty</a>
+      <a href="o-nas.html">O nas</a>
+      <a href="kontakt.html">Kontakt</a>
+      <a href="koszyk.html">Koszyk</a>
+    </div>
+  </div>
+
+  <!-- ========== HERO CAROUSEL ========== -->
+  <section class="hero-carousel swiper mt-16">
+    <div class="swiper-wrapper">
+      <!-- Slide 1 -->
+      <div class="swiper-slide">
+        <img src="images/carousel-6.jpg" alt="Billboardy Śląsk" loading="lazy">
+        <div class="hero-overlay">
+          <h1>Druk i oprawa<br>wszelkich prac dyplomowych<br>w 24h!</h1>
+          <p>Duży wybór opraw twardych i miękkich. Wyślij pracę mailem i zapłać przy odbiorze.</p>
+          <a href="produkty.html" class="cta-btn">Zobacz produkty</a>
+        </div>
+      </div>
+      <!-- Slide 2 -->
+      <div class="swiper-slide">
+        <img src="images/carousel-6.jpg" alt="Drukarnia Katowice" loading="lazy">
+        <div class="hero-overlay">
+          <h1>Profesjonalny druk<br>offsetowy i cyfrowy</h1>
+          <p>Od wizytówek po billboardy — realizujemy projekty w małym i dużym nakładzie.</p>
+          <a href="produkty.html" class="cta-btn">Nasza oferta</a>
+        </div>
+      </div>
+    </div>
+    <div class="swiper-pagination"></div>
+  </section>
+
+  <!-- ========== ANNOUNCEMENT BAR ========== -->
+  <section class="announcement-bar py-5">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <p class="text-geel text-lg sm:text-xl font-bold leading-relaxed">
+        <i class="fas fa-print mr-2"></i>
+        Druk i oprawa wszelkich prac dyplomowych w 24h!
+      </p>
+      <p class="text-white/80 text-sm mt-2">
+        Wyślij pracę mailem i zapłać przy odbiorze kartą, Blikiem lub gotówką.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== PRODUCT GRID ========== -->
+  <main class="section-wit py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-center text-3xl sm:text-4xl font-light mb-3 reveal">Nasze produkty</h2>
+      <p class="text-center text-gray-500 mb-10 reveal reveal-delay-1">Kompleksowa obsługa poligraficzna w Katowicach</p>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <!-- Product 1 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-1">
+          <img src="images/produkty/product-02.png" alt="Wizytówki">
+          <div class="card-body">
+            <h3>Wizytówki</h3>
+            <p>Profesjonalne wizytówki dla Twojej firmy.</p>
+          </div>
+        </a>
+        <!-- Product 2 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-2">
+          <img src="images/produkty/product-03.png" alt="Ulotki">
+          <div class="card-body">
+            <h3>Ulotki</h3>
+            <p>Ulotki reklamowe w różnych formatach.</p>
+          </div>
+        </a>
+        <!-- Product 3 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-3">
+          <img src="images/produkty/product-04.png" alt="Plakaty">
+          <div class="card-body">
+            <h3>Plakaty</h3>
+            <p>Plakaty w formatach od A3 do B1.</p>
+          </div>
+        </a>
+        <!-- Product 4 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-4">
+          <img src="images/produkty/product-05.png" alt="Rollupy">
+          <div class="card-body">
+            <h3>Rollupy</h3>
+            <p>Systemy wystawiennicze i rollupy.</p>
+          </div>
+        </a>
+        <!-- Product 5 -->
+        <a href="produkty.html" class="product-card reveal">
+          <img src="images/produkty/product-06.png" alt="Banery">
+          <div class="card-body">
+            <h3>Banery</h3>
+            <p>Banery wielkoformatowe na zamówienie.</p>
+          </div>
+        </a>
+        <!-- Product 6 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-1">
+          <img src="images/produkty/product-07.png" alt="Billboardy">
+          <div class="card-body">
+            <h3>Billboardy</h3>
+            <p>Reklama zewnętrzna w dużym formacie.</p>
+          </div>
+        </a>
+        <!-- Product 7 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-2">
+          <img src="images/produkty/product-08.png" alt="Fotoobrazy">
+          <div class="card-body">
+            <h3>Fotoobrazy</h3>
+            <p>Fotoobrazy na płótnie i w ramach.</p>
+          </div>
+        </a>
+        <!-- Product 8 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-3">
+          <img src="images/produkty/product-09.png" alt="Fototapety">
+          <div class="card-body">
+            <h3>Fototapety</h3>
+            <p>Fototapety na wymiar do wnętrz.</p>
+          </div>
+        </a>
+        <!-- Product 9 -->
+        <a href="produkty.html" class="product-card reveal reveal-delay-4">
+          <img src="images/produkty/product-10.png" alt="Kalendarze">
+          <div class="card-body">
+            <h3>Kalendarze</h3>
+            <p>Kalendarze spiralowane i ścienne.</p>
+          </div>
+        </a>
+        <!-- Product 10 -->
+        <a href="produkty.html" class="product-card reveal">
+          <img src="images/produkty/product-11.png" alt="Naklejki">
+          <div class="card-body">
+            <h3>Naklejki</h3>
+            <p>Naklejki w dowolnych kształtach.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="text-center mt-10 reveal">
+        <a href="produkty.html" class="btn-magenta inline-block">
+          Zobacz wszystkie produkty <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========== ABOUT SNAPSHOT ========== -->
+  <section class="section-lichtgrijs py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="reveal">
+          <h2 class="text-3xl sm:text-4xl font-light mb-4">Drukarnia w Katowicach<br>od 2002 roku</h2>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            Działając od 2002 roku — początkowo jako niewielki punkt ksero, na przestrzeni lat nabyliśmy dużo doświadczenia w branży, dzięki czemu klienci zawsze są zadowoleni z efektów naszej pracy.
+          </p>
+          <p class="text-gray-600 leading-relaxed mb-6">
+            Nastawienie na stały rozwój i poznawanie najnowszych technik poligraficznych pozwoliło nam poszerzyć naszą ofertę o druk offsetowy. Obecnie obsługujemy zarówno klientów indywidualnych, jak i agencje reklamowe oraz przedsiębiorstwa.
+          </p>
+          <a href="o-nas.html" class="btn-magenta inline-block">Poznaj nas <i class="fas fa-arrow-right ml-2"></i></a>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <img src="images/logo.png" alt="CopyCabana drukarnia" class="rounded-xl shadow-lg w-full">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SERVICES STRIP ========== -->
+  <section class="section-donkerblauw py-14">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="reveal">
+          <div class="service-icon"><i class="fas fa-print"></i></div>
+          <h4 class="text-white font-semibold text-sm mb-1">Druk cyfrowy</h4>
+          <p class="text-white/60 text-xs">Małe i średnie nakłady</p>
+        </div>
+        <div class="reveal reveal-delay-1">
+          <div class="service-icon"><i class="fas fa-cogs"></i></div>
+          <h4 class="text-white font-semibold text-sm mb-1">Druk offsetowy</h4>
+          <p class="text-white/60 text-xs">Duże nakłady, najlepsza cena</p>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <div class="service-icon"><i class="fas fa-image"></i></div>
+          <h4 class="text-white font-semibold text-sm mb-1">Wielkoformatowy</h4>
+          <p class="text-white/60 text-xs">Banery, billboardy, rollupy</p>
+        </div>
+        <div class="reveal reveal-delay-3">
+          <div class="service-icon"><i class="fas fa-book-open"></i></div>
+          <h4 class="text-white font-semibold text-sm mb-1">Oprawa prac</h4>
+          <p class="text-white/60 text-xs">Twarda i miękka oprawa 24h</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <!-- Col 1: Links -->
+        <div>
+          <a href="index.html" class="font-logo text-2xl text-geel no-underline block mb-4">CopyCabana</a>
+          <div class="flex flex-col gap-2">
+            <a href="index.html">Home</a>
+            <a href="produkty.html">Produkty</a>
+            <a href="o-nas.html">O nas</a>
+            <a href="kontakt.html">Kontakt</a>
+          </div>
+        </div>
+        <!-- Col 2: Products -->
+        <div>
+          <h4 class="text-geel font-semibold text-sm mb-4">Popularne produkty</h4>
+          <div class="flex flex-col gap-2">
+            <a href="produkt.html?slug=wizytowki">Wizytówki</a>
+            <a href="produkt.html?slug=ulotki">Ulotki</a>
+            <a href="produkt.html?slug=plakaty">Plakaty</a>
+            <a href="produkt.html?slug=banery">Banery</a>
+            <a href="produkt.html?slug=oprawa_prac">Oprawa prac</a>
+          </div>
+        </div>
+        <!-- Col 3: Contact -->
+        <div>
+          <h4 class="text-geel font-semibold text-sm mb-4">Kontakt</h4>
+          <div class="flex flex-col gap-2 text-white/75 text-sm">
+            <p><i class="fas fa-map-marker-alt mr-2 text-geel"></i>ul. Bankowa 11, 40-007 Katowice</p>
+            <p><i class="fas fa-phone mr-2 text-geel"></i><a href="tel:502293849">502 293 849</a> / <a href="tel:504939094">504 939 094</a></p>
+            <p><i class="fas fa-envelope mr-2 text-geel"></i><a href="mailto:biuro@copycabana.pl">biuro@copycabana.pl</a></p>
+            <p><i class="fas fa-clock mr-2 text-geel"></i>Pn–Pt 8:00–16:00, Sob 9:00–15:00</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="max-w-7xl mx-auto px-4">
+        &copy; 2024 CopyCabana.pl — Wszelkie prawa zastrzeżone.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="data/prices.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
