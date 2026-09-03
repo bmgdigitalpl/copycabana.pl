@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	
+	<base href="https://www.copycabana.pl/" />
+	
+	<link rel="canonical" href="https://www.copycabana.pl/images/favicon.png" />
+
+
+	<title>CopyCabana</title>
+	<meta name="description" content="" />
+
+	
+	<link rel="icon" href="images/favicon.png" type="image/x-icon">
+	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/global.css?v=20210504">
+	<link rel="stylesheet" href="css/responsive.css">
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link rel="stylesheet" href="plugins/owl-carousel/owl.carousel.css">
+	<link rel="stylesheet" href="plugins/owl-carousel/owl.theme.css">
+	<link rel="stylesheet" href="plugins/nivo-lightbox/nivo-lightbox.css">
+	<link rel="stylesheet" href="plugins/nivo-lightbox/themes/default/default.css">
+
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-KP2H9B25DD"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'G-KP2H9B25DD');
+	</script>
+
+	<script type="application/ld+json">
+	{
+	"@context": "https://schema.org",
+	"@type": "LocalBusiness",
+	"name": "CopyCabana",
+	"alternateName": "Drukarnia Katowice CopyCabana",
+	"image": "https://www.copycabana.pl/images/logo-new.png",
+	"url": "https://www.copycabana.pl/",
+	"telephone": [
+	"502293849",
+	"504939094"
+	],
+	"email": "biuro@copycabana.pl",
+	"vatID": "6342412192",
+	"address": {
+	"@type": "PostalAddress",
+	"streetAddress": "Bankowa 11",
+	"addressLocality": "Katowice",
+	"addressRegion": "śląskie",
+	"postalCode": "40-007",
+	"addressCountry": "PL"
+	},
+	"geo": {
+	"@type": "GeoCoordinates",
+	"latitude": "50.2601386",
+	"longitude": "19.0294737"
+	},
+	"hasMap": "https://maps.app.goo.gl/ivmz17pd2vX7cSu2A",
+	"openingHoursSpecification": [
+	{
+	"@type": "OpeningHoursSpecification",
+	"dayOfWeek": [
+	"Monday",
+	"Tuesday",
+	"Wednesday",
+	"Thursday",
+	"Friday"
+	],
+	"opens": "08:00",
+	"closes": "16:00"
+	},
+	{
+	"@type": "OpeningHoursSpecification",
+	"dayOfWeek": "Saturday",
+	"opens": "09:00",
+	"closes": "15:00"
+	}
+	],
+	"sameAs": [
+	"https://www.facebook.com/CopyCabanaKatowice/"
+	]
+	}
+	</script>
+	<script type="application/ld+json">
+	{
+	  "@context": "https://schema.org",
+	  "@type": "WebSite",
+	  "@id": "https://www.copycabana.pl/#website",
+	  "url": "https://www.copycabana.pl/",
+	  "name": "CopyCabana",
+	  "description": "Oferujemy druk offsetowy i cyfrowy w samym centrum Katowic. Umożliwiamy stworzenie plakatów, rollupów, banerów, wizytówek.",
+	  "publisher": {
+	    "@type": "Organization",
+	    "@id": "https://www.copycabana.pl/#organization"
+	  },
+	  "inLanguage": "pl-PL"
+	}
+	</script>
+
+	<!-- Google Tag Manager -->
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-KMVMFCXJ');</script>
+	<!-- End Google Tag Manager -->
+	
+		<script type="application/ld+json">
+	{
+	  "@context": "https://schema.org",
+	  "@type": "BreadcrumbList",
+	  "itemListElement": [
+	    	    {
+	      "@type": "ListItem",
+	      "position": 1,
+	      "name": "Strona główna",
+	      "item": "https://www.copycabana.pl/"
+	    },	    	    {
+	      "@type": "ListItem",
+	      "position": 2,
+	      "name": "Images",
+	      "item": "https://www.copycabana.pl/images"
+	    },	    	    {
+	      "@type": "ListItem",
+	      "position": 3,
+	      "name": "Favicon.png",
+	      "item": "https://www.copycabana.pl/images/favicon.png"
+	    }	    	  ]
+	}
+	</script>
+	
+</head>
+
+<body>
+
+	<!-- Google Tag Manager (noscript) -->
+	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KMVMFCXJ"
+	height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+	<!-- End Google Tag Manager (noscript) -->
+
+	<header>
+
+		<nav>
+			<ul>
+				<li><a href="/">Home</a></li>
+				<li><a href="produkty">Produkty</a>
+					<ul>
+						<li><a href="produkty/oprawa-prac-i-bindowanie">Oprawa prac dyplomowych, bindowanie</a></li>
+						<li><a href="produkty/wizytowki">Wizytówki</a></li>
+						<li><a href="produkty/ulotki">Ulotki</a></li>
+						<li><a href="produkty/plakaty">Plakaty</a></li>
+						<li><a href="produkty/rollupy">Rollupy</a></li>
+						<li><a href="produkty/banery">Banery</a></li>
+						<li><a href="produkty/billboardy">Billboardy</a></li>
+						<li><a href="produkty/fotoobrazy">Fotoobrazy</a></li>
+						<li><a href="produkty/fototapety">Fototapety</a></li>
+						<li><a href="produkty/kalendarze-spiralowane">Kalendarze spiralowane</a></li>
+						<li><a href="produkty/naklejki">Naklejki</a></li>
+						<li><a href="produkty/tabliczki-grawerowane">Tabliczki grawerowane</a></li>
+						<li><a href="produkty/rysunki-plany-mapy">Rysunki, plany, mapy (CAD)</a></li>
+						<li><a href="produkty/ksero">Ksero</a></li>
+						<li><a href="produkty/druk">Druk</a></li>	
+						<li><a href="produkty/skanowanie">Skanowanie</a></li>
+						<li><a href="produkty/zdjecia-do-dokumentow">Zdjecia do dokumentów</a></li>
+						<li><a href="produkty/pieczatki">Pieczątki</a></li>
+						<li><a href="produkty/projektowanie-graficzne">Projektowanie graficzne</a></li>
+						<li><a href="produkty/uslugi-dodatkowe">Usługi dodatkowe</a></li>
+					</ul>
+				</li>
+				<li><a href="o-nas">O nas</a></li>
+				<li><a href="kontakt">Kontakt</a></li>
+			</ul>
+		</nav>
+
+		
+			<div class="container">
+				<div class="logo"><a href="https://www.copycabana.pl/"><img src="images/logo-new.png" alt="CopyCabana" /></a></div>
+			</div>
+
+		
+	</header>
+	
+	<main class="content">
+				<nav class="breadcrumbs" aria-label="Breadcrumb">
+		    <ul>
+		        		            <li>
+		                		                    <a href="/">
+		                        Strona główna		                    </a>
+		                		            </li>
+		        		            <li>
+		                		                    <a href="/images">
+		                        Images		                    </a>
+		                		            </li>
+		        		            <li>
+		                		                    <span>Favicon.png</span>
+		                		            </li>
+		        		    </ul>
+		</nav>
+		
+
+
+		<div class="container">
+	
+<h3 style="text-align: center;"><img alt="Polski Fundusz Rozwoju" height="120" src="https://www.copycabana.pl/images/PFR%20poziom.png" width="834" /></h3>
+
+<h2 style="text-align: center;"><span style="color:#800080;"><big><ins><span style="font-size:48px;"><span style="text-align: center;"><b>Druk i oprawa </b></span></span></ins></big></span></h2>
+
+<h2 style="text-align: center;"><span style="color:#800080;"><big><ins><span style="font-size:48px;"><span style="text-align: center;"><b>wszelkich prac dyplomowych&nbsp;w 24 h<b> </b>! </b></span></span></ins></big></span><br />
+&nbsp;</h2>
+
+<h2 style="text-align: center;"><span style="color:#800080;"><big><ins><span style="font-size:36px;"><span style="text-align: center;"><b>Duży wyb&oacute;r opraw twardych i miękkich.</b></span></span></ins></big></span></h2>
+
+<h2 style="text-align: center;"><span style="color:#800080;"><big><ins><span style="font-size:36px;"><span style="text-align: center;"><b>Wyślij pracę mailem i zapłać przy odbiorze kartą, Blikiem lub got&oacute;wką.</b></span></span></ins></big></span></h2>
+
+<hr />
+<h2 style="text-align: center;">&nbsp;</h2>
+
+<p style="text-align: center;">&nbsp;</p>
+
+<p style="text-align: center;"><span style="color:#000080;"><span style="font-size:28px;"><var><span style="text-align: center;"><strong>INFORMUJEMY NASZYCH KLIENT&Oacute;W,</strong></span></var></span></span></p>
+
+<p style="text-align: center;">&nbsp;</p>
+
+<p style="text-align: center;"><span style="color:#000080;"><span style="font-size:24px;"><var><span style="text-align: center;">iż w miesiącu SIERPNIU nasza firma przechodzi w tryb wakacyjny.<br />
+W związku z tym&nbsp;<strong>w SOBOTY nasz punkt będzie NIECZYNNY.&nbsp;</strong></span></var></span></span><br />
+&nbsp;</p>
+
+<p style="text-align: center;"><span style="color:#000080;"><span style="font-size:24px;"><var><span style="text-align: center;">Liczymy na Państwa wyrozumiałość.</span></var></span></span></p>
+
+<p style="text-align: center;"><br />
+<span style="color:#000080;"><span style="font-size:24px;"><var><span style="text-align: center;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Zesp&oacute;ł CopyCABANA</strong></span></var></span></span></p>
+
+<p>&nbsp;</p>
+
+<hr />
+<p style="text-align: center;">&nbsp;</p>
+	
+</div>
+
+<div class="container home">
+
+<div class="table">
+<div class="cell five"><div class="product clickable"><a href="produkty/wizytowki"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/ulotki"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/plakaty"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/rollupy"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/banery"></a></div></div>
+</div>
+
+<div class="table">
+<div class="cell five"><div class="product clickable"><a href="produkty/billboardy"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/fotoobrazy"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/fototapety"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/kalendarze-spiralowane"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/naklejki"></a></div></div>
+</div>
+
+<div class="table">
+<div class="cell five"><div class="product clickable"><a href="produkty/tabliczki-grawerowane"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/rysunki-plany-mapy"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/ksero"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/druk"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/oprawa-prac-i-bindowanie"></a></div></div>
+</div>
+
+<div class="table">
+<div class="cell five"><div class="product clickable"><a href="produkty/skanowanie"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/zdjecia-do-dokumentow"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/pieczatki"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/projektowanie-graficzne"></a></div></div>
+<div class="cell five"><div class="product clickable"><a href="produkty/uslugi-dodatkowe"></a></div></div>
+</div>
+
+</div>
+<section class="container" id="box_seo-index">
+<div class="box_header">
+<h1 style="text-align: center;">Druk offsetowy i cyfrowy, drukarnia Katowice CopyCabana</h1>
+</div>
+
+<div class="box_inner">
+<h2 style="text-align: center;">Kompleksowa obsługa poligraficzna w Katowicach</h2>
+
+<p style="text-align: center;">Działając od 2002 roku - początkowo jako niewielki punkt ksero, na przestrzeni lat nabyliśmy dużo doświadczenia w branży, dzięki czemu klienci zawsze są zadowoleni z efekt&oacute;w naszej pracy. Nastawienie na stały rozw&oacute;j i poznawanie najnowszych technik poligraficznych pozwoliło nam poszerzyć naszą ofertę na przykład o druk offsetowy. Wcześniej obsługiwaliśmy gł&oacute;wnie klient&oacute;w z uczelni wyższych, oferując tradycyjne ksero czy oprawę i bindowanie prac dyplomowych. Obecnie dzięki znacznie poszerzonemu zakresowi usług poligraficznych naszej katowickiej drukarni, na wsp&oacute;łpracę z nami decydują się r&oacute;wnież agencje reklamowe oraz r&oacute;żne przedsiębiorstwa.</p>
+
+<h2 style="text-align: center;">Zakres naszego druku cyfrowego i offsetowego</h2>
+
+<p style="text-align: center;">Jesteśmy w stanie zrealizować r&oacute;żne projekty zar&oacute;wno w małym, jak i dużym nakładzie (dzięki technologii offsetowej). Jakość gotowej realizacji jest doskonała dzięki pracy na nowoczesnym specjalistycznym sprzęcie. Mamy świadomość, że materiały reklamowe dla firm muszą wyglądać perfekcyjnie, ponieważ mają wpływ na budowanie wizerunku marki &ndash; dlatego staramy się, aby były efektowne i prezentowały się profesjonalnie. W dużym nakładzie możemy wykonać na przykład ulotki, wizyt&oacute;wki, naklejki lub kalendarze spiralowane, kt&oacute;re mogą służyć za skuteczny nośnik reklamy. Opr&oacute;cz tego działamy na druku cyfrowym, oferując między innymi fototapety i fotoobrazy, a także tradycyjne <a href="https://www.copycabana.pl/produkty/oprawa-prac-i-bindowanie">drukowanie &ndash; na przykład prac licencjackich, magisterskich i inżynierskich</a>. Dzięki technologii cyfrowej jakość gotowego produktu jest nienaganna, niezależnie czy jest to tekst, czy obraz.</p>
+
+<p style="text-align: center;">Zar&oacute;wno w technologii cyfrowej, jak i offsetowej oferujemy realizację projekt&oacute;w na papierach o r&oacute;żnych wymiarach i gramaturze. Z pewnością razem znajdziemy rozwiązania, kt&oacute;re najlepiej będą odpowiadały Twoim oczekiwaniom - służymy fachową poradą przy każdym zam&oacute;wieniu. Jeśli nie masz jeszcze przygotowanego projektu graficznego wizyt&oacute;wki czy ulotki, możemy go dla Ciebie wykonać!</p>
+
+<h2 style="text-align: center;">Zamawiaj online i odbierz w centrum Katowic</h2>
+
+<p style="text-align: center;">Oferujemy wygodną możliwość przesłania projektu na maila, dzięki kt&oacute;rej możesz pojawić się u nas tylko przy odbiorze zam&oacute;wienia, płacąc za nie got&oacute;wką lub kartą. Siedziba naszej drukarni znajduje się w centrum Katowic, na Śr&oacute;dmieściu. Zapraszamy zatem do kontaktu mailowego lub telefonicznego!</p>
+
+<h2 style="text-align: center;">Drukarnia w Katowicach nastawiona na realne potrzeby klient&oacute;w</h2>
+
+<p style="text-align: center;">Jako <strong>drukarnia w Katowicach</strong>, CopyCabana stawia na elastyczność i dopasowanie oferty do realnych potrzeb klient&oacute;w działających <strong>na Śląsku</strong>. Obsługujemy zar&oacute;wno osoby prywatne, jak i firmy, kt&oacute;re potrzebują sprawnej realizacji materiał&oacute;w drukowanych &ndash; od prostych wydruk&oacute;w informacyjnych po zaawansowane materiały reklamowe. Dzięki szerokiemu zapleczu technologicznemu jesteśmy w stanie reagować szybko, niezależnie od skali zam&oacute;wienia czy stopnia jego złożoności.</p>
+
+<p style="text-align: center;">Wsp&oacute;łpracując z klientami biznesowymi, kładziemy duży nacisk na <strong>powtarzalność jakości, terminowość i sp&oacute;jność materiał&oacute;w</strong>. Druk realizowany w naszej drukarni w Katowicach znajduje zastosowanie w marketingu lokalnym, sprzedaży, promocji wydarzeń oraz codziennej komunikacji firm z klientami. Z naszych usług korzystają m.in. biura, punkty handlowe, szkoły, instytucje oraz agencje działające na terenie całego regionu.</p>
+
+<h2 style="text-align: center;">Materiały reklamowe i ekspozycyjne na Śląsku</h2>
+
+<p style="text-align: center;">CopyCabana to nie tylko standardowy druk, ale r&oacute;wnież realizacja projekt&oacute;w, kt&oacute;re mają przyciągać uwagę w przestrzeni publicznej. Na co dzień wykonujemy materiały wykorzystywane w kampaniach promocyjnych, akcjach sprzedażowych oraz wydarzeniach branżowych <strong>na Śląsku</strong>. Odpowiedni dob&oacute;r formatu, technologii i nośnika pozwala skutecznie dopasować przekaz do miejsca ekspozycji oraz grupy docelowej.</p>
+
+<p style="text-align: center;">W przypadku reklamy zewnętrznej szczeg&oacute;lną rolę odgrywają rozwiązania wielkoformatowe, kt&oacute;re zapewniają wysoką widoczność i trwałość. Takie zastosowanie mają m.in. <a data-url-hint="1" href="https://www.copycabana.pl/produkty/billboardy"><strong>billboardy na Śląsku</strong></a>, wykorzystywane zar&oacute;wno przez duże marki, jak i lokalne firmy chcące zwiększyć rozpoznawalność w regionie. Realizacje tego typu wymagają precyzji, odpowiednich materiał&oacute;w oraz doświadczenia w pracy z dużym formatem.</p>
+
+<h2 style="text-align: center;">Lokalna drukarnia Katowice &ndash; szybki kontakt i sprawna realizacja</h2>
+
+<p style="text-align: center;">Dużą zaletą wsp&oacute;łpracy z lokalną drukarnią jest <strong>bezpośredni kontakt oraz możliwość szybkiej realizacji zam&oacute;wień</strong>. CopyCabana działa w centrum Katowic, co ułatwia odbi&oacute;r gotowych materiał&oacute;w oraz bieżące konsultacje. Klienci mogą przesłać pliki zdalnie, skonsultować szczeg&oacute;ły telefonicznie lub mailowo, a następnie odebrać gotowe zam&oacute;wienie bez zbędnych formalności.</p>
+
+<h2 style="text-align: center;">Doradztwo i wsparcie przy realizacji zam&oacute;wień</h2>
+
+<p style="text-align: center;">Ważnym elementem działalności CopyCabana jest także <strong>wsparcie klient&oacute;w na etapie planowania realizacji</strong>. Dzięki doświadczeniu zdobytemu przy obsłudze r&oacute;żnorodnych projekt&oacute;w realizowanych w Katowicach i na Śląsku, pomagamy dobrać rozwiązania, kt&oacute;re są nie tylko estetyczne, ale r&oacute;wnież funkcjonalne i dopasowane do budżetu. Doradzamy w kwestii format&oacute;w, nakład&oacute;w oraz sposobu wykończenia materiał&oacute;w, zwracając uwagę na ich p&oacute;źniejsze zastosowanie. Takie podejście sprawia, że druk realizowany w naszej drukarni w Katowicach realnie wspiera działania promocyjne i informacyjne klient&oacute;w, a nie jest jedynie gotowym produktem bez kontekstu użycia.</p>
+
+<h2 style="text-align: center;">FAQ</h2>
+
+<p style="text-align: center;"><strong>Jakie usługi realizuje drukarnia CopyCabana w Katowicach?</strong><br />
+Drukarnia CopyCabana w Katowicach realizuje szeroki zakres usług poligraficznych, obejmujących druk cyfrowy, offsetowy, wielkoformatowy oraz usługi biurowe. Obsługiwane są zar&oacute;wno proste wydruki użytkowe, jak i rozbudowane materiały reklamowe, wykorzystywane w działaniach marketingowych i informacyjnych firm oraz instytucji.</p>
+
+<p style="text-align: center;"><strong>Czy mogę zam&oacute;wić kilka r&oacute;żnych produkt&oacute;w w jednym zleceniu?</strong><br />
+Tak, możliwa jest realizacja jednego zam&oacute;wienia obejmującego kilka r&oacute;żnych produkt&oacute;w drukowanych. Takie rozwiązanie pozwala zachować sp&oacute;jność wizualną materiał&oacute;w oraz usprawnia cały proces realizacji, ograniczając czas i formalności po stronie klienta.</p>
+
+<p style="text-align: center;"><strong>Czy CopyCabana obsługuje klient&oacute;w z całego Śląska?</strong><br />
+Tak, z usług drukarni korzystają klienci nie tylko z Katowic, ale r&oacute;wnież z całego regionu Śląska. Zam&oacute;wienia mogą być realizowane zar&oacute;wno stacjonarnie, jak i zdalnie, po wcześniejszym ustaleniu szczeg&oacute;ł&oacute;w technicznych.</p>
+</div>
+</section>
+
+
+	</main>
+
+	<footer>
+
+		<div class="container">
+			<div class="table">
+				<div class="cell three">
+					<a href="https://www.copycabana.pl/">copycabana.pl</a><br />
+					<a href="o-nas">o nas</a><br />
+					<a href="regulamin">regulamin</a><br />
+					<a href="polityka-prywatnosci">polityka prywatności</a><br />
+					<a href="informacje-o-cookies">informacje o "cookies"</a><br />
+					<a href="reklamacje">reklamacje</a>
+				</div>
+				<div class="cell three">
+					<a href="wspolpraca-z-agencjami">współpraca z agencjami</a><br />
+					<a href="pomoc">pomoc</a><br />
+					<a href="faq">FAQ</a><br />
+					<a href="jak-sprawdzic-i-przeslac-pliki">jak sprawdzić i przesłać plik</a><br />
+					<a href="terminy-i-platnosci">terminy i płatności</a><br />
+					<a href="mapa-strony">mapa strony</a>
+				</div>
+				<div class="cell three">
+					<p><a href="kontakt">Kontakt z nami</a>:<br />
+Copy Cabana<br />
+Czynne: Pn.-Pt. 8:00 - 16:00<br />
+Sob. 9.00 - 15.00<br />
+ul. Bankowa 11, 40-007 Katowice<br />
+tel: <a href="tel:502293849">502 293 849</a>, <a href="tel:504939094">504 939 094</a>,<br />
+e-mail: <a href="mailto:biuro@copycabana.pl">biuro@copycabana.pl</a><br />
+NIP: 6342412192</p>
+									</div>
+			</div>
+		</div>
+
+		<div class="copyright">
+			<div class="container">© 2016 COPYCABANA.PL | ALL RIGHTS RESERVED</div>
+		</div>
+
+	</footer>
+
+	<script src="javascript/jquery-1.12.4.min.js"></script>
+	<script src="plugins/owl-carousel/owl.carousel.min.js"></script>
+	<script src="plugins/nivo-lightbox/nivo-lightbox.min.js"></script>
+	<script src="javascript/global.js"></script>
+
+</body>
+
+</html>

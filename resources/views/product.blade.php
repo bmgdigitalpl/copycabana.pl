@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produkt — CopyCabana</title>
+  <link rel="icon" href="images/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&amp;family=Caveat:wght@700&amp;family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            donkerblauw: '#063A60',
+            blauw: '#00456F',
+            geel: '#FFED00',
+            wit: '#F5F5F5',
+            lichtgrijs: '#D9D9DD',
+            magenta: '#D51A70',
+            groen: '#7FBF45',
+            paars: '#6B3FA0',
+          },
+          fontFamily: {
+            heading: ['Montserrat', 'sans-serif'],
+            body: ['Montserrat', 'sans-serif'],
+            logo: ['Caveat', 'cursive'],
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="stylesheet" href="css/dynamic-local-service.css">
+  <link rel="stylesheet" href="css/dynamic-site.css">
+</head>
+<body class="concept-dynamic" x-data="productPage()" x-init="init()">
+
+  <!-- Toast -->
+  <div class="toast" :class="{ show: toast.show, success: toast.type === 'success' }" x-text="toast.message"
+    style="position:fixed;bottom:24px;right:24px;background:#7FBF45;color:white;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;transform:translateY(100px);opacity:0;transition:all 0.3s;"
+    :style="toast.show ? 'transform:translateY(0);opacity:1' : ''">
+  </div>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-donkerblauw/95 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="index.html" class="font-logo text-2xl text-geel no-underline">CopyCabana</a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="index.html" class="nav-link text-white text-sm no-underline">Home</a>
+        <a href="produkty.html" class="nav-link text-white text-sm no-underline">Produkty</a>
+        <a href="o-nas.html" class="nav-link text-white text-sm no-underline">O nas</a>
+        <a href="kontakt.html" class="nav-link text-white text-sm no-underline">Kontakt</a>
+        <a href="koszyk.html" class="nav-link text-white text-sm no-underline relative">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge absolute -top-2 -right-3 bg-magenta text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" x-show="cartCount > 0" x-text="cartCount"></span>
+        </a>
+      </div>
+      <button @click="mobileNav = true" class="md:hidden text-white text-xl bg-transparent border-none cursor-pointer">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="mobile-nav-overlay" :class="{ 'open': mobileNav }" @click="mobileNav = false"></div>
+  <div class="mobile-nav" :class="{ 'open': mobileNav }">
+    <button @click="mobileNav = false" class="close-btn"><i class="fas fa-times"></i></button>
+    <div class="mt-12">
+      <a href="index.html">Home</a>
+      <a href="produkty.html">Produkty</a>
+      <a href="o-nas.html">O nas</a>
+      <a href="kontakt.html">Kontakt</a>
+      <a href="koszyk.html">Koszyk</a>
+    </div>
+  </div>
+
+  <!-- ========== PRODUCT NOT FOUND ========== -->
+  <template x-if="!product">
+    <div class="min-h-screen flex items-center justify-center mt-16">
+      <div class="text-center">
+        <i class="fas fa-exclamation-triangle text-5xl text-lichtgrijs mb-4"></i>
+        <h1 class="text-xl font-semibold mb-2">Produkt nie znaleziony</h1>
+        <a href="produkty.html" class="btn-magenta inline-block mt-4">Wróć do produktów</a>
+      </div>
+    </div>
+  </template>
+
+  <!-- ========== PRODUCT PAGE ========== -->
+  <template x-if="product">
+    <div>
+      <!-- Page Header -->
+      <section class="page-header mt-16">
+        <div class="flex items-center gap-2 text-sm text-white/60 mb-2">
+          <a href="produkty.html" class="hover:text-white transition">Produkty</a>
+          <i class="fas fa-chevron-right text-xs"></i>
+          <span class="text-white" x-text="product.name"></span>
+        </div>
+        <h1 x-text="product.name"></h1>
+        <div class="underline"></div>
+      </section>
+
+      <!-- Product + Calculator -->
+      <main class="section-wit py-12">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid md:grid-cols-2 gap-8">
+
+            <!-- Left: Product Info -->
+            <div>
+              <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                <img :src="product.image" :alt="product.name" class="w-full max-h-64 object-contain mb-4">
+                <p class="text-gray-600" x-text="product.description"></p>
+              </div>
+
+              <!-- Price display -->
+              <div class="bg-donkerblauw rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-white/70 text-sm">Szacowana cena:</span>
+                  <span class="text-2xl font-bold text-geel" x-text="formatPrice(price)"></span>
+                </div>
+                <p class="text-white/50 text-xs">Cena orientacyjna. Ostateczna wycena po kontakcie.</p>
+                <button @click="addToCart()" class="w-full mt-4 bg-groen text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition">
+                  <i class="fas fa-cart-plus mr-2"></i> Dodaj do koszyka
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Calculator -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+              <h2 class="text-lg font-semibold mb-4"><i class="fas fa-calculator mr-2 text-magenta"></i>Kalkulator cen</h2>
+
+              <!-- Options Calculator -->
+              <template x-if="product.calculatorType === 'options'">
+                <div class="space-y-4">
+                  <template x-for="(option, optKey) in product.options" :key="optKey">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1" x-text="option.label"></label>
+                      <template x-if="option.type === 'select'">
+                        <select x-model="selectedValues[optKey]" @change="calculate()" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm bg-white">
+                          <template x-for="val in option.values" :key="val.value">
+                            <option :value="val.value" x-text="val.label + (val.price !== undefined ? ' (' + (val.price >= 0 ? '+' : '') + val.price.toFixed(2).replace('.',',') + ' zł)' : '')"></option>
+                          </template>
+                        </select>
+                      </template>
+                      <template x-if="option.type === 'number'">
+                        <input type="number" x-model.number="selectedValues[optKey]" @input="calculate()"
+                          :min="option.min || 1" :max="option.max || 9999"
+                          class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm">
+                      </template>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Area Calculator -->
+              <template x-if="product.calculatorType === 'area'">
+                <div class="space-y-4">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Szerokość (cm)</label>
+                      <input type="number" x-model.number="areaWidth" @input="calculate()" min="10" max="1000" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm" placeholder="np. 100">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Wysokość (cm)</label>
+                      <input type="number" x-model.number="areaHeight" @input="calculate()" min="10" max="500" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm" placeholder="np. 200">
+                    </div>
+                  </div>
+                  <div class="text-xs text-gray-400" x-show="areaWidth && areaHeight">
+                    Powierzchnia: <span x-text="((areaWidth/100) * (areaHeight/100)).toFixed(2)"></span> m²
+                  </div>
+                  <template x-for="(option, optKey) in (product.options || {})" :key="optKey">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1" x-text="option.label"></label>
+                      <select x-model="selectedValues[optKey]" @change="calculate()" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm bg-white">
+                        <template x-for="val in option.values" :key="val.value">
+                          <option :value="val.value" x-text="val.label + (val.price !== undefined ? ' (+' + val.price.toFixed(2).replace('.',',') + ' zł)' : '')"></option>
+                        </template>
+                      </select>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Ksero Calculator -->
+              <template x-if="product.calculatorType === 'ksero'">
+                <div class="space-y-4">
+                  <template x-for="(option, optKey) in product.options" :key="optKey">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1" x-text="option.label"></label>
+                      <template x-if="option.type === 'select'">
+                        <select x-model="selectedValues[optKey]" @change="calculate()" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm bg-white">
+                          <template x-for="val in option.values" :key="val.value">
+                            <option :value="val.value" x-text="val.label"></option>
+                          </template>
+                        </select>
+                      </template>
+                      <template x-if="option.type === 'number'">
+                        <input type="number" x-model.number="selectedValues[optKey]" @input="calculate()"
+                          :min="option.min || 1" :max="option.max || 9999"
+                          class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm">
+                      </template>
+                    </div>
+                  </template>
+                  <!-- Unit price display -->
+                  <div class="bg-gray-50 rounded-lg p-3 text-sm" x-show="selectedValues.format && selectedValues.kolor">
+                    <span class="text-gray-500">Cena za sztukę: </span>
+                    <span class="font-medium" x-text="getUnitPrice()"></span>
+                  </div>
+                </div>
+              </template>
+
+              <!-- Fixed Calculator -->
+              <template x-if="product.calculatorType === 'fixed'">
+                <div class="space-y-3">
+                  <template x-for="item in product.items" :key="item.value">
+                    <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition hover:border-magenta"
+                      :class="selectedValues.usluga === item.value ? 'border-magenta bg-magenta/5' : 'border-lichtgrijs'">
+                      <input type="radio" :value="item.value" x-model="selectedValues.usluga" @change="calculate()" class="accent-magenta">
+                      <span class="flex-1 text-sm" x-text="item.label"></span>
+                      <span class="font-semibold text-sm" x-text="item.price.toFixed(2).replace('.',',') + ' zł'"></span>
+                    </label>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Price breakdown -->
+              <div class="mt-6 pt-4 border-t border-gray-100">
+                <div class="flex justify-between items-center">
+                  <span class="font-semibold">Cena orientacyjna:</span>
+                  <span class="text-xl font-bold text-magenta" x-text="formatPrice(price)"></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+      <!-- CTA -->
+      <section class="section-donkerblauw py-12">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+          <h2 class="text-2xl font-light text-white mb-3">Pytanie o produkt?</h2>
+          <p class="text-white/70 mb-6">Skontaktuj się z nami — pomożemy dobrać najlepsze rozwiązanie.</p>
+          <a href="kontakt.html" class="btn-geel inline-block">Skontaktuj się <i class="fas fa-arrow-right ml-2"></i></a>
+        </div>
+      </section>
+    </div>
+  </template>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div>
+          <a href="index.html" class="font-logo text-2xl text-geel no-underline block mb-4">CopyCabana</a>
+          <div class="flex flex-col gap-2">
+            <a href="index.html">Home</a>
+            <a href="produkty.html">Produkty</a>
+            <a href="o-nas.html">O nas</a>
+            <a href="kontakt.html">Kontakt</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-geel font-semibold text-sm mb-4">Popularne produkty</h4>
+          <div class="flex flex-col gap-2">
+            <a href="produkt.html?slug=wizytowki">Wizytówki</a>
+            <a href="produkt.html?slug=ulotki">Ulotki</a>
+            <a href="produkt.html?slug=plakaty">Plakaty</a>
+            <a href="produkt.html?slug=banery">Banery</a>
+            <a href="produkt.html?slug=oprawa_prac">Oprawa prac</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-geel font-semibold text-sm mb-4">Kontakt</h4>
+          <div class="flex flex-col gap-2 text-white/75 text-sm">
+            <p><i class="fas fa-map-marker-alt mr-2 text-geel"></i>ul. Bankowa 11, 40-007 Katowice</p>
+            <p><i class="fas fa-phone mr-2 text-geel"></i><a href="tel:502293849">502 293 849</a> / <a href="tel:504939094">504 939 094</a></p>
+            <p><i class="fas fa-envelope mr-2 text-geel"></i><a href="mailto:biuro@copycabana.pl">biuro@copycabana.pl</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="max-w-7xl mx-auto px-4">&copy; 2024 CopyCabana.pl — Wszelkie prawa zastrzeżone.</div>
+    </div>
+  </footer>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="data/prices.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/calculators.js"></script>
+  <script>
+    function productPage() {
+      return {
+        mobileNav: false,
+        product: null,
+        slug: '',
+        selectedValues: {},
+        areaWidth: 100,
+        areaHeight: 100,
+        price: 0,
+        cartCount: 0,
+        toast: { show: false, message: '', type: 'success' },
+
+        init() {
+          const params = new URLSearchParams(window.location.search);
+          this.slug = params.get('slug');
+          if (!this.slug) {
+            this.slug = 'wizytowki';
+          }
+
+          this.product = PriceManager.get(this.slug);
+          if (!this.product) {
+            this.product = DEFAULT_PRICES[this.slug];
+          }
+
+          if (this.product) {
+            document.title = this.product.name + ' — CopyCabana';
+            this.initDefaults();
+            this.calculate();
+          }
+
+          this.cartCount = Cart.getCount();
+          window.addEventListener('cart-updated', () => {
+            this.cartCount = Cart.getCount();
+          });
+        },
+
+        initDefaults() {
+          for (const [key, option] of Object.entries(this.product.options || {})) {
+            this.selectedValues[key] = option.default;
+          }
+          if (this.product.calculatorType === 'fixed' && this.product.items) {
+            this.selectedValues.usluga = this.product.items[0].value;
+          }
+        },
+
+        calculate() {
+          if (!this.product) return;
+          const extra = this.product.calculatorType === 'area'
+            ? { width: this.areaWidth, height: this.areaHeight }
+            : {};
+          this.price = Calculators.calculate(this.product, this.selectedValues, extra);
+        },
+
+        getUnitPrice() {
+          const format = this.selectedValues.format || 'A4';
+          const kolor = this.selectedValues.kolor || 'czarnobialy';
+          const prices = this.product.prices;
+          if (prices && prices[format]) {
+            return Calculators.formatPrice(prices[format][kolor] || 0);
+          }
+          return '0,00 zł';
+        },
+
+        formatPrice(amount) {
+          return Calculators.formatPrice(amount);
+        },
+
+        buildSummary() {
+          return Calculators.buildSummary(this.product, this.selectedValues, this.price,
+            this.product.calculatorType === 'area' ? { width: this.areaWidth, height: this.areaHeight } : {});
+        },
+
+        addToCart() {
+          if (this.price <= 0) {
+            alert('Skonfiguruj parametry, aby zobaczyć cenę.');
+            return;
+          }
+          const item = {
+            productId: this.slug,
+            productName: this.product.name,
+            summary: this.buildSummary(),
+            options: { ...this.selectedValues },
+            price: this.price,
+            quantity: 1,
+            image: this.product.image
+          };
+          Cart.addItem(item);
+          this.showToast('Dodano do koszyka!');
+        },
+
+        showToast(message) {
+          this.toast = { show: true, message, type: 'success' };
+          setTimeout(() => { this.toast.show = false; }, 2500);
+        }
+      };
+    }
+  </script>
+</body>
+</html>

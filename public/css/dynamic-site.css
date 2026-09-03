@@ -1,0 +1,173 @@
+/* CopyCabana Dynamic Local Service theme for the public site. */
+
+body.concept-dynamic {
+  background: #f5f5f5;
+  color: #26313b;
+  font-family: 'Inter', sans-serif;
+}
+
+.concept-dynamic h1,
+.concept-dynamic h2,
+.concept-dynamic h3,
+.concept-dynamic h4,
+.concept-dynamic .font-heading {
+  font-family: 'Archivo', sans-serif;
+}
+
+.concept-dynamic .navbar {
+  border-bottom: 1px solid rgba(6, 58, 96, 0.1);
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 8px 30px rgba(6, 58, 96, 0.06);
+}
+
+.concept-dynamic .navbar .font-logo {
+  color: var(--donkerblauw) !important;
+  font-size: 2rem;
+}
+
+.concept-dynamic .navbar .nav-link {
+  color: var(--donkerblauw) !important;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.concept-dynamic .navbar .nav-link:hover {
+  color: var(--magenta) !important;
+}
+
+.concept-dynamic .navbar .md\:hidden {
+  color: var(--donkerblauw) !important;
+}
+
+.concept-dynamic .page-header {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 237, 0, 0.18), transparent 25%),
+    linear-gradient(135deg, var(--donkerblauw) 0%, var(--blauw) 100%);
+  padding: 5rem 1.5rem 4.5rem;
+}
+
+.concept-dynamic .page-header h1 {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.concept-dynamic .section-wit {
+  background: #fff;
+}
+
+.concept-dynamic .section-lichtgrijs {
+  background: #f7f8fa;
+}
+
+.concept-dynamic .product-card,
+.concept-dynamic .value-card,
+.concept-dynamic .contact-card,
+.concept-dynamic .admin-card {
+  border: 1px solid rgba(6, 58, 96, 0.09);
+  border-radius: 26px;
+  box-shadow: 0 18px 55px rgba(6, 58, 96, 0.06);
+}
+
+.concept-dynamic .product-card:hover,
+.concept-dynamic .value-card:hover,
+.concept-dynamic .contact-card:hover {
+  box-shadow: 0 24px 70px rgba(6, 58, 96, 0.12);
+  transform: translateY(-5px);
+}
+
+.concept-dynamic .product-card img {
+  background: #fff;
+}
+
+.concept-dynamic .product-card .card-body {
+  padding: 1.35rem;
+}
+
+.concept-dynamic .product-card h3,
+.concept-dynamic .value-card h3,
+.concept-dynamic .contact-card h4 {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.concept-dynamic .filter-chip {
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.concept-dynamic .filter-chip.active {
+  background: var(--magenta);
+}
+
+.concept-dynamic .btn-magenta,
+.concept-dynamic .btn-geel {
+  border-radius: 9999px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.concept-dynamic .btn-magenta:hover,
+.concept-dynamic .btn-geel:hover {
+  transform: translateY(-2px);
+}
+
+.concept-dynamic .form-input,
+.concept-dynamic input,
+.concept-dynamic select,
+.concept-dynamic textarea {
+  border-radius: 14px;
+}
+
+.concept-dynamic footer {
+  background: #fff;
+  color: var(--donkerblauw);
+}
+
+.concept-dynamic footer .font-logo {
+  color: var(--donkerblauw) !important;
+}
+
+.concept-dynamic footer h4 {
+  color: var(--magenta) !important;
+  font-family: 'Archivo', sans-serif;
+  text-transform: uppercase;
+}
+
+.concept-dynamic footer a,
+.concept-dynamic footer .text-white\/75,
+.concept-dynamic footer p {
+  color: #5e6772 !important;
+}
+
+.concept-dynamic footer a:hover {
+  color: var(--magenta) !important;
+}
+
+.concept-dynamic .footer-bottom {
+  background: var(--donkerblauw);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.concept-dynamic .mobile-nav {
+  background: var(--donkerblauw);
+}
+
+.concept-dynamic .mobile-nav a,
+.concept-dynamic .mobile-nav .close-btn {
+  color: #fff;
+}
+
+@media (max-width: 767px) {
+  .concept-dynamic .navbar .font-logo {
+    font-size: 1.8rem;
+  }
+
+  .concept-dynamic .page-header {
+    padding: 4rem 1rem 3.5rem;
+  }
+}
