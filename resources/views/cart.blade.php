@@ -150,10 +150,20 @@
                   <input type="text" x-model="customer.company" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1">
                 </div>
               </div>
-              <div class="mt-4">
+               <div class="mt-4">
                 <label class="text-xs text-gray-500">Uwagi do zamówienia</label>
                 <textarea x-model="customer.notes" rows="3" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1" placeholder="Termin realizacji, dodatkowe informacje..."></textarea>
               </div>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <label class="text-xs text-gray-500">Dostawa
+                  <select x-model="customer.shipping_method" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1"><option value="pickup">Odbiór osobisty</option><option value="parcel">Paczkomat (12 zł)</option><option value="courier">Kurier (18 zł)</option></select>
+                </label>
+                <label class="text-xs text-gray-500">NIP do faktury (opcjonalnie)<input type="text" x-model="customer.nip" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1"></label>
+              </div>
+              <label class="mt-4 flex gap-2 text-xs text-gray-600"><input type="checkbox" x-model="customer.invoice_required"> Proszę o fakturę VAT</label>
+              <label class="mt-3 flex gap-2 text-xs text-gray-600"><input type="checkbox" x-model="customer.privacy_policy_accepted"> Zapoznałem/am się z polityką prywatności i akceptuję przetwarzanie danych w celu realizacji zamówienia. *</label>
+              <label class="mt-3 flex gap-2 text-xs text-gray-600"><input type="checkbox" x-model="customer.marketing_consent"> Chcę otrzymywać informacje marketingowe (opcjonalnie).</label>
+              <p class="mt-2 text-xs text-red-600" x-show="orderError" x-text="orderError"></p>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 mt-6">
@@ -222,6 +232,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="data/prices.js"></script>
   <script src="js/cart.js"></script>
+  <script src="{{ asset('js/app.js') }}"></script>
   <script>
     function cartPage() {
       return {
@@ -229,8 +240,9 @@
         items: [],
         cartCount: 0,
         total: 0,
-        customer: { name: '', email: '', phone: '', company: '', notes: '' },
-        orderSubmitted: false,
+         customer: { name: '', email: '', phone: '', company: '', notes: '', nip: '', shipping_method: 'pickup', invoice_required: false, privacy_policy_accepted: false, marketing_consent: false },
+         orderSubmitted: false,
+         orderError: '',
 
         init() {
           this.loadCart();
@@ -263,35 +275,32 @@
           }
         },
 
-        submitOrder() {
-          if (!this.customer.name || !this.customer.email) {
-            alert('Podaj imię i nazwisko oraz adres email.');
-            return;
-          }
-          const order = {
-            id: 'CC-' + Date.now(),
-            date: new Date().toISOString(),
-            items: this.items.map(i => ({
-              id: i.id,
-              productName: i.productName,
-              summary: i.summary,
-              price: i.price,
-              quantity: i.quantity
-            })),
-            total: this.total,
-            customer: { ...this.customer }
-          };
-
-          const orders = JSON.parse(localStorage.getItem('copycabana_orders') || '[]');
-          orders.push(order);
-          localStorage.setItem('copycabana_orders', JSON.stringify(orders));
-
-          Cart.clear();
-          this.items = [];
-          this.cartCount = 0;
-          this.total = 0;
-          this.orderSubmitted = true;
-        }
+         async submitOrder() {
+           if (!this.customer.name || !this.customer.email || !this.customer.privacy_policy_accepted) {
+             this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.';
+             return;
+           }
+           this.orderError = '';
+           try {
+             const response = await fetch('{{ url('/api/v1/orders') }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({
+               customer: this.customer,
+               shipping_method: this.customer.shipping_method,
+               invoice_required: this.customer.invoice_required,
+               marketing_consent: this.customer.marketing_consent,
+               privacy_policy_accepted: this.customer.privacy_policy_accepted,
+               items: this.items.map(i => ({ product_slug: i.productId, quantity: i.quantity, configuration: i.options || {} }))
+             }) });
+             const data = await response.json();
+             if (!response.ok) throw new Error(data.message || Object.values(data.errors || {}).flat()[0] || 'Nie udało się wysłać zamówienia.');
+             Cart.clear();
+             this.items = [];
+             this.cartCount = 0;
+             this.total = 0;
+             this.orderSubmitted = true;
+           } catch (error) {
+             this.orderError = error.message;
+           }
+         }
       };
     }
   </script>

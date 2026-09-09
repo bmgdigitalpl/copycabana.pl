@@ -18,6 +18,7 @@ class ProductController extends Controller
 
         $products = Product::query()
             ->active()
+            ->with(['options' => fn ($query) => $query->active()->with(['values' => fn ($values) => $values->where('is_active', true)])])
             ->when(
                 $validated['category'] ?? null,
                 fn (Builder $query, string $category): Builder => $query->where('category', $category),
@@ -32,6 +33,7 @@ class ProductController extends Controller
     {
         $product = Product::query()
             ->active()
+            ->with(['options' => fn ($query) => $query->active()->with(['values' => fn ($values) => $values->where('is_active', true)])])
             ->where('slug', $slug)
             ->firstOrFail();
 

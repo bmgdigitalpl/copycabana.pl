@@ -292,6 +292,7 @@
   <script src="data/prices.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/calculators.js"></script>
+  <script src="{{ asset('js/app.js') }}"></script>
   <script>
     function productPage() {
       return {

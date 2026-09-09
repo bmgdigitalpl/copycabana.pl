@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductConfigurationRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class ProductConfigurationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +24,11 @@ class ProductConfigurationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'product_slug' => ['required', Rule::exists('products', 'slug')->where('is_active', true)],
+            'quantity' => ['required', 'integer', 'min:1', 'max:100'],
+            'option_value_ids' => ['nullable', 'array', 'max:30'],
+            'option_value_ids.*' => ['integer', 'exists:option_values,id'],
+            'configuration' => ['nullable', 'array'],
         ];
     }
 }

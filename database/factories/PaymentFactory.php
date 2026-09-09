@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,7 +19,14 @@ class PaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'order_id' => Order::factory(),
+            'provider' => 'manual',
+            'provider_reference' => null,
+            'status' => 'pending',
+            'amount' => 100,
+            'currency' => 'PLN',
+            'payload' => [],
+            'paid_at' => null,
         ];
     }
 }
