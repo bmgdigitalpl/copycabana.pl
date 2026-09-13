@@ -15,6 +15,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -38,6 +41,9 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(fn (): View => view('auth.login'));
         Fortify::requestPasswordResetLinkView(fn (): View => view('auth.forgot-password'));
         Fortify::resetPasswordView(fn (Request $request): View => view('auth.reset-password', ['request' => $request]));
+        Passkeys::authorizeLoginUsing(
+            fn (Request $request, PasskeyUser $user, Passkey $passkey): bool => $user instanceof User && $user->isAdmin(),
+        );
 
         Fortify::authenticateUsing(function (Request $request): ?User {
             $user = User::query()

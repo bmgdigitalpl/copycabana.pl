@@ -39,12 +39,12 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 
     public function isAdmin(): bool
     {
-        return in_array($this->role, ['admin', 'staff'], true);
+        return in_array($this->role, ['admin', 'staff'], true) && $this->disabled_at === null;
     }
 
     public function isOwner(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' && $this->disabled_at === null;
     }
 
     public function isCustomer(): bool

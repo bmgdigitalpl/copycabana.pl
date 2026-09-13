@@ -11,6 +11,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class AdminFeaturesTest extends TestCase
@@ -42,6 +45,40 @@ class AdminFeaturesTest extends TestCase
         $user = User::factory()->create(['role' => 'customer']);
 
         $this->actingAs($user)->get(route('dashboard'))->assertForbidden();
+    }
+
+    public function test_inactive_administrator_cannot_access_the_admin_area(): void
+    {
+        $user = User::factory()->create(['role' => 'admin', 'disabled_at' => now()]);
+
+        $this->actingAs($user)->get(route('dashboard'))->assertForbidden();
+    }
+
+    public function test_active_staff_passkey_can_be_used_to_log_in(): void
+    {
+        $user = User::factory()->make(['role' => 'staff']);
+        $passkey = (new Passkey)->setRelation('user', $user);
+
+        $this->assertTrue(Passkeys::allowsLogin(request(), $passkey));
+    }
+
+    #[DataProvider('ineligiblePasskeyUsers')]
+    public function test_passkey_login_rejects_inactive_or_unauthorized_users(array $attributes): void
+    {
+        $user = User::factory()->make($attributes);
+        $passkey = (new Passkey)->setRelation('user', $user);
+
+        $this->assertFalse(Passkeys::allowsLogin(request(), $passkey));
+    }
+
+    /** @return array<string, array{array<string, string>}> */
+    public static function ineligiblePasskeyUsers(): array
+    {
+        return [
+            'customer' => [['role' => 'customer']],
+            'inactive administrator' => [['role' => 'admin', 'disabled_at' => '2026-09-13 12:00:00']],
+            'inactive staff member' => [['role' => 'staff', 'disabled_at' => '2026-09-13 12:00:00']],
+        ];
     }
 
     public function test_guests_are_redirected_to_the_admin_login_page(): void
