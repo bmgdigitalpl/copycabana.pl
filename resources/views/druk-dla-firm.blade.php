@@ -5,7 +5,8 @@
 
 @section('content')
 <script>
-  window.copyCabanaB2bImages = {{ Illuminate\Support\Js::from($b2bProductImages) }};
+  window.copyCabanaB2bCatalog = {{ Illuminate\Support\Js::from($b2bCatalog) }};
+  window.copyCabanaB2bDeliveries = {{ Illuminate\Support\Js::from($b2bDeliveries) }};
 </script>
 <main class="cc-page">
   {{-- Hero --}}
@@ -78,9 +79,9 @@
                       <div>
                         <label x-text="param.label"></label>
                         <div class="cc-chip-row">
-                          <template x-for="opt in param.options" :key="opt">
-                            <button type="button" class="cc-chip" :class="isParam(param.key, opt) ? 'is-active' : ''"
-                                    @click="setParam(param.key, opt)" x-text="opt"></button>
+                          <template x-for="option in param.values" :key="option.value">
+                            <button type="button" class="cc-chip" :class="isParam(param.key, option.value) ? 'is-active' : ''"
+                                    @click="setParam(param.key, option.value)" x-text="option.label"></button>
                           </template>
                         </div>
                       </div>
@@ -204,16 +205,16 @@
           </div>
 
           <div class="cc-step-grid cc-step-grid--3">
-            @foreach (['pickup', 'parcel', 'courier'] as $d)
+            @foreach ($b2bDeliveries as $delivery)
               <label class="cc-option">
-                <input type="radio" name="b2b-odbior" value="{{ $d }}" x-model="delivery">
+                <input type="radio" name="b2b-odbior" value="{{ $delivery['id'] }}" x-model="delivery">
                 <span class="cc-option-body">
                   <span class="cc-option-check"><i class="fas fa-check" aria-hidden="true"></i><em>Wybrano</em></span>
                   <span class="cc-option-main">
-                    <strong>{{ ['pickup' => 'Odbiór w Katowicach', 'parcel' => 'Paczkomat', 'courier' => 'Kurier'][$d] }}</strong>
-                    <em>{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'Wybierz punkt z listy InPost', 'courier' => 'Dostawa pod wskazany adres'][$d] }}</em>
-                  </span>
-                   <span class="cc-option-price">{{ ['pickup' => '0,00 zł', 'parcel' => '12,00 zł', 'courier' => '18,00 zł'][$d] }}</span>
+                     <strong>{{ $delivery['name'] }}</strong>
+                     <em>{{ $delivery['hint'] }}</em>
+                   </span>
+                    <span class="cc-option-price">{{ number_format((float) $delivery['price'], 2, ',', ' ') }} zł</span>
                  </span>
                </label>
             @endforeach

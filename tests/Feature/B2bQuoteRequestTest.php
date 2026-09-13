@@ -9,6 +9,7 @@ use App\Mail\B2bQuoteRequestReceived;
 use App\Mail\B2bQuoteRequestStatusChanged;
 use App\Mail\OrderReceivedMail;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\QuoteOffer;
 use App\Models\QuoteRequest;
 use App\Models\User;
@@ -42,9 +43,9 @@ class B2bQuoteRequestTest extends TestCase
                     'phone' => '502000000',
                 ],
                 'items' => [[
-                    'product_key' => 'visits',
-                    'configuration' => ['qty' => '500', 'paper' => '350 g biały'],
-                    'quantity' => 500,
+                    'product_slug' => 'wizytowki',
+                    'configuration' => $this->businessConfiguration('wizytowki'),
+                    'quantity' => 1,
                     'upload_token' => $upload->json('upload_token'),
                     'help_wanted' => false,
                 ]],
@@ -59,6 +60,7 @@ class B2bQuoteRequestTest extends TestCase
         $this->assertSame('B2B-', substr($quoteRequest->reference, 0, 4));
         $this->assertSame('Kowalski Sp. z o.o.', $quoteRequest->company_name);
         $this->assertSame(500, $quoteRequest->items->first()->quantity);
+        $this->assertSame('350 g biały', $quoteRequest->items->first()->configuration['paper']['display']);
         $this->assertSame('attached', $quoteRequest->files->first()->status);
         Storage::disk('local')->assertExists($quoteRequest->files->first()->path);
         Mail::assertQueued(B2bQuoteRequestReceived::class, 1);
@@ -72,7 +74,7 @@ class B2bQuoteRequestTest extends TestCase
         $this->seed(ProductSeeder::class);
         $payload = [
             'customer' => ['name' => 'Anna Nowak', 'email' => 'anna@firma.pl', 'company' => 'Nowak Design'],
-            'items' => [['product_key' => 'posters', 'configuration' => ['qty' => '10'], 'quantity' => 10]],
+            'items' => [['product_slug' => 'plakaty', 'configuration' => $this->businessConfiguration('plakaty'), 'quantity' => 10]],
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
         ];
@@ -92,7 +94,7 @@ class B2bQuoteRequestTest extends TestCase
     {
         $this->postJson('/api/v1/b2b/quote-requests', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@firma.pl', 'company' => 'Firma'],
-            'items' => [['product_key' => 'visits', 'quantity' => 100]],
+            'items' => [['product_slug' => 'wizytowki', 'configuration' => $this->businessConfiguration('wizytowki'), 'quantity' => 100]],
             'shipping_method' => 'pickup',
         ])->assertUnprocessable()->assertJsonValidationErrors('privacy_policy_accepted');
     }
@@ -114,7 +116,7 @@ class B2bQuoteRequestTest extends TestCase
         $upload = $this->post('/api/v1/b2b/uploads', ['file' => UploadedFile::fake()->image('brief.png')]);
         $this->postJson('/api/v1/b2b/quote-requests', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@firma.pl', 'company' => 'Firma'],
-            'items' => [['product_key' => 'visits', 'quantity' => 100, 'upload_token' => $upload->json('upload_token')]],
+            'items' => [['product_slug' => 'wizytowki', 'configuration' => $this->businessConfiguration('wizytowki'), 'quantity' => 100, 'upload_token' => $upload->json('upload_token')]],
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
         ])->assertCreated();
@@ -306,6 +308,53 @@ class B2bQuoteRequestTest extends TestCase
         $this->assertDatabaseHas('quote_offers', ['version' => 2, 'status' => 'sent']);
     }
 
+    public function test_b2b_request_rejects_a_configuration_value_outside_the_product_schema(): void
+    {
+        $this->seed(ProductSeeder::class);
+        $configuration = $this->businessConfiguration('wizytowki');
+        $configuration['format'] = 'nieistniejący-format';
+
+        $this->postJson('/api/v1/b2b/quote-requests', [
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@firma.pl', 'company' => 'Firma'],
+            'items' => [['product_slug' => 'wizytowki', 'configuration' => $configuration, 'quantity' => 100]],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+        ])->assertUnprocessable()->assertJsonValidationErrors('items.0.configuration.format');
+
+        $this->assertDatabaseCount('quote_requests', 0);
+    }
+
+    public function test_b2b_request_rejects_an_inactive_configurator_product(): void
+    {
+        $this->seed(ProductSeeder::class);
+        Product::query()->where('slug', 'plakaty')->update(['is_active' => false]);
+
+        $this->postJson('/api/v1/b2b/quote-requests', [
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@firma.pl', 'company' => 'Firma'],
+            'items' => [['product_slug' => 'plakaty', 'configuration' => $this->businessConfiguration('plakaty'), 'quantity' => 10]],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+        ])->assertUnprocessable()->assertJsonValidationErrors('items.0.product_slug');
+
+        $this->assertDatabaseCount('quote_requests', 0);
+    }
+
+    public function test_b2b_request_rejects_a_numeric_value_outside_the_product_range(): void
+    {
+        $this->seed(ProductSeeder::class);
+        $configuration = $this->businessConfiguration('banery');
+        $configuration['width'] = '501';
+
+        $this->postJson('/api/v1/b2b/quote-requests', [
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@firma.pl', 'company' => 'Firma'],
+            'items' => [['product_slug' => 'banery', 'configuration' => $configuration, 'quantity' => 1]],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+        ])->assertUnprocessable()->assertJsonValidationErrors('items.0.configuration.width');
+
+        $this->assertDatabaseCount('quote_requests', 0);
+    }
+
     public function test_expire_quote_offers_command_updates_the_request_when_no_active_version_remains(): void
     {
         Mail::fake();
@@ -334,11 +383,38 @@ class B2bQuoteRequestTest extends TestCase
         $this->seed(ProductSeeder::class);
         $this->postJson('/api/v1/b2b/quote-requests', [
             'customer' => ['name' => 'Anna Nowak', 'email' => 'anna@firma.pl', 'company' => 'Nowak Design'],
-            'items' => [['product_key' => 'posters', 'quantity' => 10]],
+            'items' => [['product_slug' => 'plakaty', 'configuration' => $this->businessConfiguration('plakaty'), 'quantity' => 10]],
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
         ])->assertCreated();
 
         return QuoteRequest::query()->latest('id')->firstOrFail();
+    }
+
+    /** @return array<string, string> */
+    private function businessConfiguration(string $productSlug): array
+    {
+        return match ($productSlug) {
+            'wizytowki' => [
+                'qty' => '500',
+                'format' => '90×50 mm',
+                'printing' => 'dwustronnie',
+                'paper' => '350 g biały',
+                'finish' => 'bez',
+                'designs' => '1',
+            ],
+            'plakaty' => [
+                'qty' => '10',
+                'format' => 'A3',
+                'substrate' => 'papier 170 g',
+            ],
+            'banery' => [
+                'width' => '100',
+                'height' => '100',
+                'material' => 'baner 510 g',
+                'finish' => 'szwy z oczkami',
+                'qty' => '1',
+            ],
+        };
     }
 }

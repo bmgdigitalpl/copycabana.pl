@@ -718,130 +718,8 @@
      });
 
     /* --- B2B configurator (dynamic products, independent items) --- */
-    var B2B_PRODUCT_IMAGES = window.copyCabanaB2bImages || {};
-    var B2B_GENERIC_PARAMS = [
-      { key: 'qty', label: 'Liczba sztuk', type: 'number', min: 1, max: 1000 }
-    ];
-    var B2B_PRODUCTS = [
-      {
-        id: 'visits', name: 'Wizytówki', icon: 'fa-id-card', image: B2B_PRODUCT_IMAGES.visits || null,
-        desc: '90×50 mm. Papier, wykończenie i zadruk.',
-        params: [
-          { key: 'qty', label: 'Nakład', type: 'chips', options: ['100', '250', '500', '1000', '2000'] },
-          { key: 'format', label: 'Format', type: 'chips', options: ['90×50 mm', '54×85 mm'] },
-          { key: 'printing', label: 'Zadruk', type: 'chips', options: ['jednostronnie', 'dwustronnie'] },
-          { key: 'paper', label: 'Papier', type: 'chips', options: ['300 g jedwab', '350 g biały', '350 g tworzywo'] },
-          { key: 'finish', label: 'Wykończenie', type: 'chips', options: ['bez', 'lakier UV', 'folia matowa'] },
-          { key: 'designs', label: 'Liczba projektów', type: 'number', min: 1, max: 10 }
-        ]
-      },
-      {
-        id: 'leaflets', name: 'Ulotki', icon: 'fa-folder-open', image: B2B_PRODUCT_IMAGES.leaflets || null,
-        desc: 'Ulotki A6–A4 z opcją składania.',
-        params: [
-          { key: 'qty', label: 'Nakład', type: 'chips', options: ['250', '500', '1000', '2500', '5000'] },
-          { key: 'format', label: 'Format', type: 'chips', options: ['A6', 'A5', 'A4'] },
-          { key: 'paper', label: 'Papier', type: 'chips', options: ['170 g', '250 g kreda', '350 g'] },
-          { key: 'printing', label: 'Zadruk', type: 'chips', options: ['1/1 czarno-biały', '4/4 kolor'] },
-          { key: 'fold', label: 'Składanie', type: 'chips', options: ['bez składania', 'pół na pół', 'łamane na 3'] }
-        ]
-      },
-      {
-        id: 'posters', name: 'Plakaty', icon: 'fa-image', image: B2B_PRODUCT_IMAGES.posters || null,
-        desc: 'Od A3 do B2, papier lub karton.',
-        params: [
-          { key: 'qty', label: 'Liczba sztuk', type: 'chips', options: ['1', '10', '25', '50', '100'] },
-          { key: 'format', label: 'Format', type: 'chips', options: ['A3', 'A2', 'A1', 'B2'] },
-          { key: 'substrate', label: 'Podłoże', type: 'chips', options: ['papier 170 g', 'papier 250 g', 'karton 300 g'] }
-        ]
-      },
-      {
-        id: 'banners', name: 'Banery', icon: 'fa-flag', image: B2B_PRODUCT_IMAGES.banners || null,
-        desc: 'Wg wymiarów, z wykończeniem pod montaż.',
-        params: [
-          { key: 'width', label: 'Szerokość (cm)', type: 'number', min: 50, max: 500 },
-          { key: 'height', label: 'Wysokość (cm)', type: 'number', min: 50, max: 300 },
-          { key: 'material', label: 'Materiał', type: 'chips', options: ['siateczka', 'baner 510 g', 'baner 440 g'] },
-          { key: 'finish', label: 'Wykończenie', type: 'chips', options: ['szwy z oczkami', 'taśma 4 cm', 'bez wykończenia'] },
-          { key: 'qty', label: 'Liczba sztuk', type: 'chips', options: ['1', '2', '5', '10'] }
-        ]
-      },
-      {
-        id: 'rollups', name: 'Rollupy', icon: 'fa-user-tie', image: B2B_PRODUCT_IMAGES.rollups || null,
-        desc: '85×200 i 100×200 cm.',
-        params: [
-          { key: 'size', label: 'Rozmiar', type: 'chips', options: ['85×200 cm', '100×200 cm'] },
-          { key: 'package', label: 'Zakres', type: 'chips', options: ['konstrukcja + grafika', 'sama grafika'] },
-          { key: 'qty', label: 'Liczba sztuk', type: 'chips', options: ['1', '2', '5'] }
-        ]
-      },
-      {
-        id: 'documents', name: 'Dokumenty PDF', icon: 'fa-file-lines', image: B2B_PRODUCT_IMAGES.documents || null,
-        desc: 'Materiały szkoleniowe i dokumenty.',
-        params: [
-          { key: 'color', label: 'Kolor', type: 'chips', options: ['czarno-biały', 'kolor'] },
-          { key: 'sided', label: 'Strony kartki', type: 'chips', options: ['jednostronnie', 'dwustronnie'] },
-          { key: 'qty', label: 'Egzemplarze', type: 'number', min: 1, max: 50 },
-          { key: 'finish', label: 'Wykończenie', type: 'chips', options: ['bez', 'spinanie', 'oprawa kanałowa', 'teczka'] }
-        ]
-      },
-      {
-        id: 'billboards', name: 'Billboardy', icon: 'fa-rectangle-ad', image: B2B_PRODUCT_IMAGES.billboards || null,
-        desc: 'Reklama zewnętrzna w dużym formacie na Śląsku.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'canvases', name: 'Fotoobrazy', icon: 'fa-image', image: B2B_PRODUCT_IMAGES.canvases || null,
-        desc: 'Fotoobrazy na płótnie i w ramach.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'wallpapers', name: 'Fototapety', icon: 'fa-expand', image: B2B_PRODUCT_IMAGES.wallpapers || null,
-        desc: 'Fototapety na wymiar do wnętrz i biur.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'calendars', name: 'Kalendarze spiralowane', icon: 'fa-calendar-days', image: B2B_PRODUCT_IMAGES.calendars || null,
-        desc: 'Kalendarze ścienne i biurkowe z indywidualnym projektem.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'stickers', name: 'Naklejki', icon: 'fa-note-sticky', image: B2B_PRODUCT_IMAGES.stickers || null,
-        desc: 'Naklejki w dowolnych kształtach i rozmiarach.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'plaques', name: 'Tabliczki grawerowane', icon: 'fa-sign', image: B2B_PRODUCT_IMAGES.plaques || null,
-        desc: 'Tabliczki informacyjne i grawerowane laserowo.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'cad', name: 'Rysunki, plany, mapy', icon: 'fa-compass-drafting', image: B2B_PRODUCT_IMAGES.cad || null,
-        desc: 'Wydruki CAD w formatach A0–A4.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'copies', name: 'Ksero', icon: 'fa-copy', image: B2B_PRODUCT_IMAGES.copies || null,
-        desc: 'Kserokopie w czerni-bieli i kolorze.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'scans', name: 'Skanowanie', icon: 'fa-file-arrow-up', image: B2B_PRODUCT_IMAGES.scans || null,
-        desc: 'Skanowanie dokumentów i zdjęć w wysokiej rozdzielczości.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'id-photos', name: 'Zdjęcia do dokumentów', icon: 'fa-id-card', image: B2B_PRODUCT_IMAGES['id-photos'] || null,
-        desc: 'Fotoset do paszportu, dowodu i wizy.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'stamps', name: 'Pieczątki', icon: 'fa-stamp', image: B2B_PRODUCT_IMAGES.stamps || null,
-        desc: 'Pieczątki, stemple i datowniki.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'design', name: 'Projektowanie graficzne', icon: 'fa-pen-ruler', image: B2B_PRODUCT_IMAGES.design || null,
-        desc: 'Projekty graficzne materiałów reklamowych.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'extras', name: 'Usługi dodatkowe', icon: 'fa-layer-group', image: B2B_PRODUCT_IMAGES.extras || null,
-        desc: 'Laminowanie, oprawianie i personalizacja.', params: B2B_GENERIC_PARAMS
-      },
-      {
-        id: 'binding', name: 'Oprawa prac i bindowanie', icon: 'fa-book-open', image: B2B_PRODUCT_IMAGES.binding || null,
-        desc: 'Oprawa twarda i miękka prac dyplomowych w 24h.', params: B2B_GENERIC_PARAMS
-      }
-    ];
+    var B2B_PRODUCTS = window.copyCabanaB2bCatalog || [];
+    var B2B_DELIVERIES = window.copyCabanaB2bDeliveries || [];
 
     Alpine.data('ccB2bConfigurator', function () {
       return Object.assign(ccInpostState(), {
@@ -866,11 +744,7 @@
          submitted: false,
          submitError: null,
 
-        deliveries: [
-          { id: 'pickup', name: 'Odbiór w Katowicach', price: 0, demo: false, hint: 'ul. Bankowa 11, 40-007 Katowice' },
-          { id: 'parcel', name: 'Paczkomat', price: 12, demo: false, hint: 'Wybierz punkt z listy InPost' },
-          { id: 'courier', name: 'Kurier', price: 18, demo: true, hint: 'demo — integracja do potwierdzenia' }
-        ],
+        deliveries: B2B_DELIVERIES,
 
         go: ccScroll,
 
@@ -886,7 +760,7 @@
           this.params = {};
           if (ds) {
             ds.params.forEach(function (p) {
-              var def = p.type === 'chips' ? p.options[0] : String(p.min);
+              var def = p.type === 'chips' ? p.values[0].value : String(p.min);
               this.params[p.key] = def;
             }.bind(this));
           }
@@ -933,7 +807,10 @@
           p.params.forEach(function (param) {
             var v = item.params[param.key];
             if (v !== undefined && v !== null && v !== '') {
-              parts.push(param.label + ': ' + v);
+              var display = param.type === 'chips'
+                ? param.values.find(function (option) { return option.value === v; })?.label || v
+                : v;
+              parts.push(param.label + ': ' + display);
             }
           });
           return parts.join(' · ');
@@ -1007,7 +884,7 @@
                  },
                  items: this.items.map(function (item) {
                    return {
-                     product_key: item.product,
+                      product_slug: item.product,
                      configuration: item.params,
                      quantity: Number(item.params.qty || item.quantity || 1),
                      help_wanted: item.helpWanted,

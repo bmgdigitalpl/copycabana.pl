@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
     'configuration',
     'sort_order',
     'is_active',
+    'is_business_configurator',
 ])]
 class Product extends Model
 {
@@ -37,6 +38,7 @@ class Product extends Model
             'configuration' => 'array',
             'starting_price' => 'decimal:2',
             'is_active' => 'boolean',
+            'is_business_configurator' => 'boolean',
         ];
     }
 
@@ -61,6 +63,15 @@ class Product extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
+    public function scopeBusinessConfigurator(Builder $query): Builder
+    {
+        return $query->where('is_business_configurator', true);
     }
 
     public function imageUrl(): ?string

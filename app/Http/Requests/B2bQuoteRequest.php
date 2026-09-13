@@ -2,27 +2,28 @@
 
 namespace App\Http\Requests;
 
+use App\Services\BusinessConfiguratorService;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class B2bQuoteRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $productMap = (array) config('business.b2b_products', []);
-        $items = collect($this->input('items', []))->map(function (array $item) use ($productMap): array {
-            $productKey = $item['product_key'] ?? $item['product'] ?? null;
+        $items = collect($this->input('items', []))->map(function (array $item): array {
             $configuration = $item['configuration'] ?? $item['params'] ?? [];
             $configuration = is_array($configuration)
                 ? array_map(fn (mixed $value): ?string => is_scalar($value) ? (string) $value : null, $configuration)
                 : [];
 
             return [
-                'product_key' => $productKey,
-                'product_slug' => is_string($productKey) ? ($productMap[$productKey] ?? null) : null,
+                'product_slug' => $item['product_slug'] ?? $item['product'] ?? null,
                 'configuration' => is_array($configuration) ? $configuration : [],
-                'quantity' => $item['quantity'] ?? (is_array($configuration) ? ($configuration['qty'] ?? 1) : 1),
+                'quantity' => is_array($configuration) && array_key_exists('qty', $configuration)
+                    ? $configuration['qty']
+                    : ($item['quantity'] ?? 1),
                 'help_wanted' => $item['help_wanted'] ?? $item['helpWanted'] ?? false,
                 'upload_token' => $item['upload_token'] ?? $item['uploadToken'] ?? null,
             ];
@@ -75,8 +76,7 @@ class B2bQuoteRequest extends FormRequest
             'shipping_address.post_code' => ['required_unless:shipping_method,pickup', 'string', 'max:20'],
             'requested_by_date' => ['nullable', 'date', 'after_or_equal:today'],
             'items' => ['required', 'array', 'min:1', 'max:20'],
-            'items.*.product_key' => ['required', Rule::in(array_keys((array) config('business.b2b_products', [])))],
-            'items.*.product_slug' => ['required', Rule::in(array_values((array) config('business.b2b_products', [])))],
+            'items.*.product_slug' => ['required', 'string', Rule::exists('products', 'slug')->where('is_active', true)->where('is_business_configurator', true)],
             'items.*.configuration' => ['nullable', 'array', 'max:30'],
             'items.*.configuration.*' => ['nullable', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:100000'],
@@ -87,6 +87,19 @@ class B2bQuoteRequest extends FormRequest
             'brief.description' => ['nullable', 'string', 'max:5000'],
             'brief.quantity' => ['nullable', 'string', 'max:100'],
             'brief.requested_by_date' => ['nullable', 'date', 'after_or_equal:today'],
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                app(BusinessConfiguratorService::class)->validate($this->input('items', []), $validator);
+            },
         ];
     }
 }

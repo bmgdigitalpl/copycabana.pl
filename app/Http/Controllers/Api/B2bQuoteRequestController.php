@@ -8,10 +8,10 @@ use App\Http\Requests\B2bUploadRequest;
 use App\Mail\B2bQuoteRequestConfirmation;
 use App\Mail\B2bQuoteRequestReceived;
 use App\Models\Client;
-use App\Models\Product;
 use App\Models\QuoteRequest;
 use App\Services\AdminNotificationService;
 use App\Services\B2bQuoteRequestUploadService;
+use App\Services\BusinessConfiguratorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -35,7 +35,7 @@ class B2bQuoteRequestController extends Controller
         ], 201);
     }
 
-    public function store(B2bQuoteRequest $request, B2bQuoteRequestUploadService $uploads, AdminNotificationService $notifications): JsonResponse
+    public function store(B2bQuoteRequest $request, B2bQuoteRequestUploadService $uploads, AdminNotificationService $notifications, BusinessConfiguratorService $configurator): JsonResponse
     {
         $data = $request->validated();
         $idempotencyKey = $request->header('Idempotency-Key');
@@ -51,10 +51,10 @@ class B2bQuoteRequestController extends Controller
             }
         }
 
-        $quoteRequest = DB::transaction(function () use ($data, $idempotencyKey, $uploads): QuoteRequest {
+        $quoteRequest = DB::transaction(function () use ($data, $idempotencyKey, $uploads, $configurator): QuoteRequest {
             $customer = $data['customer'];
             $productSlugs = collect($data['items'])->pluck('product_slug')->unique();
-            $products = Product::query()->active()->whereIn('slug', $productSlugs)->get()->keyBy('slug');
+            $products = $configurator->productsForSlugs($productSlugs->all());
 
             if ($products->count() !== $productSlugs->count()) {
                 throw ValidationException::withMessages(['items' => 'Jedna z wybranych usług nie jest już dostępna.']);
@@ -100,7 +100,7 @@ class B2bQuoteRequestController extends Controller
                     'product_id' => $products[$itemData['product_slug']]->id,
                     'product_slug' => $itemData['product_slug'],
                     'product_name' => $products[$itemData['product_slug']]->name,
-                    'configuration' => $itemData['configuration'] ?? [],
+                    'configuration' => $configurator->snapshot($products[$itemData['product_slug']], $itemData['configuration'] ?? []),
                     'quantity' => $itemData['quantity'],
                     'help_wanted' => (bool) ($itemData['help_wanted'] ?? false),
                 ]);

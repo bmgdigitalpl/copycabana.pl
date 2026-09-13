@@ -19,11 +19,21 @@
       </div>
 
       <div class="cc-hero-visual reveal reveal-delay-2">
-        <div class="cc-hero-stack" aria-hidden="true">
-          <div class="cc-hero-card cc-hero-card--single">
-            <img src="{{ asset('images/hero-new.webp') }}" alt="">
+        @php($heroVariant = 'cards')
+        @if($heroVariant === 'image')
+          <div class="cc-hero-stack" aria-hidden="true">
+            <div class="cc-hero-card cc-hero-card--single">
+              <img src="{{ asset('images/hero-new.webp') }}" alt="">
+            </div>
           </div>
-        </div>
+        @else
+          <div class="hero-stack" style="height: 100%; align-content: center;" aria-hidden="true">
+            <article class="stack-card stack-card-main"><strong>24h</strong><p>Druk i oprawa prac dyplomowych. Dostępność terminu potwierdzamy dla Twojego pliku i wybranej oprawy.</p></article>
+            <article class="stack-card"><strong>PDF</strong><p>Prześlij dokument mailem. Podaj liczbę egzemplarzy oraz druk kolorowy lub czarno-biały.</p></article>
+            <article class="stack-card stack-card-accent"><strong>Katowice</strong><p>Odbiór w centrum miasta przy ul. Bankowej 11.</p></article>
+            <article class="stack-card"><strong>Dla firm</strong><p>Wizytówki, ulotki, plakaty, rollupy, banery i więcej.</p></article>
+          </div>
+        @endif
       </div>
     </div>
   </section>
@@ -34,9 +44,8 @@
   {{-- 03 Trust --}}
   <section class="cc-section cc-section--light">
     <div class="cc-container">
-      <x-concept.section-heading label="Dlaczego my?">
-        <x-slot:lead>Doświadczenie, zaufanie i lokalna drukarnia, do której możesz przyjść osobiście.</x-slot:lead>
-        Możesz nam zaufać.
+      <x-concept.section-heading>
+        Dlaczego CopyCabana.
       </x-concept.section-heading>
 
       <div class="cc-need-grid">

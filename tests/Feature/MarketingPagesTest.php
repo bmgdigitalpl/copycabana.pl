@@ -82,8 +82,10 @@ class MarketingPagesTest extends TestCase
             ->assertSee('Od pliku do')
             ->assertSee('gotowego wydruku.')
             ->assertSee('Prace dyplomowe, dokumenty PDF i materiały firmowe.')
-            ->assertSee('Dlaczego my?')
-            ->assertSee('Możesz nam zaufać.')
+            ->assertSee('Dlaczego CopyCabana.')
+            ->assertDontSee('Dlaczego my?')
+            ->assertDontSee('Możesz nam zaufać.')
+            ->assertDontSee('Doświadczenie, zaufanie i lokalna drukarnia, do której możesz przyjść osobiście.')
             ->assertSee('22 lata doświadczenia')
             ->assertSee('Tysiące zadowolonych klientów')
             ->assertSee('Drukarnia na miejscu')
@@ -103,29 +105,28 @@ class MarketingPagesTest extends TestCase
         $this->assertSame(3, substr_count($response->getContent(), 'class="cc-need-icon"'));
     }
 
-    public function test_homepage_hero_renders_one_static_image(): void
+    public function test_homepage_hero_renders_static_information_cards(): void
     {
         $content = $this->get(route('home'))->getContent();
 
-        $this->assertSame(1, substr_count($content, 'class="cc-hero-card cc-hero-card--single"'));
-        $this->assertStringContainsString('images/hero-new.webp', $content);
+        $this->assertSame(1, substr_count($content, 'class="hero-stack"'));
+        $this->assertStringContainsString('stack-card-main', $content);
+        $this->assertStringContainsString('24h', $content);
         $this->assertStringNotContainsString('data-cc-hero-slider', $content);
         $this->assertStringNotContainsString('cc-hero-slider-track', $content);
         $this->assertStringNotContainsString('cc-hero-slide', $content);
-        $this->assertStringNotContainsString('cc-hero-card--tag', $content);
 
-        $css = file_get_contents(public_path('css/concept.css'));
-        $this->assertStringContainsString('.cc-hero-card--single', $css);
-        $this->assertStringContainsString('align-self: flex-start;', $css);
-        $this->assertStringContainsString('border-radius: 9999px;', $css);
-        $this->assertStringContainsString('margin-left: 0.25rem;', $css);
-        $this->assertStringContainsString('background: linear-gradient(160deg, rgba(213, 26, 112, 0.12), #fff 58%);', $css);
-        $this->assertStringNotContainsString('.cc-hero-slider', $css);
+        $heroCss = file_get_contents(public_path('css/dynamic-local-service.css'));
+        $conceptCss = file_get_contents(public_path('css/concept.css'));
+
+        $this->assertStringContainsString('.hero-stack', $heroCss);
+        $this->assertStringContainsString('.stack-card-main', $heroCss);
+        $this->assertStringNotContainsString('.cc-hero-slider', $conceptCss);
     }
 
     public function test_marketing_heroes_use_the_single_card_layout(): void
     {
-        foreach (['home', 'services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+        foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
             $content = $this->get(route($routeName))->getContent();
 
             $this->assertSame(1, substr_count($content, 'class="cc-hero-card cc-hero-card--single"'));
@@ -215,7 +216,7 @@ class MarketingPagesTest extends TestCase
         Product::query()->where('slug', 'wizytowki')->update(['image_path' => 'images/produkty/druk.png']);
 
         $this->get(route('services.business'))
-            ->assertSee('copyCabanaB2bImages', false)
+            ->assertSee('copyCabanaB2bCatalog', false)
             ->assertSee('druk.png')
             ->assertSee('ulotki.png')
             ->assertSee('plakaty.png')
@@ -234,6 +235,16 @@ class MarketingPagesTest extends TestCase
             ->assertSee('pieczatki.png')
             ->assertSee('projektowanie-graficzne.png')
             ->assertSee('oprawa-prac-i-bindowanie.png');
+    }
+
+    public function test_business_configurator_uses_the_configured_shipping_prices(): void
+    {
+        config(['business.shipping.parcel' => 19.5]);
+        $this->seed(ProductSeeder::class);
+
+        $this->get(route('services.business'))
+            ->assertOk()
+            ->assertSee('19,50 zł');
     }
 
     public function test_pdf_configurator_uses_the_hands_hero_image(): void
