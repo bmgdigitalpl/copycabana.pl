@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
     'number',
     'success_token_hash',
     'idempotency_key',
+    'idempotency_fingerprint',
     'client_id',
     'status',
     'payment_status',
@@ -43,7 +44,7 @@ use Illuminate\Support\Facades\Auth;
 ])]
 class Order extends Model
 {
-    protected $hidden = ['success_token_hash'];
+    protected $hidden = ['success_token_hash', 'idempotency_key', 'idempotency_fingerprint'];
 
     /** @use HasFactory<OrderFactory> */
     use HasFactory;

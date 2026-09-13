@@ -67,7 +67,7 @@ class PdfOrderingTest extends TestCase
         $this->seed(ProductSeeder::class);
         $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
 
-        $response = $this->postJson('/api/v1/pdf/orders', [
+        $response = $this->withHeader('Idempotency-Key', 'pdf-create-key')->postJson('/api/v1/pdf/orders', [
             'upload_token' => $upload->json('upload_token'),
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
             'color_mode' => 'color',
@@ -87,6 +87,40 @@ class PdfOrderingTest extends TestCase
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'subtotal' => 4.50]);
         Mail::assertQueued(OrderReceivedMail::class, 1);
         Notification::assertSentTo($administrator, AdminActivityNotification::class);
+    }
+
+    public function test_repeated_pdf_submission_replays_the_existing_order_after_the_file_is_attached(): void
+    {
+        Storage::fake('local');
+        Mail::fake();
+        Http::fake([
+            '*/pl/standard/user/oauth/authorize' => Http::response(['access_token' => 'test-token']),
+            '*/api/v2_1/orders' => Http::response([
+                'status' => ['statusCode' => 'SUCCESS'],
+                'redirectUri' => 'https://payu.test/pdf-repeat',
+                'orderId' => 'PAYU-PDF-REPEAT',
+            ], 302, ['Location' => 'https://payu.test/pdf-repeat']),
+        ]);
+        $this->seed(ProductSeeder::class);
+        $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
+        $payload = [
+            'upload_token' => $upload->json('upload_token'),
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
+            'color_mode' => 'bw',
+            'sided' => 'duplex',
+            'finish' => 'none',
+            'copies' => 1,
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+        ];
+
+        $first = $this->withHeader('Idempotency-Key', 'pdf-repeat-key')->postJson('/api/v1/pdf/orders', $payload);
+        $second = $this->withHeader('Idempotency-Key', 'pdf-repeat-key')->postJson('/api/v1/pdf/orders', $payload);
+
+        $first->assertCreated();
+        $second->assertOk()->assertJsonPath('order.id', $first->json('order.id'));
+        $this->assertDatabaseCount('orders', 1);
+        Mail::assertQueued(OrderReceivedMail::class, 1);
     }
 
     public function test_pdf_order_requires_complete_delivery_address(): void

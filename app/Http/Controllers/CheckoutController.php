@@ -6,50 +6,43 @@ use App\Enums\OrderStatus;
 use App\Http\Requests\CheckoutRequest;
 use App\Http\Requests\ThesisOrderRequest;
 use App\Mail\OrderReceivedMail;
-use App\Models\Client;
 use App\Models\Order;
-use App\Models\Payment;
 use App\Models\Product;
 use App\Services\AdminNotificationService;
+use App\Services\ClientResolver;
+use App\Services\IdempotencyService;
 use App\Services\InvoiceService;
 use App\Services\PayuService;
 use App\Services\PdfUploadService;
 use App\Services\ProductPricingService;
 use App\Services\ThesisPricingService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
 
 class CheckoutController extends Controller
 {
-    public function __construct(private readonly ProductPricingService $pricing) {}
+    public function __construct(
+        private readonly ProductPricingService $pricing,
+        private readonly ClientResolver $clients,
+        private readonly IdempotencyService $idempotency,
+    ) {}
 
     public function store(CheckoutRequest $request, InvoiceService $invoiceService, PayuService $payu, AdminNotificationService $notifications): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
-        $customer = $data['customer'];
-        $idempotencyKey = $request->header('Idempotency-Key');
+        $idempotencyKey = $this->idempotency->key($request);
+        $fingerprint = $this->idempotency->fingerprint('checkout', $data);
 
-        if (is_string($idempotencyKey) && strlen($idempotencyKey) > 100) {
-            return response()->json(['message' => 'Idempotency-Key jest zbyt długi.'], 422);
-        }
-
-        if (is_string($idempotencyKey) && $idempotencyKey !== '') {
-            $existingOrder = Order::query()->with('items')->where('idempotency_key', $idempotencyKey)->first();
-
-            if ($existingOrder) {
-                $existingPayment = $existingOrder->payments()->latest('id')->first();
-                $paymentUrl = is_array($existingPayment?->payload)
-                    ? ($existingPayment->payload['redirect_uri'] ?? null)
-                    : null;
-
-                return $this->paymentResponse($request, $existingOrder, is_string($paymentUrl) ? $paymentUrl : null, false);
-            }
+        if ($existingOrder = Order::query()->with('items')->where('idempotency_key', $idempotencyKey)->first()) {
+            return $this->replayOrder($request, $existingOrder, $fingerprint);
         }
 
         $shippingTotal = match ($data['shipping_method']) {
@@ -59,88 +52,85 @@ class CheckoutController extends Controller
         };
         $successToken = Str::random(64);
 
-        $order = DB::transaction(function () use ($data, $customer, $shippingTotal, $invoiceService, $successToken, $idempotencyKey): Order {
-            $client = Client::query()->firstOrNew(['email' => $customer['email']]);
-            $client->fill([
-                'name' => $customer['name'],
-                'phone' => $customer['phone'] ?? null,
-                'company' => $customer['company'] ?? null,
-                'nip' => $customer['nip'] ?? null,
-                'privacy_policy_version' => config('privacy.policy_version'),
-                'privacy_policy_accepted_at' => now(),
-                'retention_until' => now()->addDays((int) config('privacy.client_retention_days')),
-            ]);
-            if (! $client->exists || ($data['marketing_consent'] ?? false)) {
-                $client->marketing_consent = (bool) ($data['marketing_consent'] ?? false);
-                $client->marketing_consent_at = $client->marketing_consent ? now() : null;
+        try {
+            [$order, $payment] = DB::transaction(function () use ($data, $shippingTotal, $invoiceService, $successToken, $idempotencyKey, $fingerprint): array {
+                $customer = $data['customer'];
+                $client = $this->clients->resolve($customer, (bool) ($data['marketing_consent'] ?? false));
+
+                $items = [];
+                $subtotal = 0.00;
+
+                foreach ($data['items'] as $item) {
+                    $product = Product::query()->active()->where('slug', $item['product_slug'])->firstOrFail();
+                    $pricing = $this->pricing->calculate($product, $item['option_value_ids'] ?? []);
+                    $lineTotal = round($pricing['unit_price'] * $item['quantity'], 2);
+                    $subtotal += $lineTotal;
+                    $items[] = [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'product_slug' => $product->slug,
+                        'configuration' => [
+                            'selected_options' => $pricing['configuration'],
+                            'customer_configuration' => $item['configuration'] ?? [],
+                        ],
+                        'unit_price' => $pricing['unit_price'],
+                        'quantity' => $item['quantity'],
+                        'total' => $lineTotal,
+                    ];
+                }
+
+                $order = Order::create([
+                    'number' => $this->orderNumber(),
+                    'success_token_hash' => hash('sha256', $successToken),
+                    'idempotency_key' => $idempotencyKey,
+                    'idempotency_fingerprint' => $fingerprint,
+                    'client_id' => $client->id,
+                    'status' => OrderStatus::Pending,
+                    'payment_status' => 'pending',
+                    'currency' => config('business.currency'),
+                    'customer_name' => $customer['name'],
+                    'customer_email' => $customer['email'],
+                    'customer_phone' => $customer['phone'] ?? null,
+                    'customer_company' => $customer['company'] ?? null,
+                    'billing_address' => $data['billing_address'] ?? null,
+                    'shipping_method' => $data['shipping_method'],
+                    'shipping_address' => $data['shipping_address'] ?? null,
+                    'requested_by_date' => $data['requested_by_date'] ?? null,
+                    'subtotal' => $subtotal,
+                    'shipping_total' => $shippingTotal,
+                    'tax_rate' => config('business.tax_rate'),
+                    'invoice_required' => (bool) ($data['invoice_required'] ?? false),
+                    'invoice_nip' => $customer['nip'] ?? null,
+                    'total' => $subtotal + $shippingTotal,
+                    'notes' => $customer['notes'] ?? null,
+                ]);
+                $order->items()->createMany($items);
+                $order->statusHistories()->create(['to_status' => OrderStatus::Pending, 'changed_by' => null]);
+
+                if ($order->invoice_required) {
+                    $invoiceService->createForOrder($order);
+                }
+
+                $payment = $order->payments()->create([
+                    'provider' => config('payment.provider'),
+                    'status' => 'pending',
+                    'amount' => $order->total,
+                    'currency' => $order->currency,
+                ]);
+
+                return [$order, $payment];
+            }, attempts: 3);
+        } catch (QueryException|ValidationException $exception) {
+            $existingOrder = Order::query()->with('items')->where('idempotency_key', $idempotencyKey)->first();
+
+            if ($existingOrder) {
+                return $this->replayOrder($request, $existingOrder, $fingerprint);
             }
-            $client->save();
 
-            $items = [];
-            $subtotal = 0.00;
-
-            foreach ($data['items'] as $item) {
-                $product = Product::query()->active()->where('slug', $item['product_slug'])->firstOrFail();
-                $pricing = $this->pricing->calculate($product, $item['option_value_ids'] ?? []);
-                $lineTotal = round($pricing['unit_price'] * $item['quantity'], 2);
-                $subtotal += $lineTotal;
-                $items[] = [
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'product_slug' => $product->slug,
-                    'configuration' => [
-                        'selected_options' => $pricing['configuration'],
-                        'customer_configuration' => $item['configuration'] ?? [],
-                    ],
-                    'unit_price' => $pricing['unit_price'],
-                    'quantity' => $item['quantity'],
-                    'total' => $lineTotal,
-                ];
-            }
-
-            $order = Order::create([
-                'number' => $this->orderNumber(),
-                'success_token_hash' => hash('sha256', $successToken),
-                'idempotency_key' => $idempotencyKey,
-                'client_id' => $client->id,
-                'status' => OrderStatus::Pending,
-                'payment_status' => 'pending',
-                'currency' => config('business.currency'),
-                'customer_name' => $customer['name'],
-                'customer_email' => $customer['email'],
-                'customer_phone' => $customer['phone'] ?? null,
-                'customer_company' => $customer['company'] ?? null,
-                'billing_address' => $data['billing_address'] ?? null,
-                'shipping_method' => $data['shipping_method'],
-                'shipping_address' => $data['shipping_address'] ?? null,
-                'requested_by_date' => $data['requested_by_date'] ?? null,
-                'subtotal' => $subtotal,
-                'shipping_total' => $shippingTotal,
-                'tax_rate' => config('business.tax_rate'),
-                'invoice_required' => (bool) ($data['invoice_required'] ?? false),
-                'invoice_nip' => $customer['nip'] ?? null,
-                'total' => $subtotal + $shippingTotal,
-                'notes' => $customer['notes'] ?? null,
-            ]);
-            $order->items()->createMany($items);
-            $order->statusHistories()->create(['to_status' => OrderStatus::Pending, 'changed_by' => null]);
-
-            if ($order->invoice_required) {
-                $invoiceService->createForOrder($order);
-            }
-
-            return $order;
-        });
+            throw $exception;
+        }
 
         $notifications->orderCreated($order);
-
-        $payment = Payment::create([
-            'order_id' => $order->id,
-            'provider' => config('payment.provider'),
-            'status' => 'pending',
-            'amount' => $order->total,
-            'currency' => $order->currency,
-        ]);
 
         try {
             $paymentUrl = $payu->createPayment(
@@ -171,106 +161,90 @@ class CheckoutController extends Controller
         AdminNotificationService $notifications,
     ): JsonResponse|RedirectResponse {
         $data = $request->validated();
-        $idempotencyKey = $request->header('Idempotency-Key');
+        $idempotencyKey = $this->idempotency->key($request);
+        $fingerprint = $this->idempotency->fingerprint('thesis', $data);
 
-        if (is_string($idempotencyKey) && strlen($idempotencyKey) > 100) {
-            return response()->json(['message' => 'Idempotency-Key jest zbyt długi.'], 422);
+        if ($existingOrder = Order::query()->with('items')->where('idempotency_key', $idempotencyKey)->first()) {
+            return $this->replayOrder($request, $existingOrder, $fingerprint);
         }
 
-        if (is_string($idempotencyKey) && $idempotencyKey !== '') {
+        $successToken = Str::random(64);
+
+        try {
+            [$order, $payment] = DB::transaction(function () use ($data, $invoiceService, $successToken, $idempotencyKey, $fingerprint, $uploads, $thesisPricing): array {
+                $customer = $data['customer'];
+                $file = $uploads->findTemporaryForUpdate($data['upload_token']);
+                $pricing = $thesisPricing->calculate($file, $data);
+                $client = $this->clients->resolve($customer, (bool) ($data['marketing_consent'] ?? false));
+
+                $product = Product::query()->active()->where('slug', 'praca-dyplomowa')->firstOrFail();
+                $order = Order::create([
+                    'number' => $this->orderNumber(),
+                    'success_token_hash' => hash('sha256', $successToken),
+                    'idempotency_key' => $idempotencyKey,
+                    'idempotency_fingerprint' => $fingerprint,
+                    'client_id' => $client->id,
+                    'status' => OrderStatus::Pending,
+                    'payment_status' => 'pending',
+                    'currency' => config('business.currency'),
+                    'customer_name' => $customer['name'],
+                    'customer_email' => $customer['email'],
+                    'customer_phone' => $customer['phone'] ?? null,
+                    'customer_company' => $customer['company'] ?? null,
+                    'shipping_method' => $data['shipping_method'],
+                    'shipping_address' => $data['shipping_address'] ?? null,
+                    'requested_by_date' => $data['requested_by_date'] ?? null,
+                    'subtotal' => $pricing['subtotal'],
+                    'shipping_total' => $pricing['shipping_total'],
+                    'tax_rate' => config('business.tax_rate'),
+                    'invoice_required' => (bool) ($data['invoice_required'] ?? false),
+                    'invoice_nip' => $customer['nip'] ?? null,
+                    'total' => $pricing['total'],
+                    'notes' => $customer['notes'] ?? null,
+                ]);
+                $item = $order->items()->create([
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'product_slug' => $product->slug,
+                    'configuration' => [
+                        'file' => [
+                            'name' => $file->original_name,
+                            'pages' => $file->pages,
+                            'sha256' => $file->sha256,
+                        ],
+                        'customer_configuration' => $pricing['configuration'],
+                    ],
+                    'unit_price' => $pricing['unit_price'],
+                    'quantity' => $data['copies'],
+                    'total' => $pricing['subtotal'],
+                ]);
+                $uploads->attach($file, $order, $item);
+                $order->statusHistories()->create(['to_status' => OrderStatus::Pending, 'changed_by' => null]);
+
+                if ($order->invoice_required) {
+                    $invoiceService->createForOrder($order);
+                }
+
+                $payment = $order->payments()->create([
+                    'provider' => config('payment.provider'),
+                    'status' => 'pending',
+                    'amount' => $order->total,
+                    'currency' => $order->currency,
+                ]);
+
+                return [$order, $payment];
+            }, attempts: 3);
+        } catch (QueryException|ValidationException $exception) {
             $existingOrder = Order::query()->with('items')->where('idempotency_key', $idempotencyKey)->first();
 
             if ($existingOrder) {
-                $existingPayment = $existingOrder->payments()->latest('id')->first();
-                $paymentUrl = is_array($existingPayment?->payload)
-                    ? ($existingPayment->payload['redirect_uri'] ?? null)
-                    : null;
-
-                return $this->paymentResponse($request, $existingOrder, is_string($paymentUrl) ? $paymentUrl : null, false);
+                return $this->replayOrder($request, $existingOrder, $fingerprint);
             }
+
+            throw $exception;
         }
 
-        $customer = $data['customer'];
-        $successToken = Str::random(64);
-
-        $order = DB::transaction(function () use ($data, $customer, $invoiceService, $successToken, $idempotencyKey, $uploads, $thesisPricing): Order {
-            $file = $uploads->findTemporaryForUpdate($data['upload_token']);
-            $pricing = $thesisPricing->calculate($file, $data);
-            $client = Client::query()->firstOrNew(['email' => $customer['email']]);
-            $client->fill([
-                'name' => $customer['name'],
-                'phone' => $customer['phone'] ?? null,
-                'company' => $customer['company'] ?? null,
-                'nip' => $customer['nip'] ?? null,
-                'privacy_policy_version' => config('privacy.policy_version'),
-                'privacy_policy_accepted_at' => now(),
-                'retention_until' => now()->addDays((int) config('privacy.client_retention_days')),
-            ]);
-            if (! $client->exists || ($data['marketing_consent'] ?? false)) {
-                $client->marketing_consent = (bool) ($data['marketing_consent'] ?? false);
-                $client->marketing_consent_at = $client->marketing_consent ? now() : null;
-            }
-            $client->save();
-
-            $product = Product::query()->active()->where('slug', 'praca-dyplomowa')->firstOrFail();
-            $order = Order::create([
-                'number' => $this->orderNumber(),
-                'success_token_hash' => hash('sha256', $successToken),
-                'idempotency_key' => $idempotencyKey,
-                'client_id' => $client->id,
-                'status' => OrderStatus::Pending,
-                'payment_status' => 'pending',
-                'currency' => config('business.currency'),
-                'customer_name' => $customer['name'],
-                'customer_email' => $customer['email'],
-                'customer_phone' => $customer['phone'] ?? null,
-                'customer_company' => $customer['company'] ?? null,
-                'shipping_method' => $data['shipping_method'],
-                'shipping_address' => $data['shipping_address'] ?? null,
-                'requested_by_date' => $data['requested_by_date'] ?? null,
-                'subtotal' => $pricing['subtotal'],
-                'shipping_total' => $pricing['shipping_total'],
-                'tax_rate' => config('business.tax_rate'),
-                'invoice_required' => (bool) ($data['invoice_required'] ?? false),
-                'invoice_nip' => $customer['nip'] ?? null,
-                'total' => $pricing['total'],
-                'notes' => $customer['notes'] ?? null,
-            ]);
-            $item = $order->items()->create([
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'product_slug' => $product->slug,
-                'configuration' => [
-                    'file' => [
-                        'name' => $file->original_name,
-                        'pages' => $file->pages,
-                        'sha256' => $file->sha256,
-                    ],
-                    'customer_configuration' => $pricing['configuration'],
-                ],
-                'unit_price' => $pricing['unit_price'],
-                'quantity' => $data['copies'],
-                'total' => $pricing['subtotal'],
-            ]);
-            $uploads->attach($file, $order, $item);
-            $order->statusHistories()->create(['to_status' => OrderStatus::Pending, 'changed_by' => null]);
-
-            if ($order->invoice_required) {
-                $invoiceService->createForOrder($order);
-            }
-
-            return $order;
-        });
-
         $notifications->orderCreated($order);
-
-        $payment = Payment::create([
-            'order_id' => $order->id,
-            'provider' => config('payment.provider'),
-            'status' => 'pending',
-            'amount' => $order->total,
-            'currency' => $order->currency,
-        ]);
 
         try {
             $paymentUrl = $payu->createPayment(
@@ -297,6 +271,18 @@ class CheckoutController extends Controller
         $order = Order::query()->where('success_token_hash', hash('sha256', $token))->firstOrFail();
 
         return view('checkout.success', compact('order'));
+    }
+
+    private function replayOrder(Request $request, Order $order, string $fingerprint): JsonResponse|RedirectResponse
+    {
+        if (! $this->idempotency->matches($order->idempotency_fingerprint, $fingerprint)) {
+            return response()->json(['message' => 'Ten Idempotency-Key został już użyty dla innego żądania.'], 409);
+        }
+
+        $payment = $order->payments()->latest('id')->first();
+        $paymentUrl = is_array($payment?->payload) ? ($payment->payload['redirect_uri'] ?? null) : null;
+
+        return $this->paymentResponse($request, $order, is_string($paymentUrl) ? $paymentUrl : null, false);
     }
 
     private function paymentResponse(Request $request, Order $order, ?string $paymentUrl, bool $created): JsonResponse|RedirectResponse

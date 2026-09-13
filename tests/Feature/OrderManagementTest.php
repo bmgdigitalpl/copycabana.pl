@@ -50,7 +50,7 @@ class OrderManagementTest extends TestCase
         Mail::fake();
         $this->seed(ProductSeeder::class);
 
-        $response = $this->postJson('/api/v1/orders', [
+        $response = $this->withHeader('Idempotency-Key', 'order-create-key')->postJson('/api/v1/orders', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
@@ -70,11 +70,42 @@ class OrderManagementTest extends TestCase
     {
         $this->seed(ProductSeeder::class);
 
-        $this->postJson('/api/v1/orders', [
+        $this->withHeader('Idempotency-Key', 'order-options-key')->postJson('/api/v1/orders', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
             'shipping_method' => 'pickup',
             'items' => [['product_slug' => 'wizytowki', 'quantity' => 1]],
         ])->assertUnprocessable()->assertJsonValidationErrors('privacy_policy_accepted');
+    }
+
+    public function test_checkout_returns_422_when_the_idempotency_key_is_missing(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $this->postJson('/api/v1/orders', [
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+            'items' => [['product_slug' => 'wizytowki', 'quantity' => 1]],
+        ])->assertUnprocessable()->assertJsonValidationErrors('idempotency_key');
+    }
+
+    public function test_checkout_returns_409_when_an_idempotency_key_is_reused_for_a_different_payload(): void
+    {
+        Mail::fake();
+        $this->seed(ProductSeeder::class);
+        $payload = [
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+            'items' => [['product_slug' => 'wizytowki', 'quantity' => 1]],
+        ];
+
+        $this->withHeader('Idempotency-Key', 'order-conflict-key')->postJson('/api/v1/orders', $payload)->assertCreated();
+        $payload['items'][0]['quantity'] = 2;
+
+        $this->withHeader('Idempotency-Key', 'order-conflict-key')->postJson('/api/v1/orders', $payload)->assertConflict();
+        $this->assertDatabaseCount('orders', 1);
+        Mail::assertQueued(OrderReceivedMail::class, 1);
     }
 
     public function test_product_options_are_exposed_and_priced_on_the_server(): void
@@ -89,7 +120,7 @@ class OrderManagementTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.options.0.values.0.id', $value->id);
 
-        $this->postJson('/api/v1/orders', [
+        $this->withHeader('Idempotency-Key', 'order-invoice-key')->postJson('/api/v1/orders', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
@@ -104,7 +135,7 @@ class OrderManagementTest extends TestCase
         Mail::fake();
         $this->seed(ProductSeeder::class);
 
-        $this->postJson('/api/v1/orders', [
+        $this->withHeader('Idempotency-Key', 'order-webhook-key')->postJson('/api/v1/orders', [
             'customer' => ['name' => 'Firma Katowice', 'email' => 'firma@example.com', 'company' => 'Firma Sp. z o.o.', 'nip' => '5261040828'],
             'shipping_method' => 'pickup',
             'invoice_required' => true,
@@ -147,7 +178,7 @@ class OrderManagementTest extends TestCase
         Mail::fake();
         $this->seed(ProductSeeder::class);
 
-        $this->postJson('/api/v1/orders', [
+        $this->withHeader('Idempotency-Key', 'order-webhook-payment-key')->postJson('/api/v1/orders', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
@@ -303,7 +334,7 @@ class OrderManagementTest extends TestCase
         $administrator = User::factory()->create(['role' => 'admin']);
         $this->seed(ProductSeeder::class);
 
-        $response = $this->postJson('/api/v1/orders', [
+        $response = $this->withHeader('Idempotency-Key', 'order-local-payment-key')->postJson('/api/v1/orders', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,

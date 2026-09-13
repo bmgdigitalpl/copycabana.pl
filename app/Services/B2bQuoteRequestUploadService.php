@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\QuoteRequestFile;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -41,21 +42,30 @@ class B2bQuoteRequestUploadService
 
     public function findTemporary(string $token): QuoteRequestFile
     {
-        $file = QuoteRequestFile::query()
+        return $this->temporaryFileQuery($token)->firstOr(function (): void {
+            throw ValidationException::withMessages([
+                'items' => 'Jeden z załączników jest nieaktualny. Dodaj plik ponownie.',
+            ]);
+        });
+    }
+
+    public function findTemporaryForUpdate(string $token): QuoteRequestFile
+    {
+        return $this->temporaryFileQuery($token)->lockForUpdate()->firstOr(function (): void {
+            throw ValidationException::withMessages([
+                'items' => 'Jeden z załączników jest nieaktualny. Dodaj plik ponownie.',
+            ]);
+        });
+    }
+
+    private function temporaryFileQuery(string $token): Builder
+    {
+        return QuoteRequestFile::query()
             ->where('token_hash', hash('sha256', $token))
             ->where('status', 'temporary')
             ->where(function ($query): void {
                 $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            })
-            ->first();
-
-        if (! $file) {
-            throw ValidationException::withMessages([
-                'items' => 'Jeden z załączników jest nieaktualny. Dodaj plik ponownie.',
-            ]);
-        }
-
-        return $file;
+            });
     }
 
     public function attach(QuoteRequestFile $file, int $quoteRequestId, int $quoteRequestItemId): void

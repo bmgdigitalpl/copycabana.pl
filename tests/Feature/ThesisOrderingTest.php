@@ -73,7 +73,7 @@ class ThesisOrderingTest extends TestCase
         $this->seed(ProductSeeder::class);
         $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
 
-        $response = $this->postJson('/api/v1/thesis/orders', [
+        $response = $this->withHeader('Idempotency-Key', 'thesis-create-key')->postJson('/api/v1/thesis/orders', [
             'upload_token' => $upload->json('upload_token'),
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
             'color_mode' => 'bw',

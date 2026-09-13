@@ -27,10 +27,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'notes',
     'admin_notes',
     'idempotency_key',
+    'idempotency_fingerprint',
 ])]
 class QuoteRequest extends Model
 {
-    protected $hidden = ['idempotency_key'];
+    protected $hidden = ['idempotency_key', 'idempotency_fingerprint'];
 
     /**
      * @return array<string, string>

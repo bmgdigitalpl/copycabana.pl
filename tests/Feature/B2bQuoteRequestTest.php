@@ -90,9 +90,29 @@ class B2bQuoteRequestTest extends TestCase
         Mail::assertQueued(B2bQuoteRequestConfirmation::class, 1);
     }
 
+    public function test_b2b_request_returns_409_when_an_idempotency_key_is_reused_for_a_different_payload(): void
+    {
+        Mail::fake();
+        $this->seed(ProductSeeder::class);
+        $payload = [
+            'customer' => ['name' => 'Anna Nowak', 'email' => 'anna@firma.pl', 'company' => 'Nowak Design'],
+            'items' => [['product_slug' => 'plakaty', 'configuration' => $this->businessConfiguration('plakaty'), 'quantity' => 10]],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+        ];
+
+        $this->withHeader('Idempotency-Key', 'b2b-conflict-key')->postJson('/api/v1/b2b/quote-requests', $payload)->assertCreated();
+        $payload['items'][0]['help_wanted'] = true;
+
+        $this->withHeader('Idempotency-Key', 'b2b-conflict-key')->postJson('/api/v1/b2b/quote-requests', $payload)->assertConflict();
+        $this->assertDatabaseCount('quote_requests', 1);
+        Mail::assertQueued(B2bQuoteRequestReceived::class, 1);
+        Mail::assertQueued(B2bQuoteRequestConfirmation::class, 1);
+    }
+
     public function test_b2b_request_rejects_missing_privacy_consent(): void
     {
-        $this->postJson('/api/v1/b2b/quote-requests', [
+        $this->withHeader('Idempotency-Key', 'b2b-admin-update-key')->postJson('/api/v1/b2b/quote-requests', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@firma.pl', 'company' => 'Firma'],
             'items' => [['product_slug' => 'wizytowki', 'configuration' => $this->businessConfiguration('wizytowki'), 'quantity' => 100]],
             'shipping_method' => 'pickup',
@@ -114,7 +134,7 @@ class B2bQuoteRequestTest extends TestCase
         Mail::fake();
         $this->seed(ProductSeeder::class);
         $upload = $this->post('/api/v1/b2b/uploads', ['file' => UploadedFile::fake()->image('brief.png')]);
-        $this->postJson('/api/v1/b2b/quote-requests', [
+        $this->withHeader('Idempotency-Key', 'b2b-create-key')->postJson('/api/v1/b2b/quote-requests', [
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@firma.pl', 'company' => 'Firma'],
             'items' => [['product_slug' => 'wizytowki', 'configuration' => $this->businessConfiguration('wizytowki'), 'quantity' => 100, 'upload_token' => $upload->json('upload_token')]],
             'shipping_method' => 'pickup',
@@ -381,7 +401,7 @@ class B2bQuoteRequestTest extends TestCase
     private function createQuoteRequest(): QuoteRequest
     {
         $this->seed(ProductSeeder::class);
-        $this->postJson('/api/v1/b2b/quote-requests', [
+        $this->withHeader('Idempotency-Key', 'b2b-helper-key')->postJson('/api/v1/b2b/quote-requests', [
             'customer' => ['name' => 'Anna Nowak', 'email' => 'anna@firma.pl', 'company' => 'Nowak Design'],
             'items' => [['product_slug' => 'plakaty', 'configuration' => $this->businessConfiguration('plakaty'), 'quantity' => 10]],
             'shipping_method' => 'pickup',
