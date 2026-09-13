@@ -24,7 +24,7 @@
           <li>odbiór osobisty przy ul. Bankowej 11;</li>
           <li>możliwość przygotowania zamówienia z wysyłką.</li>
         </ul>
-        <a href="{{ route('product') }}?slug=oprawa_prac" class="btn-magenta mt-6 inline-block">Skonfiguruj oprawę <i class="fas fa-arrow-right ml-2"></i></a>
+        <a href="{{ route('services.diploma') }}" class="btn-magenta mt-6 inline-block">Skonfiguruj oprawę <i class="fas fa-arrow-right ml-2"></i></a>
       </div>
       <div class="content-grid !grid-cols-1">
         <div class="content-card quick-card-feature"><span class="card-icon"><i class="fas fa-clock"></i></span><h3>Termin 24h</h3><p>Sprawdź dostępny termin przy składaniu zamówienia. Czas zależy od wybranej opcji i poprawności pliku.</p></div>

@@ -40,7 +40,6 @@
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
         <a href="{{ route('druk-pdf') }}">Druk PDF</a>
         <a href="{{ route('services.business') }}">Dla firm</a>
-        <a href="{{ route('products.index') }}">Produkty</a>
       </nav>
       <div class="cc-header-actions">
         <a href="{{ route('contact') }}" class="cc-link-outline">Kontakt</a>
@@ -61,7 +60,6 @@
       <a href="{{ route('druk-pdf') }}">Druk PDF</a>
       <a href="{{ route('services.business') }}">Druk dla firm</a>
       <a href="{{ route('contact') }}">Kontakt</a>
-      <a href="{{ route('products.index') }}">Produkty</a>
       <a href="{{ route('cart') }}">Koszyk</a>
     </div>
   </div>

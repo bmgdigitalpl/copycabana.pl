@@ -48,7 +48,7 @@
       <a href="index.html" class="font-logo text-2xl text-geel no-underline">CopyCabana</a>
       <div class="hidden md:flex items-center gap-8">
         <a href="index.html" class="nav-link text-white text-sm no-underline">Home</a>
-        <a href="produkty.html" class="nav-link text-white text-sm no-underline">Produkty</a>
+        <a href="{{ route('services.business') }}" class="nav-link text-white text-sm no-underline">Druk dla firm</a>
         <a href="o-nas.html" class="nav-link text-white text-sm no-underline">O nas</a>
         <a href="kontakt.html" class="nav-link text-white text-sm no-underline">Kontakt</a>
         <a href="koszyk.html" class="nav-link text-white text-sm no-underline relative">
@@ -68,7 +68,7 @@
     <button @click="mobileNav = false" class="close-btn"><i class="fas fa-times"></i></button>
     <div class="mt-12">
       <a href="index.html">Home</a>
-      <a href="produkty.html">Produkty</a>
+      <a href="{{ route('services.business') }}">Druk dla firm</a>
       <a href="o-nas.html">O nas</a>
       <a href="kontakt.html">Kontakt</a>
       <a href="koszyk.html">Koszyk</a>
@@ -184,7 +184,7 @@
           <a href="index.html" class="font-logo text-2xl text-geel no-underline block mb-4">CopyCabana</a>
           <div class="flex flex-col gap-2">
             <a href="index.html">Home</a>
-            <a href="produkty.html">Produkty</a>
+            <a href="{{ route('services.business') }}">Druk dla firm</a>
             <a href="o-nas.html">O nas</a>
             <a href="kontakt.html">Kontakt</a>
           </div>
@@ -192,11 +192,11 @@
         <div>
           <h4 class="text-geel font-semibold text-sm mb-4">Popularne produkty</h4>
           <div class="flex flex-col gap-2">
-            <a href="produkt.html?slug=wizytowki">Wizytówki</a>
-            <a href="produkt.html?slug=ulotki">Ulotki</a>
-            <a href="produkt.html?slug=plakaty">Plakaty</a>
-            <a href="produkt.html?slug=banery">Banery</a>
-            <a href="produkt.html?slug=oprawa_prac">Oprawa prac</a>
+            <a href="{{ route('services.business') }}">Wizytówki</a>
+            <a href="{{ route('services.business') }}">Ulotki</a>
+            <a href="{{ route('services.business') }}">Plakaty</a>
+            <a href="{{ route('services.business') }}">Banery</a>
+            <a href="{{ route('services.diploma') }}">Oprawa prac</a>
           </div>
         </div>
         <div>

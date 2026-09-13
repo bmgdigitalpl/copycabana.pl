@@ -13,7 +13,7 @@
 
   <section class="content-section">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="content-copy"><p class="section-kicker">Współpraca</p><h2>Materiały reklamowe od pojedynczych sztuk po większe nakłady</h2><p>Pomagamy dobrać format, papier, wykończenie i technologię druku do celu realizacji. Jeśli projekt wymaga indywidualnej kalkulacji, opisz zakres i skontaktuj się z nami.</p><div class="eyebrow-list"><span>Wizytówki</span><span>Ulotki</span><span>Plakaty</span><span>Banery</span><span>Rollupy</span><span>Projekty graficzne</span></div><a href="{{ route('products.index') }}" class="btn-magenta mt-7 inline-block">Przejdź do produktów <i class="fas fa-arrow-right ml-2"></i></a></div>
+      <div class="content-copy"><p class="section-kicker">Współpraca</p><h2>Materiały reklamowe od pojedynczych sztuk po większe nakłady</h2><p>Pomagamy dobrać format, papier, wykończenie i technologię druku do celu realizacji. Jeśli projekt wymaga indywidualnej kalkulacji, opisz zakres i skontaktuj się z nami.</p><div class="eyebrow-list"><span>Wizytówki</span><span>Ulotki</span><span>Plakaty</span><span>Banery</span><span>Rollupy</span><span>Projekty graficzne</span></div><a href="{{ route('services.business') }}" class="btn-magenta mt-7 inline-block">Przejdź do konfiguratora <i class="fas fa-arrow-right ml-2"></i></a></div>
     </div>
   </section>
 

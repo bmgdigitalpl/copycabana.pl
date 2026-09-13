@@ -42,7 +42,6 @@
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
       <a href="{{ route('home') }}" class="font-logo text-3xl text-donkerblauw no-underline">CopyCabana</a>
       <nav class="hidden items-center gap-8 md:flex">
-        <a href="{{ route('products.index') }}" class="nav-small">Produkty</a>
         <a href="{{ route('services.diploma') }}" class="nav-small">Dla studentów</a>
         <a href="{{ route('services.business') }}" class="nav-small">Dla firm</a>
         <a href="{{ route('portfolio') }}" class="nav-small">Realizacje</a>
@@ -58,7 +57,6 @@
     <button @click="mobileNav = false" class="close-btn" aria-label="Zamknij menu"><i class="fas fa-times"></i></button>
     <div class="mt-12">
       <a href="{{ route('home') }}">Strona główna</a>
-      <a href="{{ route('products.index') }}">Produkty</a>
       <a href="{{ route('services.diploma') }}">Dla studentów</a>
       <a href="{{ route('services.business') }}">Dla firm</a>
       <a href="{{ route('portfolio') }}">Realizacje</a>
@@ -74,7 +72,6 @@
     <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
       <p class="text-sm text-slate-500">CopyCabana - druk cyfrowy, offsetowy i wielkoformatowy w centrum Katowic.</p>
       <div class="footer-nav">
-        <a href="{{ route('products.index') }}">Produkty</a>
         <a href="{{ route('services.diploma') }}">Dla studentów</a>
         <a href="{{ route('services.business') }}">Dla firm</a>
         <a href="{{ route('faq') }}">FAQ</a>

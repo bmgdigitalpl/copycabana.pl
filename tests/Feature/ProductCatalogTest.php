@@ -57,18 +57,12 @@ class ProductCatalogTest extends TestCase
             ->assertJsonPath('data.calculator_type', 'fixed');
     }
 
-    public function test_catalog_pages_are_rendered_from_active_products(): void
+    public function test_legacy_catalog_pages_redirect_permanently_to_the_business_configurator(): void
     {
-        $this->seed(ProductSeeder::class);
-
-        $this->get(route('products.index'))
-            ->assertOk()
-            ->assertSee('Wizytówki')
-            ->assertSee(route('product', ['slug' => 'wizytowki']), false);
-
-        $this->get(route('product', ['slug' => 'wizytowki']))
-            ->assertOk()
-            ->assertSee('Wizytówki')
-            ->assertSee('Cena końcowa jest ponownie obliczana po stronie serwera');
+        foreach (['/produkty', '/produkty.html', '/produkt?slug=wizytowki', '/produkt.html?slug=wizytowki'] as $path) {
+            $this->get($path)
+                ->assertMovedPermanently()
+                ->assertRedirectToRoute('services.business');
+        }
     }
 }

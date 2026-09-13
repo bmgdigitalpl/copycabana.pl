@@ -71,7 +71,7 @@
        <a href="#druk-pdf" @click="mobileNav = false">Druk PDF</a>
        <a href="{{ route('services.business') }}">Dla firm</a>
       <a href="#jak-zamowic" @click="mobileNav = false">Jak zamówić</a>
-      <a href="produkty.html">Produkty</a>
+      <a href="{{ route('services.business') }}">Druk dla firm</a>
       <a href="kontakt.html">Kontakt</a>
       <a href="koszyk.html">Koszyk</a>
     </div>
@@ -117,14 +117,14 @@
           <p class="mt-4 max-w-3xl text-base leading-7 text-slate-600">Od wizytówek po billboardy. Realizujemy projekty w małym i dużym nakładzie dla klientów indywidualnych, firm i agencji reklamowych.</p>
         </div>
         <div class="quick-grid">
-          <a href="produkt.html?slug=oprawa_prac" class="quick-card quick-card-feature no-underline"><span>24h</span><h3>Oprawa prac</h3><p>Twarda i miękka oprawa prac dyplomowych.</p><strong class="quick-card-cta">Skonfiguruj i wyceń →</strong></a>
-          <a href="produkt.html?slug=wizytowki" class="quick-card no-underline"><h3>Wizytówki</h3><p>Profesjonalne wizytówki dla Twojej firmy.</p></a>
-          <a href="produkt.html?slug=ulotki" class="quick-card no-underline"><h3>Ulotki</h3><p>Ulotki reklamowe w różnych formatach.</p></a>
-          <a href="produkt.html?slug=plakaty" class="quick-card no-underline"><h3>Plakaty</h3><p>Plakaty od A3 do B1.</p></a>
-          <a href="produkt.html?slug=rollupy" class="quick-card no-underline"><h3>Rollupy</h3><p>Systemy wystawiennicze i grafiki na wymiar.</p></a>
-          <a href="produkt.html?slug=banery" class="quick-card no-underline"><h3>Banery</h3><p>Banery wielkoformatowe na zamówienie.</p></a>
+          <a href="{{ route('services.diploma') }}" class="quick-card quick-card-feature no-underline"><span>24h</span><h3>Oprawa prac</h3><p>Twarda i miękka oprawa prac dyplomowych.</p><strong class="quick-card-cta">Skonfiguruj i wyceń →</strong></a>
+          <a href="{{ route('services.business') }}" class="quick-card no-underline"><h3>Wizytówki</h3><p>Profesjonalne wizytówki dla Twojej firmy.</p></a>
+          <a href="{{ route('services.business') }}" class="quick-card no-underline"><h3>Ulotki</h3><p>Ulotki reklamowe w różnych formatach.</p></a>
+          <a href="{{ route('services.business') }}" class="quick-card no-underline"><h3>Plakaty</h3><p>Plakaty od A3 do B1.</p></a>
+          <a href="{{ route('services.business') }}" class="quick-card no-underline"><h3>Rollupy</h3><p>Systemy wystawiennicze i grafiki na wymiar.</p></a>
+          <a href="{{ route('services.business') }}" class="quick-card no-underline"><h3>Banery</h3><p>Banery wielkoformatowe na zamówienie.</p></a>
         </div>
-        <div class="mt-10 text-center"><a href="produkty.html" class="btn-magenta inline-block">Zobacz całą ofertę <i class="fas fa-arrow-right ml-2"></i></a></div>
+        <div class="mt-10 text-center"><a href="{{ route('services.business') }}" class="btn-magenta inline-block">Przejdź do konfiguratora <i class="fas fa-arrow-right ml-2"></i></a></div>
       </div>
     </section>
 
@@ -143,7 +143,7 @@
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
          <div class="section-intro"><p class="section-kicker">Cena przed zamówieniem</p><h2 class="font-heading text-4xl font-bold uppercase text-donkerblauw">Sprawdź, co obejmuje wycena</h2></div>
          <div class="content-grid">
-           <article class="content-card"><h3>Praca z oprawą</h3><p>Kalkulator pokazuje orientacyjny koszt samej oprawy. Druk stron i ewentualna dostawa wymagają osobnej wyceny.</p><a href="{{ route('product', ['slug' => 'oprawa_prac']) }}" class="btn-magenta mt-6 inline-block">Sprawdź cenę oprawy</a></article>
+           <article class="content-card"><h3>Praca z oprawą</h3><p>Kalkulator pokazuje orientacyjny koszt samej oprawy. Druk stron i ewentualna dostawa wymagają osobnej wyceny.</p><a href="{{ route('services.diploma') }}" class="btn-magenta mt-6 inline-block">Sprawdź cenę oprawy</a></article>
            <article id="druk-pdf" class="content-card"><h3>Dokumenty PDF</h3><p>Wyślij PDF i podaj liczbę egzemplarzy, kolor oraz druk jednostronny lub dwustronny. Poproś o pełną cenę i termin. Po otwarciu wiadomości dołącz plik.</p><a href="mailto:biuro@copycabana.pl?subject={{ rawurlencode('Wycena druku dokumentów PDF') }}&amp;body={{ rawurlencode("Dzień dobry, proszę o wycenę druku PDF.\nLiczba egzemplarzy: \nKolor czy czarno-biały: \nJednostronnie czy dwustronnie: \nOdbiór osobisty czy wysyłka: \nPotrzebny termin: \n\nProszę o pełną cenę i potwierdzenie terminu.") }}" class="btn-magenta mt-6 inline-block">Przygotuj mail z wyceną PDF</a></article>
            <article class="content-card"><h3>Materiały dla firmy</h3><p>Wybierz produkt z oferty. Jeśli potrzebujesz nietypowego formatu, wykończenia lub pomocy z projektem, przekaż szczegóły do indywidualnej wyceny.</p><a href="{{ route('services.business') }}" class="btn-magenta mt-6 inline-block">Zobacz druk dla firm</a></article>
          </div>
@@ -179,7 +179,7 @@
   </main>
 
   <footer class="dynamic-footer bg-white py-10">
-    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"><p class="text-sm text-slate-500">CopyCabana - druk cyfrowy, offsetowy i wielkoformatowy w centrum Katowic.</p><div class="footer-nav"><a href="produkty.html">Produkty</a><a href="o-nas.html">O nas</a><a href="kontakt.html">Kontakt</a><a href="koszyk.html">Koszyk</a></div></div>
+    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"><p class="text-sm text-slate-500">CopyCabana - druk cyfrowy, offsetowy i wielkoformatowy w centrum Katowic.</p><div class="footer-nav"><a href="{{ route('services.business') }}">Druk dla firm</a><a href="o-nas.html">O nas</a><a href="kontakt.html">Kontakt</a><a href="koszyk.html">Koszyk</a></div></div>
   </footer>
 
   <script src="data/prices.js"></script>

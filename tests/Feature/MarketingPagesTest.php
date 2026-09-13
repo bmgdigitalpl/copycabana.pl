@@ -11,12 +11,22 @@ class MarketingPagesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_product_and_cart_load_the_shared_interactions(): void
+    public function test_business_configurator_and_cart_load_the_shared_interactions(): void
     {
-        foreach (['product', 'cart'] as $routeName) {
+        foreach (['services.business', 'cart'] as $routeName) {
             $this->get(route($routeName))
                 ->assertOk()
                 ->assertSee('<script src="'.asset('js/app.js').'"></script>', false);
+        }
+    }
+
+    public function test_public_entry_points_link_directly_to_the_business_configurator(): void
+    {
+        foreach (['home', 'cart', 'about'] as $routeName) {
+            $this->get(route($routeName))
+                ->assertSee('href="'.route('services.business').'"', false)
+                ->assertDontSee('href="'.url('/produkty').'"', false)
+                ->assertDontSee('href="produkty.html"', false);
         }
     }
 

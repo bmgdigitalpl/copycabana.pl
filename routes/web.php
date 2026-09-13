@@ -11,12 +11,9 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\QuoteOfferController;
 use App\Http\Controllers\Admin\QuoteRequestController;
 use App\Http\Controllers\BusinessPrintController;
-use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\QuoteOfferAcceptanceController;
 use App\Http\Middleware\OwnerMiddleware;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
@@ -29,13 +26,10 @@ Route::view('/brand', 'brand')->name('brand');
 Route::redirect('/design-system', '/brand', 301)->name('brand.design-system');
 Route::view('/test/fonts', 'test.fonts')->name('test.fonts');
 
-Route::get('/produkty', [CatalogController::class, 'index'])->name('products.index');
-Route::redirect('/produkty.html', '/produkty', 301)->name('products.legacy');
-
-Route::get('/produkt', [CatalogController::class, 'show'])->name('product');
-Route::get('/produkt.html', function (Request $request): RedirectResponse {
-    return redirect()->route('product', $request->query(), 301);
-})->name('product.legacy');
+Route::permanentRedirect('/produkty', '/druk-dla-firm')->name('products.legacy');
+Route::permanentRedirect('/produkty.html', '/druk-dla-firm')->name('products.html.legacy');
+Route::permanentRedirect('/produkt', '/druk-dla-firm')->name('product.legacy');
+Route::permanentRedirect('/produkt.html', '/druk-dla-firm')->name('product.html.legacy');
 
 Route::view('/o-nas', 'about')->name('about');
 Route::redirect('/o-nas.html', '/o-nas', 301)->name('about.legacy');

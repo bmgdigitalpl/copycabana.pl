@@ -15,8 +15,8 @@
             <div class="rounded-2xl bg-white p-10 text-center shadow-sm">
                 <i class="fas fa-shopping-cart text-5xl text-slate-300" aria-hidden="true"></i>
                 <h2 class="mt-4 text-xl font-bold text-[#063A60]">Koszyk jest pusty</h2>
-                <p class="mt-2 text-slate-600">Dodaj produkt z katalogu, aby rozpocząć zamówienie.</p>
-                <a href="{{ route('products.index') }}" class="btn-magenta mt-6 inline-block">Przeglądaj produkty</a>
+                <p class="mt-2 text-slate-600">Wybierz produkt i ustaw jego parametry w konfiguratorze.</p>
+                <a href="{{ route('services.business') }}" class="btn-magenta mt-6 inline-block">Przejdź do konfiguratora</a>
             </div>
         </template>
 
