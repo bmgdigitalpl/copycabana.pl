@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\QuoteOfferController;
 use App\Http\Controllers\Admin\QuoteRequestController;
 use App\Http\Controllers\BusinessPrintController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\InvoiceController as CustomerInvoiceController;
@@ -42,6 +43,7 @@ Route::view('/o-nas', 'about')->name('about');
 Route::redirect('/o-nas.html', '/o-nas', 301)->name('about.legacy');
 
 Route::view('/kontakt', 'contact')->name('contact');
+Route::post('/kontakt', [ContactMessageController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
 Route::view('/polityka-prywatnosci', 'privacy')->name('privacy');
 Route::redirect('/kontakt.html', '/kontakt', 301)->name('contact.legacy');
 

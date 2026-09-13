@@ -61,44 +61,48 @@
           <p class="cc-local-note">Najprościej: opisz format, nakład i termin albo dołącz gotowy plik.</p>
         </div>
 
-        <form x-data="{ submitted: false }" @submit.prevent="submitted = true" class="cc-local-card reveal reveal-delay-1">
+        <form id="formularz" method="POST" action="{{ route('contact.store') }}" class="cc-local-card reveal reveal-delay-1">
+          @csrf
           <div class="cc-step-head">
             <span class="cc-step-num">?</span>
             <div>
               <p class="cc-section-label">Formularz</p>
               <h2>Napisz do nas</h2>
-              <p>Formularz demonstracyjny — nie wysyła jeszcze wiadomości.</p>
+              <p>Opisz sprawę, a wiadomość trafi bezpośrednio do naszego biura.</p>
             </div>
           </div>
+
+          @if (session('contact_message_sent'))
+            <p class="cc-help-note"><i class="fas fa-check-circle mr-2" aria-hidden="true"></i>Dziękujemy! Odpowiemy najszybciej jak to możliwe.</p>
+          @endif
 
           <div class="cc-field-grid">
             <div class="cc-field">
               <label for="contact-name">Imię</label>
-              <input id="contact-name" type="text" placeholder="Jan Kowalski" required>
+              <input id="contact-name" name="name" type="text" value="{{ old('name') }}" placeholder="Jan Kowalski" autocomplete="name" required @error('name') aria-invalid="true" @enderror>
+              @error('name')<p class="cc-help-note" role="alert">{{ $message }}</p>@enderror
             </div>
             <div class="cc-field">
               <label for="contact-email">Email</label>
-              <input id="contact-email" type="email" placeholder="jan@example.com" required>
+              <input id="contact-email" name="email" type="email" value="{{ old('email') }}" placeholder="jan@example.com" autocomplete="email" required @error('email') aria-invalid="true" @enderror>
+              @error('email')<p class="cc-help-note" role="alert">{{ $message }}</p>@enderror
             </div>
           </div>
 
           <div class="cc-field">
             <label for="contact-phone">Telefon (opcjonalnie)</label>
-            <input id="contact-phone" type="tel" placeholder="500 000 000">
+            <input id="contact-phone" name="phone" type="tel" value="{{ old('phone') }}" placeholder="500 000 000" autocomplete="tel" @error('phone') aria-invalid="true" @enderror>
+            @error('phone')<p class="cc-help-note" role="alert">{{ $message }}</p>@enderror
           </div>
 
           <div class="cc-field">
             <label for="contact-message">Wiadomość</label>
-            <textarea id="contact-message" rows="5" placeholder="Opisz swoje zamówienie..." required></textarea>
+            <textarea id="contact-message" name="message" rows="5" placeholder="Opisz swoje zamówienie..." required @error('message') aria-invalid="true" @enderror>{{ old('message') }}</textarea>
+            @error('message')<p class="cc-help-note" role="alert">{{ $message }}</p>@enderror
           </div>
 
-          <template x-if="!submitted">
-            <button type="submit" class="btn-magenta cc-contact-submit">Wyślij wiadomość <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
-          </template>
-
-          <template x-if="submitted">
-            <p class="cc-help-note"><i class="fas fa-check-circle mr-2" aria-hidden="true"></i>Dziękujemy! Odpowiemy najszybciej jak to możliwe.</p>
-          </template>
+          <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button type="submit" class="btn-magenta cc-contact-submit">Wyślij wiadomość <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
         </form>
       </div>
     </div>
