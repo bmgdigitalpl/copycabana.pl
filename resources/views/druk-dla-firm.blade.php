@@ -15,7 +15,7 @@
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk dla firm</p>
         <h1 class="cc-hero-title reveal reveal-delay-1">Zamów taki druk, <em>jakiego potrzebujesz.</em></h1>
-        <p class="reveal reveal-delay-2">Wizytówki, ulotki, plakaty, banery, rollupy i dokumenty. Układasz wiele pozycji w jednym zamówieniu, a my wyceniamy całość — bez ukrytych narzutów.</p>
+        <p class="reveal reveal-delay-2">Wizytówki, ulotki, plakaty, banery, rollupy i dokumenty dla firm oraz agencji. Układasz wiele pozycji w jednym zapytaniu, a my wyceniamy całość.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#produkty" @click.prevent="ccGo('#produkty')" class="btn-magenta inline-block">Zacznij od produktu <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
           <a href="#pomoc" @click.prevent="ccGo('#pomoc')" class="btn-outline-light inline-block">Masz niestandardowe zlecenie?</a>
@@ -292,14 +292,14 @@
         <section class="cc-step" id="pomoc">
           <div class="cc-step-head">
             <span class="cc-step-num">05</span>
-            <div><h2>Nie widzisz swojego druku?</h2><p>Opisz zlecenie prostymi słowami — pracownia doradzi i naciągnie format.</p></div>
+            <div><h2>Nie widzisz swojego druku?</h2><p>Opisz zlecenie prostymi słowami — pracownia doradzi i dopasuje format, nakład oraz technologię druku.</p></div>
           </div>
 
           <div class="cc-brief">
             <template x-if="!briefOpen">
               <div>
                 <h3>Mam niestandardowe zlecenie</h3>
-                <p>Plakaty w nietypowym formacie, naklejki, koperty, przeszklenia, podklady pod stół — zaczynamy od rozmowy.</p>
+                <p>Plakaty w nietypowym formacie, naklejki, koperty, teczki i podkładki — zaczynamy od rozmowy o celu realizacji.</p>
                 <label class="btn-geel" style="cursor:pointer" @click="toggleBrief()">Opisz zlecenie <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></label>
               </div>
             </template>

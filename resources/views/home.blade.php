@@ -11,7 +11,7 @@
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">CopyCabana · Drukarnia w Katowicach</p>
         <h1 class="cc-hero-title reveal reveal-delay-1">Od pliku do<br><em>gotowego wydruku.</em></h1>
-        <p class="reveal reveal-delay-2">Prace dyplomowe, dokumenty PDF i materiały firmowe. Wybierz usługę, ustaw szczegóły i poznaj kolejne kroki.</p>
+        <p class="reveal reveal-delay-2">Prace dyplomowe, dokumenty PDF oraz materiały dla firm i agencji. Wybierz usługę, ustaw szczegóły i poznaj kolejne kroki.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block">Skonfiguruj druk <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
           <a href="{{ route('services.business') }}" class="btn-geel inline-block">Druk dla firm</a>
@@ -53,7 +53,7 @@
           <span class="cc-need-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></span>
           <div class="cc-need-body">
             <h3>22 lata doświadczenia</h3>
-            <p>Od 2002 roku pomagamy przygotowywać prace dyplomowe, dokumenty i materiały firmowe.</p>
+            <p>Od 2002 roku rozwijamy się od punktu ksero w drukarnię obsługującą studentów, klientów indywidualnych, firmy i agencje.</p>
           </div>
         </article>
 
@@ -61,7 +61,7 @@
           <span class="cc-need-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
           <div class="cc-need-body">
             <h3>Tysiące zadowolonych klientów</h3>
-            <p>Obsługujemy studentów, klientów indywidualnych i firmy, które wracają do nas z kolejnymi zleceniami.</p>
+            <p>Realizujemy druk cyfrowy, offsetowy i wielkoformatowy: od dokumentów po materiały reklamowe.</p>
           </div>
         </article>
 
@@ -97,14 +97,14 @@
   {{-- 05 Gallery --}}
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
-      <x-concept.section-heading label="Galeria">
+      <x-concept.section-heading label="USŁUGI">
         <x-slot:lead>Wybrane realizacje z drukarni w Katowicach: od prac dyplomowych po materiały reklamowe.</x-slot:lead>
-        Zobacz, co u nas powstaje.
+        USŁUGI
       </x-concept.section-heading>
 
       <div class="cc-gallery">
         @foreach ([
-          ['src' => 'images/carousel-6.jpg', 'alt' => 'Oprawione prace dyplomowe', 'title' => 'Prace dyplomowe z oprawą'],
+          ['src' => 'images/produkty/oprawa-prac-i-bindowanie.png', 'alt' => 'Oprawa prac dyplomowych', 'title' => 'Oprawa prac i bindowanie'],
           ['src' => 'images/produkty/ulotki.png', 'alt' => 'Ulotki reklamowe', 'title' => 'Ulotki'],
           ['src' => 'images/produkty/plakaty.png', 'alt' => 'Plakaty drukowane', 'title' => 'Plakaty'],
           ['src' => 'images/produkty/banery.png', 'alt' => 'Banery reklamowe', 'title' => 'Banery'],
@@ -124,8 +124,8 @@
   <section class="cc-section cc-section--light">
     <div class="cc-container">
       <x-concept.section-heading label="Lokalność">
-        <x-slot:lead>Drukarnia przy ul. Bankowej 11. Możesz przyjść, zadzwonić albo umówić się osobiście.</x-slot:lead>
-        Z Katowic.<br>Dla Twojej pracy i Twojej firmy.
+        <x-slot:lead>Drukarnia przy ul. Bankowej 11. Możesz przyjść, zadzwonić albo przesłać plik zdalnie.</x-slot:lead>
+        Z Katowic.<br>Dla pracy, firmy i agencji.
       </x-concept.section-heading>
 
       <div class="cc-local-grid">
@@ -146,7 +146,7 @@
             <i class="fas fa-envelope" aria-hidden="true"></i>
             <div><strong>Email</strong><em>biuro@copycabana.pl</em></div>
           </div>
-          <p class="cc-local-note">Nie pokazujemy wycenionych opinii ani liczników stron. Pokażemy je, gdy będą prawdziwe.</p>
+          <p class="cc-local-note">Pomożemy dobrać format, nakład, papier i wykończenie do zastosowania oraz budżetu Twojego projektu.</p>
           <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block mt-4" style="width:fit-content">Sprawdź konfigurator pracy</a>
         </div>
 

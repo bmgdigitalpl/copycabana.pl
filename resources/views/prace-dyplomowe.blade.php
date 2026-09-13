@@ -14,7 +14,7 @@
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk i oprawa prac dyplomowych</p>
         <h1 class="cc-hero-title reveal reveal-delay-1">Praca napisana.<em>Teraz druk i oprawa.</em></h1>
-        <p class="reveal reveal-delay-2">Dodaj PDF, wybierz sposób druku i oprawę. Przed zamówieniem sprawdzisz pełną cenę oraz dostępny termin odbioru lub dostawy.</p>
+        <p class="reveal reveal-delay-2">Dodaj kompletny PDF, wybierz druk oraz oprawę twardą, miękką lub kanałową. Przed zamówieniem sprawdzisz pełną cenę i dostępny termin odbioru lub dostawy.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#plik" @click.prevent="ccGo('#plik')" class="btn-magenta inline-block">Dodaj pracę w PDF <i class="fas fa-upload ml-2" aria-hidden="true"></i></a>
           <a href="#oprawa" @click.prevent="ccGo('#oprawa')" class="btn-outline-light inline-block">Najpierw sprawdź oprawy</a>

@@ -81,7 +81,7 @@ class MarketingPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Od pliku do')
             ->assertSee('gotowego wydruku.')
-            ->assertSee('Prace dyplomowe, dokumenty PDF i materiały firmowe.')
+            ->assertSee('Prace dyplomowe, dokumenty PDF oraz materiały dla firm i agencji.')
             ->assertSee('Dlaczego CopyCabana.')
             ->assertDontSee('Dlaczego my?')
             ->assertDontSee('Możesz nam zaufać.')
@@ -92,7 +92,7 @@ class MarketingPagesTest extends TestCase
             ->assertSee('cc-need-grid', false)
             ->assertSee('Skonfiguruj druk')
             ->assertSee('Druk dla firm')
-            ->assertSee('Galeria')
+            ->assertSee('USŁUGI')
             ->assertSee('cc-gallery', false)
             ->assertSee('cc-marquee-group', false)
             ->assertDontSee('Chcę wydrukować dokumenty PDF')
@@ -175,6 +175,36 @@ class MarketingPagesTest extends TestCase
                 ->assertOk()
                 ->assertSee($heading);
         }
+    }
+
+    public function test_active_marketing_pages_use_verified_legacy_copy(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $this->get(route('home'))
+            ->assertSee('druk cyfrowy, offsetowy i wielkoformatowy')
+            ->assertSee('firmy i agencje');
+
+        $this->get(route('services.diploma'))
+            ->assertSee('oprawę twardą, miękką lub kanałową');
+
+        $this->get(route('druk-pdf'))
+            ->assertSee('Wrzucasz kompletny PDF');
+
+        $this->get(route('services.business'))
+            ->assertSee('dla firm oraz agencji')
+            ->assertSee('dopasuje format, nakład oraz technologię druku');
+
+        $this->get(route('portfolio'))
+            ->assertSee('Materiały reklamowe dla firm muszą wyglądać profesjonalnie');
+
+        $this->get(route('faq'))
+            ->assertSee('Czy realizujecie małe nakłady?')
+            ->assertSee('Czy obsługujecie klientów spoza Katowic?');
+
+        $this->get(route('contact'))
+            ->assertSee('LITEKST Jarosław Lipiec')
+            ->assertSee('NIP 6342412192');
     }
 
     public function test_configurator_pages_use_the_main_layout(): void

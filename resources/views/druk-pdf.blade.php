@@ -15,7 +15,7 @@
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk dokumentów PDF</p>
         <h1 class="cc-hero-title reveal reveal-delay-1">Dokument.<em>Wydruk bez narzutu.</em></h1>
-        <p class="reveal reveal-delay-2">Materiały do nauki, instrukcje, umowy i codzienne dokumenty. Wrzucasz PDF, ustawiasz kolor, strony kartki i odbiór — resztę pokażemy jako jasną cenę.</p>
+        <p class="reveal reveal-delay-2">Materiały do nauki, instrukcje, umowy i codzienne dokumenty. Wrzucasz kompletny PDF, ustawiasz kolor, strony kartki i odbiór — resztę pokażemy jako jasną cenę.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#plik" @click.prevent="ccGo('#plik')" class="btn-magenta inline-block">Dodaj dokument PDF <i class="fas fa-upload ml-2" aria-hidden="true"></i></a>
           <a href="#wykończenie" @click.prevent="ccGo('#wykończenie')" class="btn-geel inline-block">Zobacz wykończenie</a>

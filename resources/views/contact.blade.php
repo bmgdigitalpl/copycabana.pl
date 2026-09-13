@@ -54,7 +54,11 @@
             <i class="fas fa-location-dot" aria-hidden="true"></i>
             <div><strong>Adres</strong><em>ul. Bankowa 11, 40-007 Katowice</em></div>
           </div>
-          <p class="cc-local-note">Najprościej: wyślij PDF lub opis zlecenia i napisz, kiedy potrzebujesz odbioru.</p>
+          <div class="cc-local-fact">
+            <i class="fas fa-building" aria-hidden="true"></i>
+            <div><strong>Dane firmy</strong><em>LITEKST Jarosław Lipiec · NIP 6342412192</em></div>
+          </div>
+          <p class="cc-local-note">Najprościej: opisz format, nakład i termin albo dołącz gotowy plik.</p>
         </div>
 
         <form x-data="{ submitted: false }" @submit.prevent="submitted = true" class="cc-local-card reveal reveal-delay-1">
