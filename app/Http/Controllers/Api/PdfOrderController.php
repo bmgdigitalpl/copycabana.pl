@@ -10,6 +10,7 @@ use App\Mail\OrderReceivedMail;
 use App\Models\Client;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\AdminNotificationService;
 use App\Services\InvoiceService;
 use App\Services\PayuService;
 use App\Services\PdfPricingService;
@@ -35,6 +36,7 @@ class PdfOrderController extends Controller
         PdfPricingService $pricing,
         InvoiceService $invoiceService,
         PayuService $payu,
+        AdminNotificationService $notifications,
     ): JsonResponse {
         $data = $request->validated();
         $idempotencyKey = $request->header('Idempotency-Key');
@@ -121,6 +123,8 @@ class PdfOrderController extends Controller
 
             return $order;
         });
+
+        $notifications->orderCreated($order);
 
         $payment = $order->payments()->create([
             'provider' => config('payment.provider'),

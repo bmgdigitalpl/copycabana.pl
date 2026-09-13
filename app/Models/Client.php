@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'name', 'email', 'phone', 'company', 'nip', 'billing_address',
@@ -39,6 +40,18 @@ class Client extends Model
         return $this->hasMany(Order::class);
     }
 
+    /** @return HasMany<QuoteRequest, $this> */
+    public function quoteRequests(): HasMany
+    {
+        return $this->hasMany(QuoteRequest::class);
+    }
+
+    /** @return HasOne<User, $this> */
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
+    }
+
     /** @return HasMany<DataRequest, $this> */
     public function dataRequests(): HasMany
     {
@@ -47,6 +60,8 @@ class Client extends Model
 
     public function anonymize(): void
     {
+        $this->user()->update(['disabled_at' => now()]);
+
         $this->orders()->whereDoesntHave('invoice')->update([
             'customer_name' => 'Klient zanonimizowany',
             'customer_email' => 'anonimowy-'.$this->id.'@example.invalid',

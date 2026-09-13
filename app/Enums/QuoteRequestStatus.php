@@ -27,4 +27,9 @@ enum QuoteRequestStatus: string
             self::Rejected->value => 'Odrzucone',
         ];
     }
+
+    public function label(): string
+    {
+        return self::labels()[$this->value];
+    }
 }

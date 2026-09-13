@@ -10,6 +10,7 @@ use App\Mail\B2bQuoteRequestReceived;
 use App\Models\Client;
 use App\Models\Product;
 use App\Models\QuoteRequest;
+use App\Services\AdminNotificationService;
 use App\Services\B2bQuoteRequestUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,7 @@ class B2bQuoteRequestController extends Controller
         ], 201);
     }
 
-    public function store(B2bQuoteRequest $request, B2bQuoteRequestUploadService $uploads): JsonResponse
+    public function store(B2bQuoteRequest $request, B2bQuoteRequestUploadService $uploads, AdminNotificationService $notifications): JsonResponse
     {
         $data = $request->validated();
         $idempotencyKey = $request->header('Idempotency-Key');
@@ -114,6 +115,7 @@ class B2bQuoteRequestController extends Controller
         });
 
         $quoteRequest->load(['items', 'files']);
+        $notifications->quoteRequestCreated($quoteRequest);
         Mail::to(config('business.quote_email'))->queue((new B2bQuoteRequestReceived($quoteRequest))->afterCommit());
         Mail::to($quoteRequest->customer_email)->queue((new B2bQuoteRequestConfirmation($quoteRequest))->afterCommit());
 

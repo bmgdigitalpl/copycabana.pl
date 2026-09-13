@@ -23,4 +23,9 @@ enum QuoteOfferStatus: string
             self::Superseded->value => 'Zastąpiona nowszą wersją',
         ];
     }
+
+    public function label(): string
+    {
+        return self::labels()[$this->value];
+    }
 }

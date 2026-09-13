@@ -1,0 +1,5 @@
+@extends('layouts.main')
+@section('title', 'Moje wyceny | CopyCabana')
+@section('content')
+<main class="cc-container" style="padding:9rem 1.5rem 6rem"><a class="text-sm text-[#D51A70]" href="{{ route('customer.dashboard') }}">← Moje konto</a><h1 class="mt-2 text-4xl font-bold">Moje wyceny B2B</h1><div class="mt-8 space-y-4">@forelse($quotes as $quote)<a class="cc-local-card flex flex-wrap justify-between gap-4" href="{{ route('customer.quotes.show', $quote->reference) }}"><div><p class="font-bold text-[#D51A70]">{{ $quote->reference }}</p><p class="mt-1 text-sm text-slate-500">{{ $quote->created_at->format('d.m.Y H:i') }}</p></div><div class="text-right"><p>{{ $quote->status->label() }}</p>@if($quote->latestOffer)<strong>{{ number_format((float) $quote->latestOffer->total, 2, ',', ' ') }} {{ $quote->latestOffer->currency }}</strong>@endif</div></a>@empty<div class="cc-local-card text-slate-600">Brak wycen.</div>@endforelse</div><div class="mt-4">{{ $quotes->links() }}</div></main>
+@endsection

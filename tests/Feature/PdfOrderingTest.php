@@ -4,11 +4,14 @@ namespace Tests\Feature;
 
 use App\Mail\OrderReceivedMail;
 use App\Models\Order;
+use App\Models\User;
+use App\Notifications\AdminActivityNotification;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -51,6 +54,7 @@ class PdfOrderingTest extends TestCase
     {
         Storage::fake('local');
         Mail::fake();
+        Notification::fake();
         Http::fake([
             '*/pl/standard/user/oauth/authorize' => Http::response(['access_token' => 'test-token']),
             '*/api/v2_1/orders' => Http::response([
@@ -59,6 +63,7 @@ class PdfOrderingTest extends TestCase
                 'orderId' => 'PAYU-PDF-ORDER',
             ], 302, ['Location' => 'https://payu.test/pdf-pay']),
         ]);
+        $administrator = User::factory()->create(['role' => 'admin']);
         $this->seed(ProductSeeder::class);
         $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
 
@@ -81,6 +86,7 @@ class PdfOrderingTest extends TestCase
         $this->assertSame('attached', $order->files()->firstOrFail()->status);
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'subtotal' => 4.50]);
         Mail::assertQueued(OrderReceivedMail::class, 1);
+        Notification::assertSentTo($administrator, AdminActivityNotification::class);
     }
 
     public function test_pdf_order_requires_complete_delivery_address(): void

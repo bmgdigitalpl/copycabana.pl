@@ -44,6 +44,13 @@
       <div class="cc-header-actions">
         <a href="{{ route('contact') }}" class="cc-link-outline">Kontakt</a>
         <a href="{{ route('cart') }}" class="cc-link-outline">Koszyk</a>
+        @auth
+          @if(auth()->user()->isCustomer())
+            <a href="{{ route('customer.dashboard') }}" class="cc-link-outline">Moje konto</a>
+          @endif
+        @else
+          <a href="{{ route('customer.login') }}" class="cc-link-outline">Zaloguj</a>
+        @endauth
         <button @click="mobileNav = true" class="cc-burger" aria-label="Otwórz menu">
           <i class="fas fa-bars"></i>
         </button>
@@ -61,6 +68,15 @@
       <a href="{{ route('services.business') }}">Druk dla firm</a>
       <a href="{{ route('contact') }}">Kontakt</a>
       <a href="{{ route('cart') }}">Koszyk</a>
+      @auth
+        @if(auth()->user()->isCustomer())
+          <a href="{{ route('customer.dashboard') }}">Moje konto</a>
+        @else
+          <a href="{{ route('dashboard') }}">Panel administracyjny</a>
+        @endif
+      @else
+        <a href="{{ route('customer.login') }}">Zaloguj</a>
+      @endauth
     </div>
   </div>
 

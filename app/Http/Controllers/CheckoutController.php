@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Services\AdminNotificationService;
 use App\Services\InvoiceService;
 use App\Services\PayuService;
 use App\Services\PdfUploadService;
@@ -28,7 +29,7 @@ class CheckoutController extends Controller
 {
     public function __construct(private readonly ProductPricingService $pricing) {}
 
-    public function store(CheckoutRequest $request, InvoiceService $invoiceService, PayuService $payu): JsonResponse|RedirectResponse
+    public function store(CheckoutRequest $request, InvoiceService $invoiceService, PayuService $payu, AdminNotificationService $notifications): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
         $customer = $data['customer'];
@@ -131,6 +132,8 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        $notifications->orderCreated($order);
+
         $payment = Payment::create([
             'order_id' => $order->id,
             'provider' => config('payment.provider'),
@@ -165,6 +168,7 @@ class CheckoutController extends Controller
         PayuService $payu,
         PdfUploadService $uploads,
         ThesisPricingService $thesisPricing,
+        AdminNotificationService $notifications,
     ): JsonResponse|RedirectResponse {
         $data = $request->validated();
         $idempotencyKey = $request->header('Idempotency-Key');
@@ -257,6 +261,8 @@ class CheckoutController extends Controller
 
             return $order;
         });
+
+        $notifications->orderCreated($order);
 
         $payment = Payment::create([
             'order_id' => $order->id,

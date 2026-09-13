@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExportController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OptionController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PrivacyRequestController;
@@ -12,6 +12,13 @@ use App\Http\Controllers\Admin\QuoteOfferController;
 use App\Http\Controllers\Admin\QuoteRequestController;
 use App\Http\Controllers\BusinessPrintController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\InvoiceController as CustomerInvoiceController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
+use App\Http\Controllers\Customer\QuoteController as CustomerQuoteController;
+use App\Http\Controllers\Customer\VerificationController as CustomerVerificationController;
 use App\Http\Controllers\QuoteOfferAcceptanceController;
 use App\Http\Middleware\OwnerMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -46,30 +53,72 @@ Route::get('/zamowienie/sukces/{token}', [CheckoutController::class, 'success'])
 Route::get('/wycena/{token}', [QuoteOfferAcceptanceController::class, 'show'])->name('quote-offers.show');
 Route::post('/wycena/{token}/akceptuj', [QuoteOfferAcceptanceController::class, 'accept'])->middleware('throttle:orders')->name('quote-offers.accept');
 
-Route::prefix('admin')->name('admin.')->group(function (): void {
-    Route::get('/logowanie', [AuthController::class, 'create'])->name('login');
-    Route::post('/logowanie', [AuthController::class, 'store'])->middleware('throttle:login')->name('login.store');
-    Route::post('/wyloguj', [AuthController::class, 'destroy'])->middleware('auth')->name('logout');
+Route::prefix('konto')->group(function (): void {
+    Route::get('/logowanie', [CustomerAuthController::class, 'createLogin'])->name('customer.login');
+    Route::post('/logowanie', [CustomerAuthController::class, 'login'])->middleware('throttle:login')->name('customer.login.store');
+    Route::get('/rejestracja', [CustomerAuthController::class, 'createRegister'])->name('customer.register');
+    Route::post('/rejestracja', [CustomerAuthController::class, 'register'])->middleware('throttle:login')->name('customer.register.store');
+    Route::get('/reset-hasla', [CustomerAuthController::class, 'forgotPassword'])->name('customer.password.request');
+    Route::post('/reset-hasla', [CustomerAuthController::class, 'sendResetLink'])->middleware('throttle:login')->name('customer.password.email');
+    Route::get('/reset-hasla/{token}', [CustomerAuthController::class, 'resetPasswordForm'])->name('customer.password.reset');
+    Route::post('/reset-hasla/zmien', [CustomerAuthController::class, 'resetPassword'])->middleware('throttle:login')->name('customer.password.update');
+});
 
-    Route::middleware(['auth', 'admin'])->group(function (): void {
-        Route::get('/', DashboardController::class)->name('dashboard');
-        Route::resource('zamowienia', OrderController::class)->only(['index', 'show', 'update'])->parameters(['zamowienia' => 'order'])->names('orders');
-        Route::resource('wyceny', QuoteRequestController::class)->only(['index', 'show', 'update'])->parameters(['wyceny' => 'quoteRequest'])->names('quote-requests');
-        Route::post('/wyceny/{quoteRequest}/oferty', [QuoteOfferController::class, 'store'])->name('quote-offers.store');
-        Route::get('/wyceny/{quoteRequest}/pliki/{file}', [QuoteRequestController::class, 'downloadFile'])->scopeBindings()->name('quote-requests.files.download');
-        Route::get('/zamowienia/{order}/faktura', [OrderController::class, 'invoice'])->name('orders.invoice');
-        Route::get('/zamowienia/{order}/pliki/{file}', [OrderController::class, 'downloadFile'])->name('orders.files.download');
+Route::prefix('konto')->middleware(['auth', 'customer'])->group(function (): void {
+    Route::post('/wyloguj', [CustomerAuthController::class, 'logout'])->name('customer.logout');
+    Route::get('/weryfikacja', [CustomerVerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('/weryfikacja/{id}/{hash}', [CustomerVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    Route::post('/weryfikacja/ponownie', [CustomerVerificationController::class, 'resend'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
+
+Route::prefix('konto')->name('customer.')->middleware(['auth', 'customer', 'verified'])->group(function (): void {
+    Route::get('/', CustomerDashboardController::class)->name('dashboard');
+    Route::get('/zamowienia', [CustomerOrderController::class, 'index'])->name('orders.index');
+    Route::get('/zamowienia/{orderNumber}', [CustomerOrderController::class, 'show'])->name('orders.show');
+    Route::post('/zamowienia/{orderNumber}/platnosc', [CustomerOrderController::class, 'retryPayment'])
+        ->middleware('throttle:orders')
+        ->name('orders.retry-payment');
+    Route::get('/zamowienia/{orderNumber}/pliki/{file}', [CustomerOrderController::class, 'downloadFile'])->name('orders.files.download');
+    Route::get('/wyceny', [CustomerQuoteController::class, 'index'])->name('quotes.index');
+    Route::get('/wyceny/{reference}', [CustomerQuoteController::class, 'show'])->name('quotes.show');
+    Route::post('/wyceny/{reference}/oferty/{offer}/akceptuj', [CustomerQuoteController::class, 'accept'])
+        ->middleware('throttle:orders')
+        ->name('quotes.accept');
+    Route::get('/faktury/{invoice}', [CustomerInvoiceController::class, 'show'])->name('invoices.show');
+    Route::get('/profil', [CustomerProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profil', [CustomerProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profil/haslo', [CustomerProfileController::class, 'password'])->name('profile.password');
+});
+
+Route::middleware(['auth', 'admin'])->group(function (): void {
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    Route::prefix('dashboard')->name('admin.')->group(function (): void {
+        Route::resource('orders', OrderController::class)->only(['index', 'show', 'update'])->parameters(['orders' => 'order'])->names('orders');
+        Route::resource('quotes', QuoteRequestController::class)->only(['index', 'show', 'update'])->parameters(['quotes' => 'quoteRequest'])->names('quote-requests');
+        Route::post('/quotes/{quoteRequest}/offers', [QuoteOfferController::class, 'store'])->name('quote-offers.store');
+        Route::get('/quotes/{quoteRequest}/files/{file}', [QuoteRequestController::class, 'downloadFile'])->scopeBindings()->name('quote-requests.files.download');
+        Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+        Route::get('/orders/{order}/files/{file}', [OrderController::class, 'downloadFile'])->name('orders.files.download');
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::put('/notifications/{notification}', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::put('/notifications', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
         Route::middleware(OwnerMiddleware::class)->group(function (): void {
-            Route::resource('klienci', ClientController::class)->only(['index', 'show'])->parameters(['klienci' => 'client'])->names('clients');
-            Route::get('/klienci/{client}/eksport', [ClientController::class, 'export'])->name('clients.export');
-            Route::post('/klienci/{client}/wniosek-usuniecia', [ClientController::class, 'requestDeletion'])->name('clients.deletion');
-            Route::post('/klienci/{client}/anonimizuj', [ClientController::class, 'anonymize'])->name('clients.anonymize');
-            Route::resource('opcje', OptionController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])->parameters(['opcje' => 'option'])->names('options');
-            Route::resource('produkty', AdminProductController::class)->only(['index', 'edit', 'update'])->parameters(['produkty' => 'product'])->names('products');
-            Route::get('/rodo', [PrivacyRequestController::class, 'index'])->name('privacy.index');
-            Route::put('/rodo/{dataRequest}', [PrivacyRequestController::class, 'update'])->name('privacy.update');
-            Route::get('/eksport/zamowienia.csv', [ExportController::class, 'orders'])->name('exports.orders');
-            Route::get('/eksport/klienci.csv', [ExportController::class, 'clients'])->name('exports.clients');
+            Route::resource('clients', ClientController::class)->only(['index', 'show'])->parameters(['clients' => 'client'])->names('clients');
+            Route::get('/clients/{client}/export', [ClientController::class, 'export'])->name('clients.export');
+            Route::post('/clients/{client}/deletion-request', [ClientController::class, 'requestDeletion'])->name('clients.deletion');
+            Route::post('/clients/{client}/anonymize', [ClientController::class, 'anonymize'])->name('clients.anonymize');
+            Route::resource('options', OptionController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])->parameters(['options' => 'option'])->names('options');
+            Route::resource('products', AdminProductController::class)->only(['index', 'edit', 'update'])->parameters(['products' => 'product'])->names('products');
+            Route::get('/privacy', [PrivacyRequestController::class, 'index'])->name('privacy.index');
+            Route::put('/privacy/{dataRequest}', [PrivacyRequestController::class, 'update'])->name('privacy.update');
+            Route::get('/exports/orders.csv', [ExportController::class, 'orders'])->name('exports.orders');
+            Route::get('/exports/clients.csv', [ExportController::class, 'clients'])->name('exports.clients');
         });
     });
 });

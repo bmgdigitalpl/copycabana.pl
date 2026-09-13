@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\CustomerMiddleware;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,9 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['admin' => AdminMiddleware::class]);
+        $middleware->alias([
+            'admin' => AdminMiddleware::class,
+            'customer' => CustomerMiddleware::class,
+        ]);
         $middleware->append(SecurityHeaders::class);
-        $middleware->redirectGuestsTo(fn (): string => route('admin.login'));
+        $middleware->redirectGuestsTo(fn (Request $request): string => $request->is('konto*')
+            ? route('customer.login')
+            : route('login'));
 
         $middleware->trustHosts(at: fn (): array => config('app.trusted_hosts', []), subdomains: false);
     })

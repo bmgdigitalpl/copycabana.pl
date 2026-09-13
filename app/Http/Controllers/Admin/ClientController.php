@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Client;
 use App\Models\DataRequest;
+use App\Services\AdminNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -43,10 +44,11 @@ class ClientController extends Controller
         ])->header('Content-Disposition', 'attachment; filename="client-'.$client->id.'-data.json"');
     }
 
-    public function requestDeletion(Client $client): RedirectResponse
+    public function requestDeletion(Client $client, AdminNotificationService $notifications): RedirectResponse
     {
         $client->update(['deletion_requested_at' => now()]);
         $request = $client->dataRequests()->create(['type' => 'erasure', 'status' => 'pending', 'requested_at' => now()]);
+        $notifications->privacyRequestCreated($request->load('client'));
         AuditLog::create(['user_id' => auth()->id(), 'auditable_type' => DataRequest::class, 'auditable_id' => $request->id, 'action' => 'deletion_requested', 'ip_address' => request()->ip()]);
 
         return back()->with('status', 'Wniosek o usunięcie danych został zarejestrowany. Zweryfikuj obowiązki księgowe przed anonimizacją.');

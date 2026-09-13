@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\Client;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\AdminActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -39,12 +41,12 @@ class AdminFeaturesTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'customer']);
 
-        $this->actingAs($user)->get(route('admin.dashboard'))->assertForbidden();
+        $this->actingAs($user)->get(route('dashboard'))->assertForbidden();
     }
 
     public function test_guests_are_redirected_to_the_admin_login_page(): void
     {
-        $this->get(route('admin.dashboard'))->assertRedirect(route('admin.login'));
+        $this->get(route('dashboard'))->assertRedirect(route('login'));
     }
 
     public function test_admin_login_is_rate_limited(): void
@@ -52,13 +54,13 @@ class AdminFeaturesTest extends TestCase
         $user = User::factory()->create(['email' => 'admin@example.com']);
 
         for ($attempt = 0; $attempt < 5; $attempt++) {
-            $this->post(route('admin.login.store'), [
+            $this->post(route('login.store'), [
                 'email' => $user->email,
                 'password' => 'incorrect-password',
             ])->assertRedirect();
         }
 
-        $this->post(route('admin.login.store'), [
+        $this->post(route('login.store'), [
             'email' => $user->email,
             'password' => 'incorrect-password',
         ])->assertTooManyRequests();
@@ -86,7 +88,7 @@ class AdminFeaturesTest extends TestCase
         $user = User::factory()->create(['role' => 'admin']);
         $product = Product::factory()->create(['name' => 'Wizytówki']);
 
-        $this->actingAs($user)->get(route('admin.dashboard'))->assertOk()->assertSee('Pulpit');
+        $this->actingAs($user)->get(route('dashboard'))->assertOk()->assertSee('Pulpit');
         $this->actingAs($user)->get(route('admin.options.create'))->assertOk()->assertSee('Dodaj opcję');
         $this->actingAs($user)->get(route('admin.products.index'))->assertOk()->assertSee('Wizytówki');
         $this->actingAs($user)->get(route('admin.products.edit', $product))->assertOk()->assertSee('Edytuj zdjęcie produktu');
@@ -177,5 +179,80 @@ class AdminFeaturesTest extends TestCase
 
         $this->assertNotNull($client->fresh()->anonymized_at);
         $this->assertDatabaseHas('audit_logs', ['action' => 'retention_anonymized', 'auditable_id' => $client->id]);
+    }
+
+    public function test_admin_can_login_through_fortify(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => 'password',
+        ]);
+
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_fortify_login_screen_uses_the_flux_auth_view(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('Zaloguj się do panelu')
+            ->assertDontSee('Panel administracyjny');
+    }
+
+    public function test_customer_cannot_login_through_the_admin_fortify_form(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'customer',
+            'email' => 'customer@example.com',
+            'password' => 'password',
+        ]);
+
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertInvalid('email');
+
+        $this->assertGuest();
+    }
+
+    public function test_admin_can_view_and_mark_notifications_as_read(): void
+    {
+        $user = User::factory()->create(['role' => 'admin']);
+
+        Notification::send(
+            $user,
+            new AdminActivityNotification('Nowe zamówienie', 'Zamówienie CC-100 wymaga obsługi.', 'orders', route('admin.orders.index')),
+        );
+
+        $notification = $user->fresh()->unreadNotifications->first();
+
+        $this->actingAs($user)->get(route('admin.notifications.index'))
+            ->assertOk()
+            ->assertSee('Nowe zamówienie');
+
+        $this->actingAs($user)->put(route('admin.notifications.read', $notification->id))
+            ->assertRedirect();
+
+        $this->assertNotNull($notification->fresh()->read_at);
+    }
+
+    public function test_admin_can_mark_all_notifications_as_read(): void
+    {
+        $user = User::factory()->create(['role' => 'admin']);
+        Notification::send($user, new AdminActivityNotification('Aktualność', 'Sprawdź panel.', 'general'));
+
+        $this->actingAs($user)->put(route('admin.notifications.read-all'))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('notifications', [
+            'notifiable_id' => $user->id,
+            'read_at' => null,
+        ]);
     }
 }

@@ -8,6 +8,7 @@ use App\Mail\OrderStatusChangedMail;
 use App\Mail\PaymentConfirmedMail;
 use App\Models\Option;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\ProductSeeder;
@@ -201,6 +202,42 @@ class OrderManagementTest extends TestCase
             'CONTENT_TYPE' => 'application/json',
             'HTTP_OPENPAYU_SIGNATURE' => 'signature='.md5($rawBody.'test-second-key').';algorithm=MD5;sender=checkout',
         ], $rawBody)->assertBadRequest();
+    }
+
+    public function test_payu_webhook_updates_the_payment_matching_its_provider_reference(): void
+    {
+        Mail::fake();
+        $order = Order::factory()->create(['status' => OrderStatus::PaymentAwaited]);
+        $initialPayment = Payment::factory()->create([
+            'order_id' => $order->id,
+            'provider' => 'payu',
+            'provider_reference' => 'PAYU-INITIAL-ORDER',
+            'status' => 'failed',
+        ]);
+        $retryPayment = Payment::factory()->create([
+            'order_id' => $order->id,
+            'provider' => 'payu',
+            'provider_reference' => 'PAYU-RETRY-ORDER',
+        ]);
+        $rawBody = json_encode([
+            'order' => [
+                'orderId' => $retryPayment->provider_reference,
+                'extOrderId' => $order->number,
+                'status' => 'COMPLETED',
+                'currencyCode' => 'PLN',
+                'totalAmount' => '10000',
+                'merchantPosId' => 'test-pos',
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $this->call('POST', route('api.payments.payu.notify'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_OPENPAYU_SIGNATURE' => 'signature='.md5($rawBody.'test-second-key').';algorithm=MD5;sender=checkout',
+        ], $rawBody)->assertOk();
+
+        $this->assertSame('failed', $initialPayment->fresh()->status);
+        $this->assertSame('paid', $retryPayment->fresh()->status);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'payment_status' => 'paid']);
     }
 
     public function test_order_success_page_requires_the_private_token(): void
