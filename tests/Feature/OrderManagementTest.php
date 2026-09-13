@@ -11,10 +11,13 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\AdminActivityNotification;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class OrderManagementTest extends TestCase
@@ -240,6 +243,92 @@ class OrderManagementTest extends TestCase
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'payment_status' => 'paid']);
     }
 
+    public function test_payu_webhook_does_not_regress_a_paid_payment_from_late_notifications(): void
+    {
+        Mail::fake();
+        $order = Order::factory()->create([
+            'status' => OrderStatus::PaymentAwaited,
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+        $payment = Payment::factory()->create([
+            'order_id' => $order->id,
+            'provider' => 'payu',
+            'provider_reference' => 'PAYU-PAID-ORDER',
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        foreach (['WAITING', 'CANCELED', 'REJECTED'] as $status) {
+            $this->sendPayuNotification($order, $payment, $status)->assertOk();
+        }
+
+        $this->assertSame('paid', $payment->fresh()->status);
+        $this->assertSame('paid', $order->fresh()->payment_status);
+        $this->assertSame(OrderStatus::PaymentAwaited, $order->fresh()->status);
+        Mail::assertNotQueued(PaymentConfirmedMail::class);
+    }
+
+    public function test_payu_webhook_does_not_complete_a_payment_after_it_has_failed(): void
+    {
+        Mail::fake();
+        $order = Order::factory()->create(['status' => OrderStatus::PaymentAwaited]);
+        $payment = Payment::factory()->create([
+            'order_id' => $order->id,
+            'provider' => 'payu',
+            'provider_reference' => 'PAYU-FAILED-ORDER',
+        ]);
+
+        $this->sendPayuNotification($order, $payment, 'CANCELED')->assertOk();
+        $this->sendPayuNotification($order, $payment, 'COMPLETED')->assertOk();
+
+        $this->assertSame('failed', $payment->fresh()->status);
+        $this->assertSame('failed', $order->fresh()->payment_status);
+        $this->assertSame(OrderStatus::Cancelled, $order->fresh()->status);
+        Mail::assertNotQueued(PaymentConfirmedMail::class);
+    }
+
+    public function test_payu_webhook_returns_404_when_mock_payments_are_enabled(): void
+    {
+        config(['payment.provider' => 'mock']);
+
+        $this->postJson(route('api.payments.payu.notify'))->assertNotFound();
+    }
+
+    public function test_local_mock_payment_completes_the_customer_and_admin_flow(): void
+    {
+        Mail::fake();
+        Notification::fake();
+        config(['payment.provider' => 'mock']);
+        $administrator = User::factory()->create(['role' => 'admin']);
+        $this->seed(ProductSeeder::class);
+
+        $response = $this->postJson('/api/v1/orders', [
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+            'items' => [['product_slug' => 'wizytowki', 'quantity' => 1]],
+        ]);
+
+        $order = Order::query()->latest('id')->firstOrFail();
+        $payment = $order->payments()->firstOrFail();
+        $customer = User::factory()->create([
+            'email' => 'jan@example.com',
+            'role' => 'customer',
+            'client_id' => $order->client_id,
+        ]);
+
+        $response->assertCreated()->assertJsonPath('payment_url', route('local-payments.show', $payment));
+        $this->actingAs($customer)->get(route('local-payments.show', $payment))->assertSee('Płatność testowa');
+        $this->post(route('local-payments.store', $payment))->assertRedirect($payment->fresh()->payload['continue_url']);
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'paid']);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'payment_status' => 'paid']);
+        $this->actingAs($administrator)->get(route('admin.orders.show', $order))->assertOk();
+        Mail::assertQueued(PaymentConfirmedMail::class, 1);
+        Notification::assertSentTo($administrator, AdminActivityNotification::class);
+    }
+
     public function test_order_success_page_requires_the_private_token(): void
     {
         $token = 'private-success-token';
@@ -249,5 +338,24 @@ class OrderManagementTest extends TestCase
         $this->get(route('checkout.success', ['token' => $token]))
             ->assertOk()
             ->assertSee($order->number);
+    }
+
+    private function sendPayuNotification(Order $order, Payment $payment, string $status): TestResponse
+    {
+        $rawBody = json_encode([
+            'order' => [
+                'orderId' => $payment->provider_reference,
+                'extOrderId' => $order->number,
+                'status' => $status,
+                'currencyCode' => $order->currency,
+                'totalAmount' => (string) round((float) $order->total * 100),
+                'merchantPosId' => 'test-pos',
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        return $this->call('POST', route('api.payments.payu.notify'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_OPENPAYU_SIGNATURE' => 'signature='.md5($rawBody.'test-second-key').';algorithm=MD5;sender=checkout',
+        ], $rawBody);
     }
 }

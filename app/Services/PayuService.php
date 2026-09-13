@@ -7,6 +7,7 @@ use App\Models\Payment;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class PayuService
@@ -18,6 +19,10 @@ class PayuService
         string $notifyUrl,
         string $customerIp,
     ): string {
+        if (config('payment.provider') === 'mock') {
+            return $this->createMockPayment($payment, $continueUrl);
+        }
+
         $response = $this->client()->withToken($this->accessToken())
             ->withOptions(['allow_redirects' => false])
             ->post('/api/v2_1/orders', $this->orderPayload($order, $continueUrl, $notifyUrl, $customerIp));
@@ -40,6 +45,27 @@ class PayuService
                 'order_id' => $providerReference,
                 'redirect_uri' => $redirectUri,
                 'status' => $response->json('status.statusCode'),
+            ],
+        ])->save();
+
+        return $redirectUri;
+    }
+
+    private function createMockPayment(Payment $payment, string $continueUrl): string
+    {
+        if (! app()->environment('local', 'testing')) {
+            throw new RuntimeException('Mock payments are only available in local and testing environments.');
+        }
+
+        $redirectUri = route('local-payments.show', $payment);
+
+        $payment->forceFill([
+            'provider_reference' => 'MOCK-'.Str::upper(Str::random(12)),
+            'status' => 'pending',
+            'payload' => [
+                'redirect_uri' => $redirectUri,
+                'continue_url' => $continueUrl,
+                'status' => 'PENDING',
             ],
         ])->save();
 

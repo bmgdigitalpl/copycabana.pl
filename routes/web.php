@@ -20,6 +20,7 @@ use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Customer\QuoteController as CustomerQuoteController;
 use App\Http\Controllers\Customer\VerificationController as CustomerVerificationController;
+use App\Http\Controllers\LocalPaymentController;
 use App\Http\Controllers\QuoteOfferAcceptanceController;
 use App\Http\Middleware\OwnerMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +55,11 @@ Route::post('/zamowienie', [CheckoutController::class, 'store'])->middleware('th
 Route::get('/zamowienie/sukces/{token}', [CheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/wycena/{token}', [QuoteOfferAcceptanceController::class, 'show'])->name('quote-offers.show');
 Route::post('/wycena/{token}/akceptuj', [QuoteOfferAcceptanceController::class, 'accept'])->middleware('throttle:orders')->name('quote-offers.accept');
+
+if (app()->environment('local', 'testing')) {
+    Route::get('/platnosc-testowa/{payment}', [LocalPaymentController::class, 'show'])->name('local-payments.show');
+    Route::post('/platnosc-testowa/{payment}', [LocalPaymentController::class, 'store'])->name('local-payments.store');
+}
 
 Route::prefix('konto')->group(function (): void {
     Route::get('/logowanie', [CustomerAuthController::class, 'createLogin'])->name('customer.login');

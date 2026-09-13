@@ -18,6 +18,8 @@ class PayuWebhookController extends Controller
 {
     public function __invoke(Request $request, PayuService $payu, AdminNotificationService $notifications): JsonResponse
     {
+        abort_unless(config('payment.provider') === 'payu', 404);
+
         $rawBody = $request->getContent();
 
         abort_unless($payu->hasValidNotificationSignature($rawBody, $request->header('OpenPayU-Signature')), 403);
@@ -35,45 +37,50 @@ class PayuWebhookController extends Controller
 
         abort_unless(is_string($externalOrderNumber) && is_string($providerReference) && is_string($status) && is_string($merchantPosId), 400);
 
-        $changedOrder = DB::transaction(function () use ($externalOrderNumber, $providerReference, $status, $merchantPosId, $payload): ?Order {
+        [$changedOrder, $paymentConfirmed] = DB::transaction(function () use ($externalOrderNumber, $providerReference, $status, $merchantPosId, $payload): array {
             $order = Order::query()->where('number', $externalOrderNumber)->lockForUpdate()->firstOrFail();
             $payment = Payment::query()
                 ->where('order_id', $order->id)
-                ->where('provider', 'payu')
+                ->where('provider', config('payment.provider'))
                 ->where('provider_reference', $providerReference)
                 ->lockForUpdate()
                 ->firstOrFail();
-            $wasPaid = $order->payment_status === 'paid';
             $nextPaymentStatus = $this->paymentStatus($status);
-            $wasPaymentStatus = $payment->status;
 
             abort_unless($this->amountMatches($order, $payload), 400);
             abort_unless($merchantPosId === (string) config('services.payu.pos_id'), 400);
 
+            if (! $payment->canTransitionTo($nextPaymentStatus)) {
+                return [null, false];
+            }
+
             $payment->forceFill([
-                'provider_reference' => $providerReference,
                 'status' => $nextPaymentStatus,
                 'payload' => $payload,
-                'paid_at' => $status === 'COMPLETED' ? now() : $payment->paid_at,
+                'paid_at' => $nextPaymentStatus === 'paid' ? now() : $payment->paid_at,
             ])->save();
 
-            if ($status === 'COMPLETED' && $order->payment_status !== 'paid') {
+            if ($nextPaymentStatus === 'paid') {
                 $order->forceFill([
                     'payment_status' => 'paid',
                     'paid_at' => now(),
                 ])->save();
             }
 
-            if ($status === 'COMPLETED' && ! $wasPaid) {
-                Mail::to($order->customer_email)->queue(new PaymentConfirmedMail($order->refresh()));
+            if ($nextPaymentStatus === 'failed') {
+                $order->forceFill(['payment_status' => 'failed'])->save();
             }
 
-            if (in_array($status, ['CANCELED', 'REJECTED'], true) && $order->status === OrderStatus::PaymentAwaited) {
+            if ($nextPaymentStatus === 'failed' && $order->status === OrderStatus::PaymentAwaited) {
                 $order->transitionTo(OrderStatus::Cancelled, 'Płatność PayU została odrzucona lub anulowana.');
             }
 
-            return $wasPaymentStatus !== $nextPaymentStatus ? $order : null;
+            return [$order, $nextPaymentStatus === 'paid'];
         });
+
+        if ($paymentConfirmed) {
+            Mail::to($changedOrder->customer_email)->queue(new PaymentConfirmedMail($changedOrder->refresh()));
+        }
 
         if ($changedOrder !== null) {
             $notifications->paymentStatusChanged($changedOrder->refresh());

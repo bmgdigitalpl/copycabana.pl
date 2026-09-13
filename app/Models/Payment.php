@@ -42,4 +42,9 @@ class Payment extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    public function canTransitionTo(string $status): bool
+    {
+        return $this->status === 'pending' && in_array($status, ['paid', 'failed'], true);
+    }
 }
