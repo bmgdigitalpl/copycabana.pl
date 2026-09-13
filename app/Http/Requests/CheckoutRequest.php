@@ -34,7 +34,7 @@ class CheckoutRequest extends FormRequest
             'customer.email' => ['required', 'email:rfc', 'max:255'],
             'customer.phone' => ['nullable', 'string', 'max:40'],
             'customer.company' => ['nullable', 'string', 'max:150'],
-            'customer.nip' => ['nullable', 'string', 'max:20', function (string $attribute, mixed $value, Closure $fail): void {
+            'customer.nip' => ['required_if:invoice_required,true', 'nullable', 'string', 'max:20', function (string $attribute, mixed $value, Closure $fail): void {
                 $nip = preg_replace('/[^0-9]/', '', (string) $value);
                 if (strlen($nip) !== 10) {
                     $fail('Podaj prawidłowy numer NIP.');
@@ -51,8 +51,13 @@ class CheckoutRequest extends FormRequest
                 }
             }],
             'customer.notes' => ['nullable', 'string', 'max:5000'],
-            'billing_address' => ['nullable', 'array'],
-            'shipping_address' => ['nullable', 'array'],
+            'billing_address' => ['nullable', 'array', 'max:10'],
+            'shipping_address' => ['nullable', 'array', 'max:10'],
+            'shipping_address.point_code' => ['required_if:shipping_method,parcel', 'string', 'max:30'],
+            'shipping_address.name' => ['required_if:shipping_method,parcel', 'string', 'max:100'],
+            'shipping_address.address' => ['required_unless:shipping_method,pickup', 'string', 'max:255'],
+            'shipping_address.city' => ['required_unless:shipping_method,pickup', 'string', 'max:100'],
+            'shipping_address.post_code' => ['required_unless:shipping_method,pickup', 'string', 'max:20'],
             'shipping_method' => ['required', 'string', 'in:pickup,parcel,courier'],
             'invoice_required' => ['sometimes', 'boolean'],
             'marketing_consent' => ['sometimes', 'boolean'],
@@ -62,7 +67,7 @@ class CheckoutRequest extends FormRequest
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:100'],
             'items.*.option_value_ids' => ['nullable', 'array', 'max:30'],
             'items.*.option_value_ids.*' => ['integer', 'exists:option_values,id'],
-            'items.*.configuration' => ['nullable', 'array'],
+            'items.*.configuration' => ['nullable', 'array', 'max:20'],
         ];
     }
 }

@@ -4,6 +4,10 @@
 @section('description', 'Wrzucasz PDF, ustawiasz kolor, strony kartki, wykończenie i odbiór. Konfigurator druku dokumentów — CopyCabana, Katowice.')
 
 @section('content')
+<script>
+  window.copyCabanaPdfPricing = @js(config('business.pdf'));
+  window.copyCabanaShipping = @js(config('business.shipping'));
+</script>
 <main class="cc-page">
   {{-- Hero --}}
   <section class="cc-hero">
@@ -16,29 +20,18 @@
           <a href="#plik" @click.prevent="ccGo('#plik')" class="btn-magenta inline-block">Dodaj dokument PDF <i class="fas fa-upload ml-2" aria-hidden="true"></i></a>
           <a href="#wykończenie" @click.prevent="ccGo('#wykończenie')" class="btn-geel inline-block">Zobacz wykończenie</a>
         </div>
+        <p class="cc-hero-hint reveal reveal-delay-4"><i class="fas fa-circle-info" aria-hidden="true"></i> Zazwyczaj realizujemy dokumenty w 24h. Termin zależy od pliku, ustawień i obciążenia — pokażemy go w podsumowaniu.</p>
       </div>
 
       <div class="cc-hero-visual reveal reveal-delay-2">
         <div class="cc-hero-stack" aria-hidden="true">
-          <div class="cc-hero-card cc-hero-card--b">
-            <img src="{{ asset('images/produkty/product-03.png') }}" alt="">
+          <div class="cc-hero-card cc-hero-card--single">
+            <img src="{{ asset('images/produkty/hands.png') }}" alt="">
           </div>
-          <div class="cc-hero-card cc-hero-card--a">
-            <div class="cc-hero-mini-report" aria-hidden="true">
-              <span>PDF</span>
-              <strong>32 strony</strong>
-              <p>druk dwustronny · czarno-biały</p>
-            </div>
-          </div>
-          <div class="cc-hero-card cc-hero-card--tag">Wydruk PDF</div>
         </div>
       </div>
     </div>
   </section>
-
-  <div class="cc-container cc-mt" style="padding-top:1.5rem">
-    <x-concept.demo-notice>Wersja demonstracyjna konfiguratora</x-concept.demo-notice>
-  </div>
 
   {{-- Configurator --}}
   <div x-data="ccPdfConfigurator()" class="cc-container cc-config cc-config-page">
@@ -64,13 +57,12 @@
               <div class="cc-dropzone-inner">
                 <i class="cc-dropzone-icon fas fa-file-pdf" aria-hidden="true"></i>
                 <h3>Przeciągnij PDF albo wybierz plik</h3>
-                <p>Format PDF. Demo — pliki nie są wysyłane nigdzie.</p>
+                 <p>Format PDF, maksymalnie {{ config('business.thesis.max_pages') }} stron i 20 MB.</p>
                 <div class="cc-dropzone-actions">
                   <label class="btn-magenta" style="cursor:pointer">
                     <i class="fas fa-folder-open mr-2" aria-hidden="true"></i>Wybierz plik PDF
                     <input type="file" accept=".pdf,application/pdf" class="sr-only" @change="change($event)">
                   </label>
-                  <button type="button" class="brand-upload-button" @click="simulate()">Symuluj analizę PDF</button>
                 </div>
               </div>
             </template>
@@ -160,15 +152,15 @@
 
           <div class="cc-step-grid cc-step-grid--3">
             @foreach ([
-              ['id' => 'none', 'label' => 'Bez wykończenia', 'hint' => 'Wydruk gotowy do odbioru.', 'price' => '0,00 zł'],
-              ['id' => 'staples', 'label' => 'Spinanie zeszytowe', 'hint' => 'Dwa zszywki wzdłuż grzbietu.', 'price' => '4,00 zł'],
-              ['id' => 'folder', 'label' => 'Teczka', 'hint' => 'Gładka teczka zamykana na gumkę.', 'price' => '8,00 zł'],
-              ['id' => 'channel', 'label' => 'Oprawa kanałowa', 'hint' => 'Klejony blok dla większych dokumentów.', 'price' => '18,00 zł'],
+              ['id' => 'none', 'label' => 'Bez wykończenia', 'hint' => 'Wydruk gotowy do odbioru.'],
+              ['id' => 'staples', 'label' => 'Spinanie zeszytowe', 'hint' => 'Dwa zszywki wzdłuż grzbietu.'],
+              ['id' => 'folder', 'label' => 'Teczka', 'hint' => 'Gładka teczka zamykana na gumkę.'],
+              ['id' => 'channel', 'label' => 'Oprawa kanałowa', 'hint' => 'Klejony blok dla większych dokumentów.'],
             ] as $f)
-              <x-concept.option-card group="pdf-finish" value="{{ $f['id'] }}" model="finish" label="{{ $f['label'] }}" hint="{{ $f['hint'] }}" price="{{ $f['price'] }}" />
+              <x-concept.option-card group="pdf-finish" value="{{ $f['id'] }}" model="finish" label="{{ $f['label'] }}" hint="{{ $f['hint'] }}" price="{{ number_format((float) config('business.pdf.finishes.'.$f['id'].'.price'), 2, ',', ' ') }} zł" />
             @endforeach
           </div>
-          <p class="cc-step-micro">Ceny wykończenia są przykładowe i mogą się zmienić przed produkcją.</p>
+          <p class="cc-step-micro">Cena jest obliczana na podstawie aktualnego cennika.</p>
         </section>
 
         {{-- Step 04 — Odbiór --}}
@@ -185,10 +177,20 @@
                 value="{{ $d }}"
                 model="delivery"
                 label="{{ ['pickup' => 'Odbiór w Katowicach', 'parcel' => 'Paczkomat', 'courier' => 'Kurier'][$d] }}"
-                hint="{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'demo — integracja do potwierdzenia', 'courier' => 'demo — integracja do potwierdzenia'][$d] }}"
-                price="{{ ['pickup' => '0,00 zł', 'parcel' => '12,00 zł', 'courier' => '18,00 zł'][$d] }}" />
+                hint="{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'Wybierz punkt z listy InPost', 'courier' => 'Dostawa pod wskazany adres'][$d] }}"
+                 price="{{ number_format((float) config('business.shipping.'.$d), 2, ',', ' ') }} zł" />
             @endforeach
           </div>
+
+           <x-concept.inpost-picker prefix="pdf" />
+
+           <template x-if="delivery === 'courier'">
+             <div class="cc-field-grid" x-transition.opacity.duration.200ms>
+               <div class="cc-field"><label for="pdf-adres">Adres</label><input id="pdf-adres" type="text" x-model="courierAddress.address" placeholder="ul. Bankowa 11"></div>
+               <div class="cc-field"><label for="pdf-miasto">Miasto</label><input id="pdf-miasto" type="text" x-model="courierAddress.city" placeholder="Katowice"></div>
+               <div class="cc-field"><label for="pdf-kod">Kod pocztowy</label><input id="pdf-kod" type="text" x-model="courierAddress.post_code" placeholder="40-007"></div>
+             </div>
+           </template>
 
           <div class="cc-field">
             <label for="pdf-data">Potrzebuję najpóźniej</label>
@@ -204,7 +206,7 @@
         <section class="cc-step" id="dane">
           <div class="cc-step-head">
             <span class="cc-step-num">05</span>
-            <div><h2>Podaj dane do zamówienia.</h2><p>Demo — nic nie jest wysyłane.</p></div>
+             <div><h2>Podaj dane do zamówienia.</h2><p>Po wysłaniu przejdziesz do bezpiecznej płatności.</p></div>
           </div>
 
           <div class="cc-field-grid">
@@ -215,6 +217,10 @@
             <div class="cc-field">
               <label for="pdf-email">E-mail</label>
               <input id="pdf-email" type="email" x-model="form.email" placeholder="jan@example.com">
+            </div>
+            <div class="cc-field">
+              <label for="pdf-telefon">Telefon</label>
+              <input id="pdf-telefon" type="tel" x-model="form.phone" placeholder="502 000 000">
             </div>
           </div>
 
@@ -238,6 +244,10 @@
               </div>
             </div>
           </template>
+          <label class="cc-consent">
+            <input type="checkbox" x-model="privacyAccepted">
+            <span>Akceptuję <a href="{{ route('privacy') }}" target="_blank" rel="noopener">politykę prywatności</a> i zgadzam się na przetwarzanie danych w celu realizacji zamówienia.</span>
+          </label>
         </section>
 
         {{-- Step 06 — Podsumowanie --}}
@@ -253,6 +263,7 @@
               <ul>
                 <template x-if="file.pages"><li><template x-text="file.pages"></template> stron · <template x-text="file.colored"></template> kolorowych</li></template>
                 <li x-text="(print.sided === 'simplex' ? 'jednostronnie' : 'dwustronnie') + ' · ' + print.copies + ' egz.'"></li>
+                <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
               </ul>
             </div>
             <template x-if="!file.name">
@@ -273,8 +284,8 @@
           </div>
 
           <div class="cc-final-actions">
-            <button type="button" class="btn-magenta" disabled>Zobacz przykładowe podsumowanie <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></button>
-            <p class="cc-summary-demo">Wersja demonstracyjna. Nie przesyła plików ani nie składa zamówień.</p>
+             <button type="button" class="btn-magenta" @click="submitOrder()" :disabled="submitting || quoteLoading"><span x-text="submitting ? 'Przetwarzamy...' : 'Przejdź do płatności'"></span> <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></button>
+             <p class="cc-summary-demo">Cena jest potwierdzana po stronie serwera przed utworzeniem zamówienia.</p>
           </div>
         </section>
       </div>
@@ -284,11 +295,12 @@
     <aside class="cc-summary" aria-label="Podsumowanie zamówienia">
       <div class="cc-summary-card">
         <div class="cc-summary-head">
-          <strong><i class="fas fa-file-pdf mr-2 text-magenta" aria-hidden="true"></i>Twój dokument</strong>
-          <ul>
-            <li x-text="file.name || 'nie dodano pliku'"></li>
-            <li x-text="(print.sided === 'simplex' ? 'jednostronnie' : 'dwustronnie') + ' · ' + print.copies + ' egz.'"></li>
-          </ul>
+           <strong><i class="fas fa-file-pdf mr-2 text-magenta" aria-hidden="true"></i>Twój dokument</strong>
+           <ul>
+             <li x-text="file.name || 'nie dodano pliku'"></li>
+             <li x-text="(print.sided === 'simplex' ? 'jednostronnie' : 'dwustronnie') + ' · ' + print.copies + ' egz.'"></li>
+             <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
+           </ul>
         </div>
         <template x-if="!file.name">
           <div class="cc-price-row"><span>Druk</span><strong class="cc-price-status">po analizie PDF</strong></div>
@@ -307,7 +319,7 @@
         <div class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(total())"></strong></div>
         <div class="cc-summary-actions">
           <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Przejdź do podsumowania <i class="fas fa-arrow-down ml-2" aria-hidden="true"></i></button>
-          <p class="cc-summary-demo">Wersja demonstracyjna — ceny poglądowe.</p>
+           <p class="cc-summary-demo">Ceny i dostępność są potwierdzane przed płatnością.</p>
         </div>
       </div>
     </aside>

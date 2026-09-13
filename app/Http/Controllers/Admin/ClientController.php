@@ -54,9 +54,15 @@ class ClientController extends Controller
 
     public function anonymize(Client $client): RedirectResponse
     {
-        $old = $client->only(['name', 'email', 'phone', 'company', 'nip']);
         $client->anonymize();
-        AuditLog::create(['user_id' => auth()->id(), 'auditable_type' => Client::class, 'auditable_id' => $client->id, 'action' => 'anonymized', 'old_values' => $old, 'ip_address' => request()->ip()]);
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'auditable_type' => Client::class,
+            'auditable_id' => $client->id,
+            'action' => 'anonymized',
+            'new_values' => ['anonymized' => true],
+            'ip_address' => request()->ip(),
+        ]);
 
         return back()->with('status', 'Dane klienta zostały zanonimizowane.');
     }

@@ -4,6 +4,9 @@
 @section('description', 'Wizytówki, ulotki, plakaty, banery, rollupy i dokumenty w jednym zamówieniu. Konfigurator druku dla firm — CopyCabana, Katowice.')
 
 @section('content')
+<script>
+  window.copyCabanaB2bImages = {{ Illuminate\Support\Js::from($b2bProductImages) }};
+</script>
 <main class="cc-page">
   {{-- Hero --}}
   <section class="cc-hero">
@@ -20,20 +23,16 @@
 
       <div class="cc-hero-visual reveal reveal-delay-2">
         <div class="cc-hero-stack" aria-hidden="true">
-          <div class="cc-hero-card cc-hero-card--b">
+          <div class="cc-hero-card cc-hero-card--single">
             <img src="{{ asset('images/produkty/product-03.png') }}" alt="">
           </div>
-          <div class="cc-hero-card cc-hero-card--a">
-            <img src="{{ asset('images/produkty/product-02.png') }}" alt="">
-          </div>
-          <div class="cc-hero-card cc-hero-card--tag">Druk dla firm</div>
         </div>
       </div>
     </div>
   </section>
 
   <div class="cc-container cc-mt" style="padding-top:1.5rem">
-    <x-concept.demo-notice>Wersja demonstracyjna — ceny ustala pracownia po kontakcie, bez ukrytych narzutów</x-concept.demo-notice>
+    <p class="cc-step-micro">Wypełnij brief, dołącz pliki i wyślij zapytanie. Pracownia przygotuje indywidualną wycenę.</p>
   </div>
 
   {{-- Configurator --}}
@@ -50,11 +49,14 @@
 
           <div class="cc-b2b-grid">
             <template x-for="p in products" :key="p.id">
-              <button type="button" class="cc-b2b-card"
-                      :class="selected === p.id ? 'is-selected' : ''"
-                      @click="selectProduct(p.id)">
-                <span class="cc-b2b-check"><i class="fas fa-check" aria-hidden="true"></i></span>
-                <i :class="'fas ' + p.icon" class="cc-b2b-icon" aria-hidden="true"></i>
+               <button type="button" class="cc-b2b-card"
+                       :class="selected === p.id ? 'is-selected' : ''"
+                       @click="selectProduct(p.id)">
+                 <span class="cc-b2b-check"><i class="fas fa-check" aria-hidden="true"></i></span>
+                 <template x-if="p.image">
+                   <span class="cc-b2b-card-image"><img :src="p.image" :alt="p.name" loading="lazy"></span>
+                 </template>
+                 <i :class="'fas ' + p.icon" class="cc-b2b-icon" aria-hidden="true"></i>
                 <strong x-text="p.name"></strong>
                 <p x-text="p.desc"></p>
               </button>
@@ -99,7 +101,7 @@
 
               {{-- Project upload (optional) --}}
               <div class="cc-b2b-file">
-                <div x-data="ccDropzone('b2b-' + selected, { pages: 0, colored: 0 })"
+                <div x-data="ccDropzone('b2b-' + selected, { endpoint: '/api/v1/b2b/uploads', extensions: ['pdf', 'ai', 'cdr', 'png', 'jpg', 'jpeg'], invalidMessage: 'Wybierz PDF, AI, CDR, PNG lub JPG.' })"
                      class="cc-dropzone cc-dropzone--compact"
                      :class="status === 'invalid' ? 'is-invalid' : (dragging && status === 'empty' ? 'is-dragover' : '')"
                      @dragover.prevent="dragenter"
@@ -111,13 +113,12 @@
                     <div class="cc-dropzone-inner">
                       <i class="cc-dropzone-icon fas fa-file-upload" aria-hidden="true"></i>
                       <h3>Dodaj projekt (opcjonalnie)</h3>
-                      <p>PDF, AI lub Cdr. Możesz wysłać później.</p>
+                       <p>PDF, AI, CDR, PNG albo JPG. Maksymalnie 20 MB.</p>
                       <div class="cc-dropzone-actions">
                         <label class="btn-magenta" style="cursor:pointer">
                           <i class="fas fa-folder-open mr-2" aria-hidden="true"></i>Wybierz plik
                           <input type="file" accept=".pdf,.ai,.cdr,.png,.jpg,.jpeg,application/pdf" class="sr-only" @change="change($event)">
                         </label>
-                        <button type="button" class="brand-upload-button" @click="simulate()">Symuluj plik</button>
                       </div>
                     </div>
                   </template>
@@ -145,7 +146,7 @@
                     </div>
                   </template>
                 </div>
-                <span class="cc-b2b-file-hint">Plik w tej wersji nie jest nigdzie wysyłany — istnieje tylko w wersji demo.</span>
+                <span class="cc-b2b-file-hint">Plik zostanie dołączony do zapytania i będzie dostępny tylko dla pracowni.</span>
               </div>
 
               {{-- Help toggle --}}
@@ -210,15 +211,25 @@
                   <span class="cc-option-check"><i class="fas fa-check" aria-hidden="true"></i><em>Wybrano</em></span>
                   <span class="cc-option-main">
                     <strong>{{ ['pickup' => 'Odbiór w Katowicach', 'parcel' => 'Paczkomat', 'courier' => 'Kurier'][$d] }}</strong>
-                    <em>{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'demo — integracja do potwierdzenia', 'courier' => 'demo — integracja do potwierdzenia'][$d] }}</em>
+                    <em>{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'Wybierz punkt z listy InPost', 'courier' => 'Dostawa pod wskazany adres'][$d] }}</em>
                   </span>
-                  <span class="cc-option-price">{{ ['pickup' => '0,00 zł', 'parcel' => '12,00 zł', 'courier' => '18,00 zł'][$d] }}</span>
-                </span>
-              </label>
+                   <span class="cc-option-price">{{ ['pickup' => '0,00 zł', 'parcel' => '12,00 zł', 'courier' => '18,00 zł'][$d] }}</span>
+                 </span>
+               </label>
             @endforeach
           </div>
 
-          <div class="cc-field">
+           <x-concept.inpost-picker prefix="b2b" />
+
+           <template x-if="delivery === 'courier'">
+             <div class="cc-field-grid" x-transition.opacity.duration.200ms>
+               <div class="cc-field"><label for="b2b-courier-address">Adres dostawy</label><input id="b2b-courier-address" type="text" x-model="courierAddress.address" placeholder="Ulica i numer"></div>
+               <div class="cc-field"><label for="b2b-courier-city">Miasto</label><input id="b2b-courier-city" type="text" x-model="courierAddress.city" placeholder="Katowice"></div>
+               <div class="cc-field"><label for="b2b-courier-post-code">Kod pocztowy</label><input id="b2b-courier-post-code" type="text" x-model="courierAddress.post_code" placeholder="40-007"></div>
+             </div>
+           </template>
+
+           <div class="cc-field">
             <label for="b2b-data">Potrzebuję najpóźniej</label>
             <input id="b2b-data" type="date" x-model="byDate" :min="new Date().toISOString().split('T')[0]">
           </div>
@@ -233,7 +244,7 @@
         <section class="cc-step" id="dane">
           <div class="cc-step-head">
             <span class="cc-step-num">04</span>
-            <div><h2>Dokąd wysłać wycenę?</h2><p>Demo — nic nie jest wysyłane.</p></div>
+             <div><h2>Dokąd wysłać wycenę?</h2><p>Odpowiemy na podany adres e-mail.</p></div>
           </div>
 
           <div class="cc-field-grid">
@@ -269,6 +280,11 @@
               <input id="b2b-nip" type="text" x-model="company.nip" placeholder="0000000000">
             </div>
           </template>
+
+          <label class="cc-consent">
+            <input type="checkbox" x-model="privacyAccepted">
+            <span>Akceptuję <a href="{{ route('privacy') }}" target="_blank" rel="noopener">politykę prywatności</a> i zgadzam się na przetwarzanie danych w celu przygotowania wyceny.</span>
+          </label>
         </section>
 
         {{-- Step 05 — Pomoc / niestandardowe zlecenie --}}
@@ -302,8 +318,8 @@
                 <input id="brief-qty" type="text" x-model="brief.qty" placeholder="np. 500 sztuk">
                 <label for="brief-date">Kiedy potrzebne</label>
                 <input id="brief-date" type="date" x-model="brief.date" :min="new Date().toISOString().split('T')[0]">
-                <button type="submit" class="btn-magenta">Wyślij opis (demo) <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
-                <p class="cc-brief-note" x-show="briefSent" x-text="'W wersji demonstracyjnej nic nie zostało wysłane.'"></p>
+                <button type="submit" class="btn-magenta">Zapisz opis do zapytania <i class="fas fa-plus ml-2" aria-hidden="true"></i></button>
+                <p class="cc-brief-note" x-show="briefSent">Opis zostanie dołączony do zapytania.</p>
               </form>
             </template>
           </div>
@@ -320,9 +336,10 @@
             <div class="cc-summary-head">
               <strong><i class="fas fa-clipboard-list mr-2 text-magenta" aria-hidden="true"></i>Wniosek o wycenę</strong>
               <ul>
-                <li x-text="items.length + (items.length === 1 ? ' pozycja' : items.length > 1 && items.length < 5 ? ' pozycje' : ' pozycji')"></li>
-                <li x-text="deliveryName() || 'odbiór nie wybrany'"></li>
-              </ul>
+                 <li x-text="items.length + (items.length === 1 ? ' pozycja' : items.length > 1 && items.length < 5 ? ' pozycje' : ' pozycji')"></li>
+                 <li x-text="deliveryName() || 'odbiór nie wybrany'"></li>
+                 <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
+               </ul>
             </div>
 
             <template x-if="items.length === 0">
@@ -341,8 +358,9 @@
           </div>
 
           <div class="cc-final-actions">
-            <button type="button" class="btn-magenta" disabled>Wyślij wniosek o wycenę (demo) <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
-            <p class="cc-summary-demo">Wersja demonstracyjna. Nie wysyła plików i nie składa zamówień.</p>
+            <button type="button" class="btn-magenta" @click="submitQuoteRequest()" :disabled="submitting || submitted"><span x-text="submitting ? 'Wysyłamy...' : (submitted ? 'Zapytanie wysłane' : 'Wyślij wniosek o wycenę')"></span> <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
+            <p class="cc-summary-demo" x-show="submitError" x-text="submitError"></p>
+            <p class="cc-summary-demo" x-show="submitted">Dziękujemy. Odpowiemy po analizie zakresu i plików.</p>
           </div>
         </section>
       </div>
@@ -354,9 +372,10 @@
         <div class="cc-summary-head">
           <strong><i class="fas fa-clipboard-list mr-2 text-magenta" aria-hidden="true"></i>Twoje zamówienie</strong>
           <ul>
-            <li x-text="items.length + (items.length === 1 ? ' pozycja' : items.length > 1 && items.length < 5 ? ' pozycje' : ' pozycji')"></li>
-            <li x-text="deliveryName() || 'odbiór nie wybrany'"></li>
-          </ul>
+             <li x-text="items.length + (items.length === 1 ? ' pozycja' : items.length > 1 && items.length < 5 ? ' pozycje' : ' pozycji')"></li>
+             <li x-text="deliveryName() || 'odbiór nie wybrany'"></li>
+             <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
+           </ul>
         </div>
         <template x-if="items.length === 0">
           <div class="cc-price-row"><span>Pozycje</span><strong class="cc-price-status">dodaj przynajmniej jedną</strong></div>

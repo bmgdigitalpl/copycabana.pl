@@ -19,7 +19,7 @@ class ProductCatalogTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonCount(20, 'data')
+            ->assertJsonCount(21, 'data')
             ->assertJsonPath('data.0.slug', 'wizytowki')
             ->assertJsonPath('data.0.name', 'Wizytówki');
     }
@@ -55,5 +55,20 @@ class ProductCatalogTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.slug', 'oprawa-prac')
             ->assertJsonPath('data.calculator_type', 'fixed');
+    }
+
+    public function test_catalog_pages_are_rendered_from_active_products(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $this->get(route('products.index'))
+            ->assertOk()
+            ->assertSee('Wizytówki')
+            ->assertSee(route('product', ['slug' => 'wizytowki']), false);
+
+        $this->get(route('product', ['slug' => 'wizytowki']))
+            ->assertOk()
+            ->assertSee('Wizytówki')
+            ->assertSee('Cena końcowa jest ponownie obliczana po stronie serwera');
     }
 }

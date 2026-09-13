@@ -9,13 +9,13 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        if (! env('ADMIN_EMAIL') || ! env('ADMIN_PASSWORD')) {
+        if (! config('services.admin.email') || ! config('services.admin.password')) {
             return;
         }
 
         User::query()->updateOrCreate(
-            ['email' => env('ADMIN_EMAIL')],
-            ['name' => env('ADMIN_NAME', 'CopyCabana Admin'), 'password' => env('ADMIN_PASSWORD'), 'role' => 'admin'],
+            ['email' => config('services.admin.email')],
+            ['name' => config('services.admin.name'), 'password' => config('services.admin.password'), 'role' => 'admin'],
         );
     }
 }

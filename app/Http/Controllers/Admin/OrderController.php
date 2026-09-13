@@ -8,12 +8,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Mail\OrderStatusChangedMail;
 use App\Models\Order;
+use App\Models\OrderFile;
 use App\Services\InvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
 {
@@ -35,7 +38,7 @@ class OrderController extends Controller
     public function show(Order $order): View
     {
         return view('admin.orders.show', [
-            'order' => $order->load(['items', 'client', 'payments', 'statusHistories.changedBy', 'invoice']),
+            'order' => $order->load(['items', 'files', 'client', 'payments', 'statusHistories.changedBy', 'invoice']),
             'statuses' => OrderStatus::labels(),
             'carriers' => Carrier::labels(),
         ]);
@@ -60,7 +63,7 @@ class OrderController extends Controller
         }
 
         if ($wasChanged) {
-            Mail::to($order->customer_email)->send(new OrderStatusChangedMail($order->refresh()));
+            Mail::to($order->customer_email)->queue(new OrderStatusChangedMail($order->refresh()));
         }
 
         return back()->with('status', 'Zamówienie zostało zaktualizowane.');
@@ -71,5 +74,14 @@ class OrderController extends Controller
         $invoice = $invoiceService->createForOrder($order);
 
         return view('admin.invoices.show', compact('invoice'));
+    }
+
+    public function downloadFile(Order $order, OrderFile $file): StreamedResponse
+    {
+        abort_unless($file->order_id === $order->id && $file->status === 'attached', 404);
+
+        return Storage::disk($file->disk)->download($file->path, $file->original_name, [
+            'Content-Type' => $file->mime_type,
+        ]);
     }
 }

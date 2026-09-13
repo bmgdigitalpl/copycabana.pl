@@ -56,12 +56,9 @@
     var Alpine = window.Alpine;
     if (!Alpine) return;
 
-    /* Dropzone: empty / drag-over / uploading / analyzing / ready / invalid.
-       Emits bubbling `cc-file` CustomEvent the parent configurator consumes. */
+   /* Dropzone: upload a PDF and emit its server-side analysis. */
     Alpine.data('ccDropzone', function (key, opts) {
       opts = opts || {};
-      var defaults = { pages: 84, colored: 12, invalid: false };
-      var cfg = Object.assign(defaults, opts);
 
       return {
         dragging: false,
@@ -69,12 +66,8 @@
         status: 'empty',
         pages: 0,
         colored: 0,
-        timers: [],
-
-        destroy: function () {
-          this.timers.forEach(function (t) { clearTimeout(t); });
-          this.timers = [];
-        },
+        uploadToken: null,
+        message: null,
 
         change: function (event) {
           var file = event.target.files && event.target.files[0];
@@ -92,38 +85,59 @@
 
         pick: function (file) {
           if (!file) return;
-          var ok = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+          var allowedExtensions = opts.extensions || ['pdf'];
+          var extension = String(file.name || '').split('.').pop().toLowerCase();
+          var ok = allowedExtensions.indexOf(extension) !== -1;
           if (!ok) {
             this.name = file.name || 'plik.pdf';
             this.status = 'invalid';
+            this.message = opts.invalidMessage || 'Wybierz obsługiwany format pliku.';
             this.emit();
             return;
           }
           this.name = file.name;
-          this.start();
+          this.upload(file);
         },
 
-        start: function () {
+        upload: function (file) {
           var self = this;
           self.status = 'uploading';
           self.pages = 0;
           self.colored = 0;
-          this.timers.forEach(function (t) { clearTimeout(t); });
-          this.timers = [];
-          this.timers.push(setTimeout(function () {
-            self.status = 'analyzing';
-            self.timers.push(setTimeout(function () {
-              self.pages = cfg.pages;
-              self.colored = cfg.colored;
-              self.status = 'ready';
-              self.emit();
-            }, cfg.pages ? 1900 : 1500));
-          }, 1400));
+          self.uploadToken = null;
+          self.message = null;
+          var formData = new FormData();
+          formData.append('file', file);
+
+          fetch(opts.endpoint || '/api/v1/uploads', {
+            method: 'POST',
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+            body: formData
+          }).then(function (response) {
+            return response.json().then(function (payload) {
+              if (!response.ok) throw new Error(payload.message || payload.errors?.file?.[0] || 'Nie udało się wysłać pliku.');
+              return payload;
+            });
+          }).then(function (payload) {
+            self.uploadToken = payload.upload_token;
+            self.pages = payload.file.pages;
+            self.colored = 0;
+            self.status = 'ready';
+            self.emit();
+          }).catch(function (error) {
+            self.status = 'invalid';
+            self.message = error.message;
+            self.emit();
+          });
         },
 
         simulate: function () {
-          this.name = cfg.pages ? 'praca-dyplomowa.pdf' : 'dokument.pdf';
-          this.start();
+          this.name = opts.pages ? 'praca-dyplomowa.pdf' : 'dokument.pdf';
+          this.pages = opts.pages || 0;
+          this.colored = opts.colored || 0;
+          this.status = 'ready';
+          this.emit();
         },
 
         emit: function () {
@@ -133,6 +147,7 @@
               key: key,
               name: this.name,
               status: this.status,
+              uploadToken: this.uploadToken,
               pages: this.pages,
               colored: this.colored
             }
@@ -207,12 +222,114 @@
       return Math.round((d - now) / 86400000);
     }
 
+    var CC_INPOST_POINTS_ENDPOINT = '/api/v1/inpost/points';
+
+    function ccSearchInpostPoints(searchTerm) {
+      var term = String(searchTerm || '').trim();
+      var compactTerm = term.replace(/\s+/g, '');
+      var isPostCode = /^\d{2}-?\d{3}$/.test(compactTerm);
+      var parameter = isPostCode ? 'post_code' : 'city';
+      var value = isPostCode
+        ? compactTerm.slice(0, 2) + '-' + compactTerm.slice(2)
+        : term;
+
+      return fetch(CC_INPOST_POINTS_ENDPOINT + '?' + parameter + '=' + encodeURIComponent(value), {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin'
+      }).then(function (response) {
+        if (!response.ok) throw new Error('InPost points request failed');
+        return response.json();
+      }).then(function (payload) {
+        return Array.isArray(payload.points) ? payload.points : [];
+      });
+    }
+
+    function ccInpostState() {
+      return {
+        parcelLocker: null,
+        lockerSearch: '',
+        lockers: [],
+        lockerLoading: false,
+        lockerError: null,
+        lockerRequest: 0,
+
+        init: function () {
+          var self = this;
+          this.$watch('delivery', function (value) {
+            if (value !== 'parcel') self.resetLocker();
+          });
+        },
+
+        resetLocker: function () {
+          this.parcelLocker = null;
+          this.lockerSearch = '';
+          this.lockers = [];
+          this.lockerLoading = false;
+          this.lockerError = null;
+          this.lockerRequest += 1;
+        },
+
+        searchLockers: function () {
+          var term = String(this.lockerSearch || '').trim();
+          if (term.length < 3) {
+            this.lockers = [];
+            this.parcelLocker = null;
+            this.lockerError = 'Wpisz co najmniej 3 znaki: kod pocztowy albo miasto.';
+            return;
+          }
+
+          var self = this;
+          var requestId = ++this.lockerRequest;
+          this.parcelLocker = null;
+          this.lockers = [];
+          this.lockerLoading = true;
+          this.lockerError = null;
+
+          ccSearchInpostPoints(term).then(function (points) {
+            if (requestId !== self.lockerRequest) return;
+            self.lockers = points;
+            if (!points.length) self.lockerError = 'Nie znaleziono paczkomatów dla podanej lokalizacji.';
+          }).catch(function () {
+            if (requestId === self.lockerRequest) {
+              self.lockerError = 'Nie udało się pobrać listy paczkomatów. Spróbuj ponownie.';
+            }
+          }).finally(function () {
+            if (requestId === self.lockerRequest) self.lockerLoading = false;
+          });
+        },
+
+        pickLocker: function (point) {
+          this.parcelLocker = point;
+          this.lockerError = null;
+        },
+
+        lockerSummary: function () {
+          if (!this.parcelLocker) return '';
+          return this.parcelLocker.name + ' · ' + this.parcelLocker.address;
+        }
+      };
+    }
+
     /* --- Thesis configurator --- */
     Alpine.data('ccConfigurator', function () {
-      var bw = 0.2;
-      var color = 0.5;
-      return {
-        file: { name: null, pages: 0, colored: 0 },
+      var pricing = window.copyCabanaThesisPricing || {};
+      var pagePrices = pricing.page_prices || {};
+      var bindingPrices = pricing.bindings || {};
+      var coverPrices = pricing.covers || {};
+      var deliveryPrices = pricing.shipping || {};
+      var bw = Number(pagePrices.bw ?? 0.2);
+      var color = Number(pagePrices.color ?? 0.5);
+      return Object.assign(ccInpostState(), {
+        file: { name: null, pages: 0, colored: 0, uploadToken: null },
+        quote: null,
+        quoteLoading: false,
+        quoteError: null,
+        quoteRequest: 0,
+        quoteTimer: null,
+        submitting: false,
+        orderError: null,
+        idempotencyKey: null,
+        privacyAccepted: false,
         print: { color: 'bw', sided: 'duplex', copies: 1 },
         binding: 'hard',
         cover: 'none',
@@ -236,26 +353,154 @@
         form: { name: '', email: '', phone: '', invoice: false, company: '', nip: '' },
 
         bindings: [
-          { id: 'soft', name: 'Oprawa miękka', price: 0, hint: 'Klasyczna broszura. Częsty standard wydziałów.', thickness: 'soft' },
-          { id: 'channel', name: 'Oprawa kanałowa', price: 25, hint: 'Klejony blok, równy grzbiet.', thickness: 'channel' },
-          { id: 'hard', name: 'Oprawa twarda', price: 50, hint: 'Sztywna oprawa. Premium w obronie.', thickness: 'hard' }
+          { id: 'soft', name: 'Oprawa miękka', price: Number(bindingPrices.soft?.price ?? 0), hint: 'Klasyczna broszura. Częsty standard wydziałów.', thickness: 'soft' },
+          { id: 'channel', name: 'Oprawa kanałowa', price: Number(bindingPrices.channel?.price ?? 25), hint: 'Klejony blok, równy grzbiet.', thickness: 'channel' },
+          { id: 'hard', name: 'Oprawa twarda', price: Number(bindingPrices.hard?.price ?? 50), hint: 'Sztywna oprawa. Premium w obronie.', thickness: 'hard' }
         ],
         covers: [
-          { id: 'none', name: 'Bez napisu', price: 0, hint: 'Czysta okładka.' },
-          { id: 'standard', name: 'Standardowy napis', price: 15, hint: 'Tytuł pracy + imię i nazwisko.' },
-          { id: 'custom', name: 'Własny napis', price: 10, hint: 'Wpisz dokładnie, co ma być na okładce.' }
+          { id: 'none', name: 'Bez napisu', price: Number(coverPrices.none?.price ?? 0), hint: 'Czysta okładka.' },
+          { id: 'standard', name: 'Standardowy napis', price: Number(coverPrices.standard?.price ?? 15), hint: 'Tytuł pracy + imię i nazwisko.' },
+          { id: 'custom', name: 'Własny napis', price: Number(coverPrices.custom?.price ?? 10), hint: 'Wpisz dokładnie, co ma być na okładce.' }
         ],
         deliveries: [
-          { id: 'pickup', name: 'Odbiór w Katowicach', price: 0, demo: false, hint: 'ul. Bankowa 11, 40-007 Katowice' },
-          { id: 'parcel', name: 'Paczkomat', price: 12, demo: true, hint: 'demo — integracja do potwierdzenia' },
-          { id: 'courier', name: 'Kurier', price: 18, demo: true, hint: 'demo — integracja do potwierdzenia' }
+          { id: 'pickup', name: 'Odbiór w Katowicach', price: Number(deliveryPrices.pickup ?? 0), hint: 'ul. Bankowa 11, 40-007 Katowice' },
+          { id: 'parcel', name: 'Paczkomat', price: Number(deliveryPrices.parcel ?? 12), hint: 'Wybierz punkt z listy InPost' },
         ],
+
+         init: function () {
+           var self = this;
+           this.idempotencyKey = window.crypto?.randomUUID?.() || String(Date.now()) + Math.random();
+           ['file.uploadToken', 'print.color', 'print.sided', 'binding', 'cover', 'coverText', 'coverColor', 'print.copies', 'delivery', 'parcelLocker'].forEach(function (path) {
+             self.$watch(path, function () { self.scheduleQuote(); });
+           });
+         },
+
+         scheduleQuote: function () {
+           var self = this;
+           clearTimeout(this.quoteTimer);
+           this.quoteTimer = setTimeout(function () { self.refreshQuote(); }, 250);
+         },
+
+         quotePayload: function () {
+           return {
+             upload_token: this.file.uploadToken,
+             color_mode: this.print.color,
+             sided: this.print.sided,
+             binding: this.binding,
+             cover: this.cover,
+             cover_text: this.coverText,
+             cover_color: this.coverColor,
+              copies: this.print.copies,
+              shipping_method: this.delivery,
+              requested_by_date: this.byDate || null
+           };
+         },
+
+         refreshQuote: function () {
+           if (!this.file.uploadToken || !this.delivery) return;
+           var self = this;
+           var requestId = ++this.quoteRequest;
+           this.quoteLoading = true;
+           this.quoteError = null;
+
+           return fetch('/api/v1/thesis/quote', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+             credentials: 'same-origin',
+             body: JSON.stringify(this.quotePayload())
+           }).then(function (response) {
+             return response.json().then(function (payload) {
+               if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się wyliczyć ceny.');
+               return payload;
+             });
+           }).then(function (payload) {
+             if (requestId === self.quoteRequest) self.quote = payload.quote;
+           }).catch(function (error) {
+             if (requestId === self.quoteRequest) {
+               self.quote = null;
+               self.quoteError = error.message;
+             }
+           }).finally(function () {
+             if (requestId === self.quoteRequest) self.quoteLoading = false;
+           });
+         },
+
+        quoteValue: function (key, fallback) {
+          return this.quote && this.quote[key] !== undefined ? this.quote[key] : fallback;
+        },
+
+        shippingAddress: function () {
+          if (this.delivery !== 'parcel' || !this.parcelLocker) return null;
+
+          return {
+            point_code: this.parcelLocker.name,
+            name: this.parcelLocker.name,
+            address: this.parcelLocker.address,
+            city: this.parcelLocker.city,
+            post_code: this.parcelLocker.post_code
+          };
+        },
+
+        async submitOrder() {
+          if (!this.file.uploadToken) {
+            this.orderError = 'Najpierw dodaj plik PDF.';
+            return;
+          }
+          if (!this.delivery || (this.delivery === 'parcel' && !this.parcelLocker)) {
+            this.orderError = 'Wybierz sposób odbioru i paczkomat, jeśli jest potrzebny.';
+            return;
+          }
+          if (!this.form.name || !this.form.email || !this.privacyAccepted) {
+            this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.';
+            return;
+          }
+
+          this.orderError = null;
+          this.submitting = true;
+
+          try {
+            await this.refreshQuote();
+            if (!this.quote) throw new Error('Nie udało się potwierdzić ceny. Spróbuj ponownie.');
+
+            var response = await fetch('/api/v1/thesis/orders', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'Idempotency-Key': this.idempotencyKey
+              },
+              credentials: 'same-origin',
+              body: JSON.stringify(Object.assign(this.quotePayload(), {
+                customer: {
+                  name: this.form.name,
+                  email: this.form.email,
+                  phone: this.form.phone,
+                  company: this.form.company,
+                  nip: this.form.nip
+                },
+                shipping_address: this.shippingAddress(),
+                requested_by_date: this.byDate || null,
+                invoice_required: this.form.invoice,
+                marketing_consent: false,
+                privacy_policy_accepted: this.privacyAccepted
+              }))
+            });
+            var payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się utworzyć zamówienia.');
+            window.location.assign(payload.payment_url);
+          } catch (error) {
+            this.orderError = error.message;
+          } finally {
+            this.submitting = false;
+          }
+        },
 
         go: ccScroll,
 
         onFile: function (detail) {
           if (!detail || detail.key !== 'thesis') return;
-          this.file = { name: detail.name, pages: detail.pages, colored: detail.colored };
+          this.file = { name: detail.name, pages: detail.pages, colored: 0, uploadToken: detail.uploadToken };
+          this.print.color = 'bw';
         },
 
         activeVariant: function () {
@@ -265,38 +510,42 @@
         printTotal: function () {
           if (!this.file.pages) return 0;
           var pages = this.file.pages;
-          var colored = this.file.colored;
-          var rate = this.print.color === 'bw' ? bw : color;
-          return (pages * rate) * this.print.copies;
+          var total = this.print.color === 'bw' ? pages * bw : pages * color;
+          return total * this.print.copies;
+        },
+        printColorName: function () {
+          return this.print.color === 'bw'
+            ? 'całość czarno-biała'
+            : 'całość kolorowa';
         },
         bindingName: function () {
-          var b = this.bindings.find(function (x) { return x.id === this.binding; });
+          var b = this.bindings.find(function (x) { return x.id === this.binding; }.bind(this));
           return b ? b.name : null;
         },
         coverName: function () {
-          var c = this.covers.find(function (x) { return x.id === this.cover; });
+          var c = this.covers.find(function (x) { return x.id === this.cover; }.bind(this));
           return c ? c.name : null;
         },
         bindingPrice: function () {
-          var b = this.bindings.find(function (x) { return x.id === this.binding; });
+          var b = this.bindings.find(function (x) { return x.id === this.binding; }.bind(this));
           return b ? b.price : 0;
         },
         coverPrice: function () {
-          var c = this.covers.find(function (x) { return x.id === this.cover; });
+          var c = this.covers.find(function (x) { return x.id === this.cover; }.bind(this));
           return c ? c.price : 0;
         },
         deliveryPrice: function () {
           if (!this.delivery) return null;
-          var d = this.deliveries.find(function (x) { return x.id === this.delivery; });
+          var d = this.deliveries.find(function (x) { return x.id === this.delivery; }.bind(this));
           return d ? d.price : 0;
         },
         deliveryName: function () {
-          var d = this.deliveries.find(function (x) { return x.id === this.delivery; });
+          var d = this.deliveries.find(function (x) { return x.id === this.delivery; }.bind(this));
           return d ? d.name : null;
         },
-        total: function () {
-          return this.printTotal() + this.bindingPrice() + this.coverPrice() + (this.deliveryPrice() ?? 0);
-        },
+         total: function () {
+           return this.printTotal() + ((this.bindingPrice() + this.coverPrice()) * this.print.copies) + (this.deliveryPrice() ?? 0);
+         },
         dateLbl: function () { return ccDateLbl(this.byDate); },
         deliveryLate: function () {
           if (!this.delivery || this.delivery === 'pickup' || !this.byDate) return null;
@@ -306,75 +555,176 @@
             ? 'Przewidywane doręczenie może wypaść po wskazanej dacie. Rozważ odbiór osobisty.'
             : null;
         },
-        fmt: fmtPL
-      };
-    });
+         fmt: fmtPL
+       });
+     });
 
-    /* --- PDF configurator (simpler, no forced binding) --- */
-    Alpine.data('ccPdfConfigurator', function () {
-      var bw = 0.2;
-      var color = 0.5;
-      return {
-        file: { name: null, pages: 0, colored: 0 },
-        print: { color: 'bw', sided: 'duplex', copies: 1 },
-        finish: 'none',
-        delivery: null,
-        byDate: '',
-        form: { name: '', email: '', phone: '', invoice: false, company: '', nip: '' },
+     /* --- PDF configurator backed by the real upload, quote, and checkout flow. --- */
+     Alpine.data('ccPdfConfigurator', function () {
+       var pricing = window.copyCabanaPdfPricing || {};
+       var pagePrices = pricing.page_prices || {};
+       var finishes = pricing.finishes || {};
+       var deliveryPrices = window.copyCabanaShipping || {};
+       var bw = Number(pagePrices.bw ?? 0.2);
+       var color = Number(pagePrices.color ?? 0.5);
 
-        finishes: [
-          { id: 'none', name: 'Bez wykończenia', price: 0, hint: 'Wydruk + zwinięcie w rulon lub teczkę.' },
-          { id: 'staples', name: 'Spinanie zeszytowe', price: 4, hint: 'Dwa zszywki wzdłuż grzbietu.' },
-          { id: 'folder', name: 'Teczka', price: 8, hint: 'Gładka teczka zamykana na gumkę.' },
-          { id: 'channel', name: 'Oprawa kanałowa', price: 18, hint: 'Klejony blok dla większych dokumentów.' }
-        ],
-        deliveries: [
-          { id: 'pickup', name: 'Odbiór w Katowicach', price: 0, demo: false, hint: 'ul. Bankowa 11, 40-007 Katowice' },
-          { id: 'parcel', name: 'Paczkomat', price: 12, demo: true, hint: 'demo — integracja do potwierdzenia' },
-          { id: 'courier', name: 'Kurier', price: 18, demo: true, hint: 'demo — integracja do potwierdzenia' }
-        ],
+       return Object.assign(ccInpostState(), {
+         file: { name: null, pages: 0, colored: 0, uploadToken: null },
+         quote: null,
+         quoteLoading: false,
+         quoteError: null,
+         quoteRequest: 0,
+         quoteTimer: null,
+         submitting: false,
+         orderError: null,
+         idempotencyKey: null,
+         privacyAccepted: false,
+         print: { color: 'bw', sided: 'duplex', copies: 1 },
+         finish: 'none',
+         delivery: null,
+         byDate: '',
+         courierAddress: { address: '', city: '', post_code: '' },
+         form: { name: '', email: '', phone: '', invoice: false, company: '', nip: '' },
 
-        go: ccScroll,
+         finishes: Object.keys(finishes).map(function (id) {
+           return { id: id, name: finishes[id].label, price: Number(finishes[id].price || 0), hint: '' };
+         }),
+         deliveries: [
+           { id: 'pickup', name: 'Odbiór w Katowicach', price: Number(deliveryPrices.pickup || 0), hint: 'ul. Bankowa 11, 40-007 Katowice' },
+           { id: 'parcel', name: 'Paczkomat', price: Number(deliveryPrices.parcel || 0), hint: 'Wybierz punkt z listy InPost' },
+           { id: 'courier', name: 'Kurier', price: Number(deliveryPrices.courier || 0), hint: 'Dostawa pod wskazany adres' }
+         ],
 
-        onFile: function (detail) {
-          if (!detail || detail.key !== 'pdf') return;
-          this.file = { name: detail.name, pages: detail.pages, colored: detail.colored };
-        },
+         init: function () {
+           var self = this;
+           this.idempotencyKey = window.crypto?.randomUUID?.() || String(Date.now()) + Math.random();
+           ['file.uploadToken', 'print.color', 'print.sided', 'print.copies', 'finish', 'delivery', 'parcelLocker', 'byDate'].forEach(function (path) {
+             self.$watch(path, function () { self.scheduleQuote(); });
+           });
+           this.$watch('delivery', function (value) {
+             if (value !== 'parcel') self.resetLocker();
+           });
+         },
 
-        printTotal: function () {
-          if (!this.file.pages) return 0;
-          var rate = this.print.color === 'bw' ? bw : color;
-          return (this.file.pages * rate) * this.print.copies;
-        },
-        finishPrice: function () {
-          var f = this.finishes.find(function (x) { return x.id === this.finish; }.bind(this));
-          return f ? f.price : 0;
-        },
-        deliveryPrice: function () {
-          if (!this.delivery) return null;
-          var d = this.deliveries.find(function (x) { return x.id === this.delivery; });
-          return d ? d.price : 0;
-        },
-        total: function () {
-          return this.printTotal() + this.finishPrice() + (this.deliveryPrice() ?? 0);
-        },
-        dateLbl: function () { return ccDateLbl(this.byDate); },
-        deliveryLate: function () {
-          if (!this.delivery || this.delivery === 'pickup' || !this.byDate) return null;
-          var days = ccDaysUntil(this.byDate);
-          if (days === null) return null;
-          return days < 3
-            ? 'Przewidywane doręczenie może wypaść po wskazanej dacie. Rozważ odbiór osobisty.'
-            : null;
-        },
-        fmt: fmtPL
-      };
-    });
+         scheduleQuote: function () {
+           var self = this;
+           clearTimeout(this.quoteTimer);
+           this.quoteTimer = setTimeout(function () { self.refreshQuote(); }, 250);
+         },
+
+         quotePayload: function () {
+           return {
+             upload_token: this.file.uploadToken,
+             color_mode: this.print.color,
+             sided: this.print.sided,
+             finish: this.finish,
+             copies: this.print.copies,
+             shipping_method: this.delivery
+           };
+         },
+
+         refreshQuote: function () {
+           if (!this.file.uploadToken || !this.delivery) return;
+           var self = this;
+           var requestId = ++this.quoteRequest;
+           this.quoteLoading = true;
+           this.quoteError = null;
+
+           return fetch('/api/v1/pdf/quote', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+             credentials: 'same-origin',
+             body: JSON.stringify(this.quotePayload())
+           }).then(function (response) {
+             return response.json().then(function (payload) {
+               if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się wyliczyć ceny.');
+               return payload;
+             });
+           }).then(function (payload) {
+             if (requestId === self.quoteRequest) self.quote = payload.quote;
+           }).catch(function (error) {
+             if (requestId === self.quoteRequest) {
+               self.quote = null;
+               self.quoteError = error.message;
+             }
+           }).finally(function () {
+             if (requestId === self.quoteRequest) self.quoteLoading = false;
+           });
+         },
+
+         shippingAddress: function () {
+           if (this.delivery === 'parcel' && this.parcelLocker) {
+             return { point_code: this.parcelLocker.name, name: this.parcelLocker.name, address: this.parcelLocker.address, city: this.parcelLocker.city, post_code: this.parcelLocker.post_code };
+           }
+           return this.delivery === 'courier' ? this.courierAddress : null;
+         },
+
+         submitOrder: async function () {
+           if (!this.file.uploadToken) { this.orderError = 'Najpierw dodaj plik PDF.'; return; }
+           if (!this.delivery || (this.delivery === 'parcel' && !this.parcelLocker)) { this.orderError = 'Wybierz sposób odbioru i paczkomat, jeśli jest potrzebny.'; return; }
+           if (this.delivery === 'courier' && (!this.courierAddress.address || !this.courierAddress.city || !this.courierAddress.post_code)) { this.orderError = 'Uzupełnij adres dostawy kurierskiej.'; return; }
+           if (!this.form.name || !this.form.email || !this.privacyAccepted) { this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.'; return; }
+
+           this.orderError = null;
+           this.submitting = true;
+           try {
+             await this.refreshQuote();
+             if (!this.quote) throw new Error('Nie udało się potwierdzić ceny. Spróbuj ponownie.');
+             var response = await fetch('/api/v1/pdf/orders', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': this.idempotencyKey },
+               credentials: 'same-origin',
+               body: JSON.stringify({
+                 upload_token: this.file.uploadToken,
+                 color_mode: this.print.color,
+                 sided: this.print.sided,
+                 finish: this.finish,
+                 copies: this.print.copies,
+                 shipping_method: this.delivery,
+                 shipping_address: this.shippingAddress(),
+                 requested_by_date: this.byDate || null,
+                 invoice_required: this.form.invoice,
+                 privacy_policy_accepted: this.privacyAccepted,
+                 customer: { name: this.form.name, email: this.form.email, phone: this.form.phone, company: this.form.company, nip: this.form.nip }
+               })
+             });
+             var payload = await response.json();
+             if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się utworzyć zamówienia.');
+             window.location.assign(payload.payment_url);
+           } catch (error) {
+             this.orderError = error.message;
+           } finally {
+             this.submitting = false;
+           }
+         },
+
+         go: ccScroll,
+         onFile: function (detail) {
+           if (!detail || detail.key !== 'pdf') return;
+           this.file = { name: detail.name, pages: detail.pages, colored: detail.colored, uploadToken: detail.uploadToken };
+         },
+         printTotal: function () { return this.file.pages ? this.file.pages * (this.print.color === 'bw' ? bw : color) * this.print.copies : 0; },
+         finishPrice: function () { var f = this.finishes.find(function (x) { return x.id === this.finish; }.bind(this)); return f ? f.price * this.print.copies : 0; },
+         deliveryPrice: function () { if (!this.delivery) return null; var d = this.deliveries.find(function (x) { return x.id === this.delivery; }.bind(this)); return d ? d.price : 0; },
+         total: function () { return this.quote ? Number(this.quote.total) : this.printTotal() + this.finishPrice() + (this.deliveryPrice() ?? 0); },
+         dateLbl: function () { return ccDateLbl(this.byDate); },
+         deliveryLate: function () {
+           if (!this.delivery || this.delivery === 'pickup' || !this.byDate) return null;
+           var days = ccDaysUntil(this.byDate);
+           return days !== null && days < 3 ? 'Przewidywane doręczenie może wypaść po wskazanej dacie. Rozważ odbiór osobisty.' : null;
+         },
+         fmt: fmtPL
+       });
+     });
 
     /* --- B2B configurator (dynamic products, independent items) --- */
+    var B2B_PRODUCT_IMAGES = window.copyCabanaB2bImages || {};
+    var B2B_GENERIC_PARAMS = [
+      { key: 'qty', label: 'Liczba sztuk', type: 'number', min: 1, max: 1000 }
+    ];
     var B2B_PRODUCTS = [
       {
-        id: 'visits', name: 'Wizytówki', icon: 'fa-id-card',
+        id: 'visits', name: 'Wizytówki', icon: 'fa-id-card', image: B2B_PRODUCT_IMAGES.visits || null,
         desc: '90×50 mm. Papier, wykończenie i zadruk.',
         params: [
           { key: 'qty', label: 'Nakład', type: 'chips', options: ['100', '250', '500', '1000', '2000'] },
@@ -386,7 +736,7 @@
         ]
       },
       {
-        id: 'leaflets', name: 'Ulotki', icon: 'fa-folder-open',
+        id: 'leaflets', name: 'Ulotki', icon: 'fa-folder-open', image: B2B_PRODUCT_IMAGES.leaflets || null,
         desc: 'Ulotki A6–A4 z opcją składania.',
         params: [
           { key: 'qty', label: 'Nakład', type: 'chips', options: ['250', '500', '1000', '2500', '5000'] },
@@ -397,7 +747,7 @@
         ]
       },
       {
-        id: 'posters', name: 'Plakaty', icon: 'fa-image',
+        id: 'posters', name: 'Plakaty', icon: 'fa-image', image: B2B_PRODUCT_IMAGES.posters || null,
         desc: 'Od A3 do B2, papier lub karton.',
         params: [
           { key: 'qty', label: 'Liczba sztuk', type: 'chips', options: ['1', '10', '25', '50', '100'] },
@@ -406,7 +756,7 @@
         ]
       },
       {
-        id: 'banners', name: 'Banery', icon: 'fa-flag',
+        id: 'banners', name: 'Banery', icon: 'fa-flag', image: B2B_PRODUCT_IMAGES.banners || null,
         desc: 'Wg wymiarów, z wykończeniem pod montaż.',
         params: [
           { key: 'width', label: 'Szerokość (cm)', type: 'number', min: 50, max: 500 },
@@ -417,7 +767,7 @@
         ]
       },
       {
-        id: 'rollups', name: 'Rollupy', icon: 'fa-user-tie',
+        id: 'rollups', name: 'Rollupy', icon: 'fa-user-tie', image: B2B_PRODUCT_IMAGES.rollups || null,
         desc: '85×200 i 100×200 cm.',
         params: [
           { key: 'size', label: 'Rozmiar', type: 'chips', options: ['85×200 cm', '100×200 cm'] },
@@ -426,7 +776,7 @@
         ]
       },
       {
-        id: 'documents', name: 'Dokumenty PDF', icon: 'fa-file-lines',
+        id: 'documents', name: 'Dokumenty PDF', icon: 'fa-file-lines', image: B2B_PRODUCT_IMAGES.documents || null,
         desc: 'Materiały szkoleniowe i dokumenty.',
         params: [
           { key: 'color', label: 'Kolor', type: 'chips', options: ['czarno-biały', 'kolor'] },
@@ -434,30 +784,91 @@
           { key: 'qty', label: 'Egzemplarze', type: 'number', min: 1, max: 50 },
           { key: 'finish', label: 'Wykończenie', type: 'chips', options: ['bez', 'spinanie', 'oprawa kanałowa', 'teczka'] }
         ]
+      },
+      {
+        id: 'billboards', name: 'Billboardy', icon: 'fa-rectangle-ad', image: B2B_PRODUCT_IMAGES.billboards || null,
+        desc: 'Reklama zewnętrzna w dużym formacie na Śląsku.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'canvases', name: 'Fotoobrazy', icon: 'fa-image', image: B2B_PRODUCT_IMAGES.canvases || null,
+        desc: 'Fotoobrazy na płótnie i w ramach.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'wallpapers', name: 'Fototapety', icon: 'fa-expand', image: B2B_PRODUCT_IMAGES.wallpapers || null,
+        desc: 'Fototapety na wymiar do wnętrz i biur.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'calendars', name: 'Kalendarze spiralowane', icon: 'fa-calendar-days', image: B2B_PRODUCT_IMAGES.calendars || null,
+        desc: 'Kalendarze ścienne i biurkowe z indywidualnym projektem.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'stickers', name: 'Naklejki', icon: 'fa-note-sticky', image: B2B_PRODUCT_IMAGES.stickers || null,
+        desc: 'Naklejki w dowolnych kształtach i rozmiarach.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'plaques', name: 'Tabliczki grawerowane', icon: 'fa-sign', image: B2B_PRODUCT_IMAGES.plaques || null,
+        desc: 'Tabliczki informacyjne i grawerowane laserowo.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'cad', name: 'Rysunki, plany, mapy', icon: 'fa-compass-drafting', image: B2B_PRODUCT_IMAGES.cad || null,
+        desc: 'Wydruki CAD w formatach A0–A4.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'copies', name: 'Ksero', icon: 'fa-copy', image: B2B_PRODUCT_IMAGES.copies || null,
+        desc: 'Kserokopie w czerni-bieli i kolorze.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'scans', name: 'Skanowanie', icon: 'fa-file-arrow-up', image: B2B_PRODUCT_IMAGES.scans || null,
+        desc: 'Skanowanie dokumentów i zdjęć w wysokiej rozdzielczości.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'id-photos', name: 'Zdjęcia do dokumentów', icon: 'fa-id-card', image: B2B_PRODUCT_IMAGES['id-photos'] || null,
+        desc: 'Fotoset do paszportu, dowodu i wizy.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'stamps', name: 'Pieczątki', icon: 'fa-stamp', image: B2B_PRODUCT_IMAGES.stamps || null,
+        desc: 'Pieczątki, stemple i datowniki.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'design', name: 'Projektowanie graficzne', icon: 'fa-pen-ruler', image: B2B_PRODUCT_IMAGES.design || null,
+        desc: 'Projekty graficzne materiałów reklamowych.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'extras', name: 'Usługi dodatkowe', icon: 'fa-layer-group', image: B2B_PRODUCT_IMAGES.extras || null,
+        desc: 'Laminowanie, oprawianie i personalizacja.', params: B2B_GENERIC_PARAMS
+      },
+      {
+        id: 'binding', name: 'Oprawa prac i bindowanie', icon: 'fa-book-open', image: B2B_PRODUCT_IMAGES.binding || null,
+        desc: 'Oprawa twarda i miękka prac dyplomowych w 24h.', params: B2B_GENERIC_PARAMS
       }
     ];
 
     Alpine.data('ccB2bConfigurator', function () {
-      return {
+      return Object.assign(ccInpostState(), {
         products: B2B_PRODUCTS,
 
         selected: null,
         params: {},
-        file: { name: null, status: 'empty' },
-        helpWanted: false,
-        items: [],
+         file: { name: null, status: 'empty', uploadToken: null },
+         helpWanted: false,
+         items: [],
 
         briefOpen: false,
         brief: { type: '', desc: '', qty: '', date: '' },
         briefSent: false,
 
-        delivery: null,
-        byDate: '',
-        company: { person: '', name: '', email: '', phone: '', invoice: false, nip: '' },
+         delivery: null,
+         byDate: '',
+         courierAddress: { address: '', city: '', post_code: '' },
+         company: { person: '', name: '', email: '', phone: '', invoice: false, nip: '' },
+         privacyAccepted: false,
+         submitting: false,
+         submitted: false,
+         submitError: null,
 
         deliveries: [
           { id: 'pickup', name: 'Odbiór w Katowicach', price: 0, demo: false, hint: 'ul. Bankowa 11, 40-007 Katowice' },
-          { id: 'parcel', name: 'Paczkomat', price: 12, demo: true, hint: 'demo — integracja do potwierdzenia' },
+          { id: 'parcel', name: 'Paczkomat', price: 12, demo: false, hint: 'Wybierz punkt z listy InPost' },
           { id: 'courier', name: 'Kurier', price: 18, demo: true, hint: 'demo — integracja do potwierdzenia' }
         ],
 
@@ -484,10 +895,10 @@
         setParam: function (key, value) { this.params[key] = value; },
         isParam: function (key, value) { return this.params[key] === value; },
 
-        onFile: function (detail) {
-          if (!detail || !this.selected) return;
-          if (detail.key !== 'b2b-' + this.selected) return;
-          this.file = { name: detail.name, status: detail.status };
+         onFile: function (detail) {
+           if (!detail || !this.selected) return;
+           if (detail.key !== 'b2b-' + this.selected) return;
+           this.file = { name: detail.name, status: detail.status, uploadToken: detail.uploadToken };
         },
 
         commitItem: function () {
@@ -501,8 +912,9 @@
             icon: p.icon,
             params: snap,
             file: this.file.name,
-            designs: Number(snap.designs || snap.qty || 1),
-            helpWanted: this.helpWanted
+             designs: Number(snap.designs || snap.qty || 1),
+             helpWanted: this.helpWanted,
+             uploadToken: this.file.uploadToken
           });
           this.selected = null;
           this.params = {};
@@ -539,13 +951,95 @@
           this.briefSent = false;
         },
 
-        sendBrief: function () {
-          this.briefSent = true;
-        },
+         sendBrief: function () {
+           this.briefSent = true;
+         },
+
+         shippingAddress: function () {
+           if (this.delivery === 'parcel' && this.parcelLocker) {
+             return {
+               point_code: this.parcelLocker.name,
+               name: this.parcelLocker.name,
+               address: this.parcelLocker.address,
+               city: this.parcelLocker.city,
+               post_code: this.parcelLocker.post_code
+             };
+           }
+
+           if (this.delivery === 'courier') return this.courierAddress;
+
+           return null;
+         },
+
+         submitQuoteRequest: async function () {
+           if (this.submitted || this.submitting) return;
+           if (!this.items.length) {
+             this.submitError = 'Dodaj przynajmniej jedną pozycję.';
+             return;
+           }
+           if (!this.delivery || (this.delivery === 'parcel' && !this.parcelLocker)) {
+             this.submitError = 'Wybierz sposób odbioru i paczkomat, jeśli jest potrzebny.';
+             return;
+           }
+           if (!this.company.person || !this.company.name || !this.company.email || !this.privacyAccepted) {
+             this.submitError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.';
+             return;
+           }
+
+           this.submitError = null;
+           this.submitting = true;
+           try {
+             var response = await fetch('/api/v1/b2b/quote-requests', {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json',
+                 Accept: 'application/json',
+                 'Idempotency-Key': this.idempotencyKey || (this.idempotencyKey = window.crypto?.randomUUID?.() || String(Date.now()) + Math.random())
+               },
+               credentials: 'same-origin',
+               body: JSON.stringify({
+                 customer: {
+                   name: this.company.person,
+                   email: this.company.email,
+                   phone: this.company.phone,
+                   company: this.company.name,
+                   nip: this.company.nip
+                 },
+                 items: this.items.map(function (item) {
+                   return {
+                     product_key: item.product,
+                     configuration: item.params,
+                     quantity: Number(item.params.qty || item.quantity || 1),
+                     help_wanted: item.helpWanted,
+                     upload_token: item.uploadToken || null
+                   };
+                 }),
+                 shipping_method: this.delivery,
+                 shipping_address: this.shippingAddress(),
+                 requested_by_date: this.byDate || null,
+                 invoice_required: this.company.invoice,
+                 privacy_policy_accepted: this.privacyAccepted,
+                 brief: this.briefOpen ? {
+                   type: this.brief.type,
+                   description: this.brief.desc,
+                   quantity: this.brief.qty,
+                   requested_by_date: this.brief.date || null
+                 } : null
+               })
+             });
+             var payload = await response.json();
+             if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się wysłać zapytania.');
+             this.submitted = true;
+           } catch (error) {
+             this.submitError = error.message;
+           } finally {
+             this.submitting = false;
+           }
+         },
 
         dateLbl: function () { return ccDateLbl(this.byDate); },
         deliveryName: function () {
-          var d = this.deliveries.find(function (x) { return x.id === this.delivery; });
+          var d = this.deliveries.find(function (x) { return x.id === this.delivery; }.bind(this));
           return d ? d.name : null;
         },
         deliveryLate: function () {
@@ -556,7 +1050,7 @@
             ? 'Przewidywane doręczenie może wypaść po wskazanej dacie. Rozważ odbiór osobisty.'
             : null;
         }
-      };
+      });
     });
   });
 })();

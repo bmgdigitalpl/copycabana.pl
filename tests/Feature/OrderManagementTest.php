@@ -5,18 +5,41 @@ namespace Tests\Feature;
 use App\Enums\OrderStatus;
 use App\Mail\OrderReceivedMail;
 use App\Mail\OrderStatusChangedMail;
+use App\Mail\PaymentConfirmedMail;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class OrderManagementTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'services.payu.pos_id' => 'test-pos',
+            'services.payu.client_id' => 'test-client',
+            'services.payu.client_secret' => 'test-secret',
+            'services.payu.second_key' => 'test-second-key',
+        ]);
+
+        Http::fake([
+            '*/pl/standard/user/oauth/authorize' => Http::response(['access_token' => 'test-token'], 200),
+            '*/api/v2_1/orders' => Http::response([
+                'status' => ['statusCode' => 'SUCCESS'],
+                'redirectUri' => 'https://payu.test/pay',
+                'orderId' => 'PAYU-TEST-ORDER',
+            ], 302, ['Location' => 'https://payu.test/pay']),
+        ]);
+    }
 
     public function test_checkout_creates_a_real_order_and_client_from_cart_data(): void
     {
@@ -31,10 +54,12 @@ class OrderManagementTest extends TestCase
             'items' => [['product_slug' => 'wizytowki', 'quantity' => 2, 'configuration' => ['format' => 'A6'], 'unit_price' => 0.01]],
         ]);
 
-        $response->assertCreated()->assertJsonPath('order.status', 'pending');
+        $response->assertCreated()
+            ->assertJsonPath('order.status', 'payment_awaited')
+            ->assertJsonPath('payment_url', 'https://payu.test/pay');
         $this->assertDatabaseHas('clients', ['email' => 'jan@example.com', 'marketing_consent' => false]);
         $this->assertDatabaseHas('orders', ['customer_email' => 'jan@example.com', 'total' => 50]);
-        Mail::assertSent(OrderReceivedMail::class);
+        Mail::assertQueued(OrderReceivedMail::class);
     }
 
     public function test_checkout_requires_privacy_acceptance(): void
@@ -101,7 +126,7 @@ class OrderManagementTest extends TestCase
 
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'processing', 'carrier' => 'inpost']);
         $this->assertDatabaseHas('order_status_histories', ['order_id' => $order->id, 'to_status' => 'processing']);
-        Mail::assertSent(OrderStatusChangedMail::class);
+        Mail::assertQueued(OrderStatusChangedMail::class);
     }
 
     public function test_terminal_order_cannot_be_reopened(): void
@@ -111,5 +136,81 @@ class OrderManagementTest extends TestCase
 
         $this->actingAs($user)->put(route('admin.orders.update', $order), ['status' => 'processing'])
             ->assertRedirect()->assertSessionHasErrors('status');
+    }
+
+    public function test_payu_webhook_marks_the_payment_as_paid(): void
+    {
+        Mail::fake();
+        $this->seed(ProductSeeder::class);
+
+        $this->postJson('/api/v1/orders', [
+            'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
+            'shipping_method' => 'pickup',
+            'privacy_policy_accepted' => true,
+            'items' => [['product_slug' => 'wizytowki', 'quantity' => 1]],
+        ])->assertCreated();
+
+        $order = Order::query()->latest('id')->firstOrFail();
+        $rawBody = json_encode([
+            'order' => [
+                'orderId' => 'PAYU-TEST-ORDER',
+                'extOrderId' => $order->number,
+                'status' => 'COMPLETED',
+                'currencyCode' => 'PLN',
+                'totalAmount' => (string) round((float) $order->total * 100),
+                'merchantPosId' => 'test-pos',
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $this->call('POST', route('api.payments.payu.notify'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_OPENPAYU_SIGNATURE' => 'signature='.md5($rawBody.'test-second-key').';algorithm=MD5;sender=checkout',
+        ], $rawBody)->assertOk();
+
+        $this->call('POST', route('api.payments.payu.notify'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_OPENPAYU_SIGNATURE' => 'signature='.md5($rawBody.'test-second-key').';algorithm=MD5;sender=checkout',
+        ], $rawBody)->assertOk();
+
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'status' => 'paid']);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'payment_status' => 'paid']);
+        Mail::assertQueued(PaymentConfirmedMail::class, 1);
+    }
+
+    public function test_payu_webhook_rejects_an_invalid_signature(): void
+    {
+        $rawBody = json_encode(['order' => []], JSON_THROW_ON_ERROR);
+
+        $this->call('POST', route('api.payments.payu.notify'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_OPENPAYU_SIGNATURE' => 'signature=invalid;algorithm=MD5;sender=checkout',
+        ], $rawBody)->assertForbidden();
+    }
+
+    public function test_payu_webhook_requires_the_configured_merchant_pos_id(): void
+    {
+        $rawBody = json_encode([
+            'order' => [
+                'orderId' => 'PAYU-TEST-ORDER',
+                'extOrderId' => 'CC-20260913-ABC123',
+                'status' => 'COMPLETED',
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $this->call('POST', route('api.payments.payu.notify'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_OPENPAYU_SIGNATURE' => 'signature='.md5($rawBody.'test-second-key').';algorithm=MD5;sender=checkout',
+        ], $rawBody)->assertBadRequest();
+    }
+
+    public function test_order_success_page_requires_the_private_token(): void
+    {
+        $token = 'private-success-token';
+        $order = Order::factory()->create(['success_token_hash' => hash('sha256', $token)]);
+
+        $this->get('/zamowienie/1/sukces')->assertNotFound();
+        $this->get(route('checkout.success', ['token' => $token]))
+            ->assertOk()
+            ->assertSee($order->number);
     }
 }

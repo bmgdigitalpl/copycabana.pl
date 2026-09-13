@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    'inpost' => [
+        'base_url' => env('INPOST_API_BASE_URL', 'https://api-pl-points.easypack24.net/v1'),
+        'token' => env('INPOST_API_TOKEN'),
+    ],
+
+    'payu' => [
+        'base_url' => env('PAYU_BASE_URL', 'https://secure.snd.payu.com'),
+        'pos_id' => env('PAYU_POS_ID'),
+        'client_id' => env('PAYU_CLIENT_ID'),
+        'client_secret' => env('PAYU_CLIENT_SECRET'),
+        'second_key' => env('PAYU_SECOND_KEY'),
+    ],
+
+    'admin' => [
+        'email' => env('ADMIN_EMAIL'),
+        'password' => env('ADMIN_PASSWORD'),
+        'name' => env('ADMIN_NAME', 'CopyCabana Admin'),
+    ],
+
 ];

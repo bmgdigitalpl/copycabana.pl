@@ -14,8 +14,10 @@
         <nav class="mt-8 grid gap-2 text-sm">
             <a class="rounded px-3 py-2 hover:bg-white/10" href="{{ route('admin.dashboard') }}">Pulpit</a>
             <a class="rounded px-3 py-2 hover:bg-white/10" href="{{ route('admin.orders.index') }}">Zamówienia</a>
+            <a class="rounded px-3 py-2 hover:bg-white/10" href="{{ route('admin.quote-requests.index') }}">Zapytania B2B</a>
             <a class="rounded px-3 py-2 hover:bg-white/10" href="{{ route('admin.clients.index') }}">Klienci i RODO</a>
             <a class="rounded px-3 py-2 hover:bg-white/10" href="{{ route('admin.privacy.index') }}">Wnioski RODO</a>
+            <a class="rounded px-3 py-2 hover:bg-white/10" href="{{ route('admin.products.index') }}">Produkty i zdjęcia</a>
             <a class="rounded px-3 py-2 hover:bg-white/10" href="{{ route('admin.options.index') }}">Opcje i ceny</a>
         </nav>
         <form class="mt-8" method="post" action="{{ route('admin.logout') }}">

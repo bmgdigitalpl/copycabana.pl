@@ -2,10 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\Product;
+use Database\Seeders\ProductSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class MarketingPagesTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_product_and_cart_load_the_shared_interactions(): void
     {
         foreach (['product', 'cart'] as $routeName) {
@@ -44,18 +49,92 @@ class MarketingPagesTest extends TestCase
             ->assertRedirect(route('brand'));
     }
 
+    public function test_font_pairing_comparison_page_renders_all_specimens(): void
+    {
+        $this->get(route('test.fonts'))
+            ->assertOk()
+            ->assertSee('Jeden hero.')
+            ->assertSee('Archivo + Inter')
+            ->assertSee('Roboto Slab + Roboto')
+            ->assertSee('Playfair Display + Montserrat')
+            ->assertSee('Cormorant + Cormorant Garamond')
+            ->assertSee('Lora + Libre Baskerville')
+            ->assertSee('Source Sans 3 + Merriweather')
+            ->assertSee('font-test.css', false);
+    }
+
     public function test_homepage_uses_the_main_layout_and_exposes_the_three_order_paths(): void
     {
-        $this->get(route('home'))
+        $response = $this->get(route('home'));
+
+        $response
             ->assertOk()
-            ->assertSee('Ty masz plik.')
-            ->assertSee('My zajmiemy się drukiem.')
-            ->assertSee('Wydrukuj i opraw pracę')
-            ->assertSee('Zamów druk dla firmy')
-            ->assertSee('Chcę wydrukować dokumenty PDF')
+            ->assertSee('Od pliku do')
+            ->assertSee('gotowego wydruku.')
+            ->assertSee('Prace dyplomowe, dokumenty PDF i materiały firmowe.')
+            ->assertSee('Dlaczego my?')
+            ->assertSee('Możesz nam zaufać.')
+            ->assertSee('22 lata doświadczenia')
+            ->assertSee('Tysiące zadowolonych klientów')
+            ->assertSee('Drukarnia na miejscu')
+            ->assertSee('cc-need-grid', false)
+            ->assertSee('Skonfiguruj druk')
+            ->assertSee('Druk dla firm')
+            ->assertSee('Galeria')
+            ->assertSee('cc-gallery', false)
+            ->assertSee('cc-marquee-group', false)
+            ->assertDontSee('Chcę wydrukować dokumenty PDF')
+            ->assertDontSee('Cena i kontrola')
+            ->assertDontSee('Jakość')
             ->assertSee(route('services.diploma'), false)
             ->assertSee(route('services.business'), false)
             ->assertSee(route('druk-pdf'), false);
+
+        $this->assertSame(3, substr_count($response->getContent(), 'class="cc-need-icon"'));
+    }
+
+    public function test_homepage_hero_renders_one_static_image(): void
+    {
+        $content = $this->get(route('home'))->getContent();
+
+        $this->assertSame(1, substr_count($content, 'class="cc-hero-card cc-hero-card--single"'));
+        $this->assertStringContainsString('images/hero-new.webp', $content);
+        $this->assertStringNotContainsString('data-cc-hero-slider', $content);
+        $this->assertStringNotContainsString('cc-hero-slider-track', $content);
+        $this->assertStringNotContainsString('cc-hero-slide', $content);
+        $this->assertStringNotContainsString('cc-hero-card--tag', $content);
+
+        $css = file_get_contents(public_path('css/concept.css'));
+        $this->assertStringContainsString('.cc-hero-card--single', $css);
+        $this->assertStringContainsString('align-self: flex-start;', $css);
+        $this->assertStringContainsString('border-radius: 9999px;', $css);
+        $this->assertStringContainsString('margin-left: 0.25rem;', $css);
+        $this->assertStringContainsString('background: linear-gradient(160deg, rgba(213, 26, 112, 0.12), #fff 58%);', $css);
+        $this->assertStringNotContainsString('.cc-hero-slider', $css);
+    }
+
+    public function test_marketing_heroes_use_the_single_card_layout(): void
+    {
+        foreach (['home', 'services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+            $content = $this->get(route($routeName))->getContent();
+
+            $this->assertSame(1, substr_count($content, 'class="cc-hero-card cc-hero-card--single"'));
+            $this->assertStringNotContainsString('cc-hero-card--a', $content);
+            $this->assertStringNotContainsString('cc-hero-card--b', $content);
+            $this->assertStringNotContainsString('cc-hero-card--tag', $content);
+        }
+
+        $this->get(route('druk-pdf'))
+            ->assertSee('Zazwyczaj realizujemy dokumenty w 24h.')
+            ->assertSee('cc-hero-hint', false);
+    }
+
+    public function test_public_typography_uses_the_selected_roboto_pairing(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Roboto+Slab', false)
+            ->assertSee('Roboto:wght@400;500;700', false);
     }
 
     public function test_homepage_does_not_render_playground_markers(): void
@@ -69,6 +148,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_marketing_pages_render_successfully(): void
     {
+        $this->seed(ProductSeeder::class);
         $pages = [
             'services.diploma' => 'Praca napisana.',
             'services.business' => 'Zamów taki druk,',
@@ -88,6 +168,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_configurator_pages_use_the_main_layout(): void
     {
+        $this->seed(ProductSeeder::class);
         foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
             $this->get(route($routeName))
                 ->assertOk()
@@ -111,10 +192,56 @@ class MarketingPagesTest extends TestCase
 
     public function test_business_configurator_sidebar_uses_shared_summary_action_spacing(): void
     {
+        $this->seed(ProductSeeder::class);
         $this->get(route('services.business'))
             ->assertOk()
             ->assertSee('<div class="cc-summary-actions">', false)
             ->assertSee('Wersja demonstracyjna — wycena po kontakcie.');
+    }
+
+    public function test_business_configurator_uses_the_editable_product_images(): void
+    {
+        $this->seed(ProductSeeder::class);
+        Product::query()->where('slug', 'wizytowki')->update(['image_path' => 'images/produkty/druk.png']);
+
+        $this->get(route('services.business'))
+            ->assertSee('copyCabanaB2bImages', false)
+            ->assertSee('druk.png')
+            ->assertSee('ulotki.png')
+            ->assertSee('plakaty.png')
+            ->assertSee('banery.png')
+            ->assertSee('rollupy.png')
+            ->assertSee('billboardy.png')
+            ->assertSee('fotoobrazy.png')
+            ->assertSee('fototapety.png')
+            ->assertSee('kalendarze-spiralowane.png')
+            ->assertSee('naklejki.png')
+            ->assertSee('tabliczki-grawerowane.png')
+            ->assertSee('rysunki-plany-mapycad.png')
+            ->assertSee('ksero.png')
+            ->assertSee('skanowanie.png')
+            ->assertSee('zdjecia-do-dokumentow.png')
+            ->assertSee('pieczatki.png')
+            ->assertSee('projektowanie-graficzne.png')
+            ->assertSee('oprawa-prac-i-bindowanie.png');
+    }
+
+    public function test_pdf_configurator_uses_the_hands_hero_image(): void
+    {
+        $this->get(route('druk-pdf'))
+            ->assertSee('images/produkty/hands.png', false)
+            ->assertSee('cc-hero-card--single', false)
+            ->assertDontSee('cc-hero-mini-report', false)
+            ->assertDontSee('cc-hero-card--tag', false);
+    }
+
+    public function test_business_product_cards_keep_their_full_image_area(): void
+    {
+        $css = file_get_contents(public_path('css/concept.css'));
+
+        $this->assertSame(true, str_contains($css, '.cc-b2b-card-image img'));
+        $this->assertSame(true, str_contains($css, 'object-fit: contain;'));
+        $this->assertSame(true, str_contains($css, 'aspect-ratio: 828 / 710;'));
     }
 
     public function test_production_cta_styles_use_the_loaded_body_font(): void
@@ -123,6 +250,35 @@ class MarketingPagesTest extends TestCase
 
         $this->assertSame(true, str_contains($css, '.concept-site :is(.btn-magenta, .btn-geel, .btn-outline-light, .brand-upload-button)'));
         $this->assertSame(true, str_contains($css, "font-family: 'Inter', sans-serif;"));
+        $this->assertSame(true, str_contains($css, '.cc-field .cc-toggle'));
+        $this->assertSame(true, str_contains($css, 'text-transform: none;'));
+    }
+
+    public function test_configurators_render_the_inpost_point_picker(): void
+    {
+        foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+            $this->get(route($routeName))
+                ->assertSee('cc-inpost-picker', false)
+                ->assertSee('Wybierz punkt z listy InPost');
+        }
+    }
+
+    public function test_diploma_configurator_places_copy_count_in_the_summary_step(): void
+    {
+        $content = $this->get(route('services.diploma'))->getContent();
+        $stepTwoStart = strpos($content, '<section class="cc-step" id="druk">');
+        $stepThreeStart = strpos($content, '<section class="cc-step" id="oprawa">');
+        $summaryStart = strpos($content, '<section class="cc-step" id="podsumowanie">');
+        $copyCountPosition = strpos($content, '<div class="cc-summary-copies">');
+
+        $this->assertIsInt($stepTwoStart);
+        $this->assertIsInt($stepThreeStart);
+        $this->assertIsInt($summaryStart);
+        $this->assertIsInt($copyCountPosition);
+        $this->assertStringNotContainsString('Liczba egzemplarzy', substr($content, $stepTwoStart, $stepThreeStart - $stepTwoStart));
+        $this->assertGreaterThan($summaryStart, $copyCountPosition);
+        $this->assertStringContainsString('value="color"', $content);
+        $this->assertStringContainsString('całość kolorowa', $content);
     }
 
     public function test_diploma_configurator_renders_the_live_thesis_binding_preview(): void
@@ -134,7 +290,11 @@ class MarketingPagesTest extends TestCase
             ->assertSee('cc-title-chip', false)
             ->assertSee('Kolor okładki', false)
             ->assertSee('Przykładowe napisy', false)
-            ->assertSee('activeVariant().degree', false);
+            ->assertSee('activeVariant().degree', false)
+            ->assertSee('images/produkty/graduation.png', false)
+            ->assertSee('cc-hero-card--single', false)
+            ->assertDontSee('cc-hero-mini-report', false)
+            ->assertDontSee('cc-hero-card--tag', false);
     }
 
     public function test_archived_pages_are_reachable_and_linked_from_the_archive_index(): void

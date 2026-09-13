@@ -67,6 +67,8 @@ class Client extends Model
             'marketing_consent_at' => null,
             'privacy_policy_version' => null,
             'privacy_policy_accepted_at' => null,
+            'deletion_requested_at' => null,
+            'retention_until' => null,
             'anonymized_at' => now(),
         ])->save();
     }

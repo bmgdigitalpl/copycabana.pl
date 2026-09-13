@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 
 #[Fillable([
     'number',
+    'success_token_hash',
+    'idempotency_key',
     'client_id',
     'status',
     'payment_status',
@@ -28,6 +30,7 @@ use Illuminate\Support\Facades\Auth;
     'carrier',
     'tracking_number',
     'shipping_address',
+    'requested_by_date',
     'subtotal',
     'shipping_total',
     'tax_rate',
@@ -40,6 +43,8 @@ use Illuminate\Support\Facades\Auth;
 ])]
 class Order extends Model
 {
+    protected $hidden = ['success_token_hash'];
+
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
 
@@ -51,6 +56,7 @@ class Order extends Model
         return [
             'billing_address' => 'array',
             'shipping_address' => 'array',
+            'requested_by_date' => 'date',
             'status' => OrderStatus::class,
             'carrier' => Carrier::class,
             'invoice_required' => 'boolean',
@@ -69,6 +75,14 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @return HasMany<OrderFile, $this>
+     */
+    public function files(): HasMany
+    {
+        return $this->hasMany(OrderFile::class);
     }
 
     /**
@@ -120,6 +134,34 @@ class Order extends Model
             'note' => $note,
             'changed_by' => Auth::id(),
         ]);
+    }
+
+    public function prepareForPaymentRetry(): void
+    {
+        $current = $this->status instanceof OrderStatus ? $this->status : OrderStatus::from((string) $this->status);
+
+        if (! in_array($current, [OrderStatus::Pending, OrderStatus::Cancelled], true)) {
+            throw new \DomainException("Cannot retry payment for order in {$current->value} status.");
+        }
+
+        if ($current === OrderStatus::Cancelled) {
+            $this->forceFill([
+                'status' => OrderStatus::Pending,
+                'payment_status' => 'pending',
+            ])->save();
+            $this->statusHistories()->create([
+                'from_status' => OrderStatus::Cancelled,
+                'to_status' => OrderStatus::Pending,
+                'note' => 'Przygotowano ponowną próbę płatności.',
+                'changed_by' => null,
+            ]);
+
+            return;
+        }
+
+        if ($this->payment_status !== 'pending') {
+            $this->forceFill(['payment_status' => 'pending'])->save();
+        }
     }
 
     public function trackingUrl(): ?string

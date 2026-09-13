@@ -8,7 +8,7 @@
   <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&amp;family=Caveat:wght@700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&amp;family=Roboto:wght@400;500;700&amp;family=Roboto+Slab:wght@500;600;700&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -20,7 +20,7 @@
             lichtgrijs: '#D9DDE1', magenta: '#D51A70', groen: '#7FBF45', paars: '#6B3FA0'
           },
           fontFamily: {
-            heading: ['Archivo', 'sans-serif'], body: ['Inter', 'sans-serif'], logo: ['Caveat', 'cursive']
+            heading: ['Roboto Slab', 'serif'], body: ['Roboto', 'sans-serif'], logo: ['Caveat', 'cursive']
           }
         }
       }
@@ -29,9 +29,9 @@
   <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
   <link rel="stylesheet" href="{{ asset('css/dynamic-local-service.css') }}">
   <link rel="stylesheet" href="{{ asset('css/dynamic-site.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/concept.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/concept.css') }}?v={{ filemtime(public_path('css/concept.css')) }}">
 </head>
-<body class="concept-dynamic concept-site" x-data="{ mobileNav: false }">
+<body class="concept-dynamic concept-site {{ request()->routeIs('test.fonts') ? 'font-test-root' : '' }}" x-data="{ mobileNav: false }">
   <header class="cc-header">
     <div class="cc-container cc-header-inner">
       <a href="{{ route('home') }}" class="font-logo no-underline cc-logo">CopyCabana</a>
@@ -40,9 +40,11 @@
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
         <a href="{{ route('druk-pdf') }}">Druk PDF</a>
         <a href="{{ route('services.business') }}">Dla firm</a>
+        <a href="{{ route('products.index') }}">Produkty</a>
       </nav>
       <div class="cc-header-actions">
         <a href="{{ route('contact') }}" class="cc-link-outline">Kontakt</a>
+        <a href="{{ route('cart') }}" class="cc-link-outline">Koszyk</a>
         <button @click="mobileNav = true" class="cc-burger" aria-label="Otwórz menu">
           <i class="fas fa-bars"></i>
         </button>
@@ -59,6 +61,8 @@
       <a href="{{ route('druk-pdf') }}">Druk PDF</a>
       <a href="{{ route('services.business') }}">Druk dla firm</a>
       <a href="{{ route('contact') }}">Kontakt</a>
+      <a href="{{ route('products.index') }}">Produkty</a>
+      <a href="{{ route('cart') }}">Koszyk</a>
     </div>
   </div>
 
@@ -80,6 +84,7 @@
   </footer>
 
   <script src="{{ asset('js/concept.js') }}"></script>
+  <script src="{{ asset('js/app.js') }}"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

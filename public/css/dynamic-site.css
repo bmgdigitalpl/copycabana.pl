@@ -470,6 +470,27 @@ body.concept-dynamic {
   }
 }
 
+/* --- Global production typography: Roboto Slab + Roboto --- */
+body.concept-dynamic:not(.font-test-root) {
+  font-family: 'Roboto', sans-serif;
+}
+
+body.concept-dynamic:not(.font-test-root) :where(*):not(i):not(svg) {
+  font-family: 'Roboto', sans-serif;
+}
+
+body.concept-dynamic:not(.font-test-root) :is(h1, h2, h3, h4, h5, h6, .font-heading) {
+  font-family: 'Roboto Slab', serif;
+}
+
+body.concept-dynamic:not(.font-test-root) .font-logo {
+  font-family: 'Caveat', cursive;
+}
+
+body.concept-dynamic:not(.font-test-root) :is(button, input, select, textarea) {
+  font-family: 'Roboto', sans-serif;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .brand-slider-track {
     animation: brand-slider-loop 34s linear infinite;

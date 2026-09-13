@@ -10,27 +10,19 @@
     <div class="cc-container cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">CopyCabana · Drukarnia w Katowicach</p>
-        <h1 class="cc-hero-title reveal reveal-delay-1">Ty masz plik.<em>My zajmiemy się drukiem.</em></h1>
-        <p class="reveal reveal-delay-2">Prace dyplomowe, dokumenty i materiały dla firm. Wybierz, co chcesz wydrukować, i przejdź do zamawiania.</p>
+        <h1 class="cc-hero-title reveal reveal-delay-1">Od pliku do<br><em>gotowego wydruku.</em></h1>
+        <p class="reveal reveal-delay-2">Prace dyplomowe, dokumenty PDF i materiały firmowe. Wybierz usługę, ustaw szczegóły i poznaj kolejne kroki.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
-          <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block">Wydrukuj i opraw pracę <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
-          <a href="{{ route('services.business') }}" class="btn-geel inline-block">Zamów druk dla firmy</a>
+          <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block">Skonfiguruj druk <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
+          <a href="{{ route('services.business') }}" class="btn-geel inline-block">Druk dla firm</a>
         </div>
-        <a href="{{ route('druk-pdf') }}" class="cc-hero-trio-link reveal reveal-delay-4">Chcę wydrukować dokumenty PDF →</a>
       </div>
 
       <div class="cc-hero-visual reveal reveal-delay-2">
         <div class="cc-hero-stack" aria-hidden="true">
-          <div class="cc-hero-card cc-hero-card--a">
-            <img src="{{ asset('images/carousel-6.jpg') }}" alt="">
+          <div class="cc-hero-card cc-hero-card--single">
+            <img src="{{ asset('images/hero-new.webp') }}" alt="">
           </div>
-          <div class="cc-hero-card cc-hero-card--b">
-            <img src="{{ asset('images/produkty/product-03.png') }}" alt="">
-          </div>
-          <div class="cc-hero-card cc-hero-card--c">
-            <img src="{{ asset('images/produkty/product-02.png') }}" alt="">
-          </div>
-          <div class="cc-hero-card cc-hero-card--tag">Od PDF do gotowej pracy</div>
         </div>
       </div>
     </div>
@@ -39,24 +31,38 @@
   {{-- 02 Service slider --}}
   <x-concept.marquee :items="['Prace dyplomowe', 'Druk PDF', 'Wizytówki', 'Ulotki', 'Plakaty', 'Banery', 'Rollupy', 'Oprawa']" />
 
-  {{-- 03 What are we printing --}}
+  {{-- 03 Trust --}}
   <section class="cc-section cc-section--light">
     <div class="cc-container">
-      <x-concept.section-heading label="Wybór ścieżki">
-        <x-slot:lead>Nie musisz rozumieć druku. Wybierz, co chcesz zrobić, a pokażemy momentalnie właściwy konfigurator.</x-slot:lead>
-        Co dziś drukujemy?
+      <x-concept.section-heading label="Dlaczego my?">
+        <x-slot:lead>Doświadczenie, zaufanie i lokalna drukarnia, do której możesz przyjść osobiście.</x-slot:lead>
+        Możesz nam zaufać.
       </x-concept.section-heading>
 
       <div class="cc-need-grid">
-        <x-concept.need-card icon="fa-graduation-cap" title="Prace dyplomowe" cta="Wydrukuj i opraw pracę" href="{{ route('services.diploma') }}">
-          Wydrukuj pracę i dobierz oprawę. Wszystkie ustawienia sprawdzisz w jednym podsumowaniu.
-        </x-concept.need-card>
-        <x-concept.need-card icon="fa-file-pdf" accent="yellow" title="Dokumenty PDF" cta="Wydrukuj PDF" href="{{ route('druk-pdf') }}">
-          Materiały do nauki, instrukcje i codzienne dokumenty. Wybierz druk bez zbędnych dodatków.
-        </x-concept.need-card>
-        <x-concept.need-card icon="fa-building" accent="blue" title="Druk dla firm" cta="Zamów druk dla firmy" href="{{ route('services.business') }}">
-          Wizytówki, ulotki, banery i materiały dla Twojej firmy. Kilka pozycji w jednym zamówieniu.
-        </x-concept.need-card>
+        <article class="cc-need-card reveal">
+          <span class="cc-need-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></span>
+          <div class="cc-need-body">
+            <h3>22 lata doświadczenia</h3>
+            <p>Od 2002 roku pomagamy przygotowywać prace dyplomowe, dokumenty i materiały firmowe.</p>
+          </div>
+        </article>
+
+        <article class="cc-need-card cc-need-card--yellow reveal reveal-delay-1">
+          <span class="cc-need-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+          <div class="cc-need-body">
+            <h3>Tysiące zadowolonych klientów</h3>
+            <p>Obsługujemy studentów, klientów indywidualnych i firmy, które wracają do nas z kolejnymi zleceniami.</p>
+          </div>
+        </article>
+
+        <article class="cc-need-card cc-need-card--blue reveal reveal-delay-2">
+          <span class="cc-need-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></span>
+          <div class="cc-need-body">
+            <h3>Drukarnia na miejscu</h3>
+            <p>Znajdziesz nas przy ul. Bankowej 11 w Katowicach. Odbierz zamówienie osobiście albo wybierz wysyłkę.</p>
+          </div>
+        </article>
       </div>
     </div>
   </section>
@@ -65,102 +71,51 @@
   <section class="cc-section cc-section--dark cc-process" data-cc-process>
     <div class="cc-container">
       <x-concept.section-heading label="Jak to działa" dark align="center">
-        <x-slot:lead>Od pliku do gotowego wydruku. Bez maili, bez zawijania, bez zgadywania ceny.</x-slot:lead>
+        <x-slot:lead>Od pliku do gotowego wydruku. Wybierasz, my dbamy o resztę.</x-slot:lead>
         Od pliku do gotowego wydruku.
       </x-concept.section-heading>
 
       <div class="cc-process-steps">
-        <article class="cc-process-step"><span class="num">01</span><h3>Dodajesz plik</h3><p>Przeciągasz PDF. System liczy strony i pokazuje raport.</p></article>
-        <article class="cc-process-step"><span class="num">02</span><h3>Wybierasz opcje</h3><p>Kolor, strony kartki, egzemplarze i oprawa.</p></article>
-        <article class="cc-process-step"><span class="num">03</span><h3>Widzisz cenę</h3><p>Kwota rośnie razem z wyborem — od razu, nie po zapytaniu.</p></article>
-        <article class="cc-process-step"><span class="num">04</span><h3>Odbiór lub dostawa</h3><p>Katowice, paczkomat albo kurier. Termin osobno od produkcji.</p></article>
-        <article class="cc-process-step"><span class="num">05</span><h3>My drukujemy</h3><p>Konfiguracja trafia do produkcji w jasnej formie.</p></article>
+        <article class="cc-process-step"><span class="num">01</span><h3>Dodajesz plik</h3><p>Przeciągasz PDF. Sprawdzamy liczbę stron i podstawowe informacje.</p></article>
+        <article class="cc-process-step"><span class="num">02</span><h3>Wybierasz ustawienia</h3><p>Kolor, druk jednostronny lub dwustronny, liczba egzemplarzy i oprawa.</p></article>
+        <article class="cc-process-step"><span class="num">03</span><h3>Sprawdzasz cenę</h3><p>Podsumowanie pokazuje, z czego składa się kwota. Bez czekania na odpowiedź.</p></article>
+        <article class="cc-process-step"><span class="num">04</span><h3>Wybierasz odbiór</h3><p>Odbiór w Katowicach, paczkomat albo kurier. Termin produkcji oddzielamy od doręczenia.</p></article>
+        <article class="cc-process-step"><span class="num">05</span><h3>My drukujemy</h3><p>Dostajesz jasne zlecenie, a My przygotowujemy Twój druk.</p></article>
       </div>
     </div>
   </section>
 
-  {{-- 05 Price + control --}}
-  <section class="cc-section cc-section--light" id="cc-cena">
-    <div class="cc-container cc-example-grid">
-      <x-concept.section-heading label="Cena i kontrola">
-        <x-slot:lead>Live podsumowanie po prawej nie jest prawdziwą wyceną. To demonstracja tego, jak będzie działać konfigurator: cena reaguje na każdą zmianę.</x-slot:lead>
-        Wiesz, co zamawiasz.<br>Wiesz, ile płacisz.
-      </x-concept.section-heading>
-
-      <div x-data="ccExample()" class="cc-example-card reveal">
-        <div class="cc-example-head">
-          <strong><i class="fas fa-file-pdf mr-2 text-magenta" aria-hidden="true"></i>Praca.pdf — przykład</strong>
-          <x-concept.demo-notice>Przykład poglądowy</x-concept.demo-notice>
-        </div>
-        <div class="cc-example-body">
-          <div class="cc-example-field">
-            <span>Strony / kolor</span>
-            <div class="cc-seg">
-              <template x-for="m in ['mieszane','czarno-biały']">
-                <button type="button"
-                        :class="{ 'is-active': colorMode === m }"
-                        @click="setColor(m)"
-                        x-text="m"></button>
-              </template>
-            </div>
-          </div>
-          <div class="cc-example-field">
-            <span>Oprawa</span>
-            <div class="cc-seg">
-              <button type="button" :class="{ 'is-active': binding === 'miękka' }" @click="setBinding('miękka')">miękka · 0 zł</button>
-              <button type="button" :class="{ 'is-active': binding === 'kanałowa' }" @click="setBinding('kanałowa')">kanałowa · 25 zł</button>
-              <button type="button" :class="{ 'is-active': binding === 'twarda' }" @click="setBinding('twarda')">twarda · 50 zł</button>
-            </div>
-          </div>
-          <div class="cc-example-field">
-            <span>Egzemplarze <b class="text-magenta" x-text="copies"></b></span>
-            <div class="cc-qty">
-              <button type="button" @click="copies = copies > 1 ? copies - 1 : 1" aria-label="Mniej egzemplarzy"><i class="fas fa-minus" aria-hidden="true"></i></button>
-              <strong x-text="copies"></strong>
-              <button type="button" @click="copies = copies < 10 ? copies + 1 : 10" aria-label="Więcej egzemplarzy"><i class="fas fa-plus" aria-hidden="true"></i></button>
-            </div>
-          </div>
-        </div>
-        <div class="cc-example-target">
-          <div class="cc-price-row"><span>Druk <small>x<template x-text="copies"></template></small></span><strong x-text="fmt(printTotal())"></strong></div>
-          <div class="cc-price-row"><span>Oprawa <small x-text="binding"></small></span><strong x-text="fmt(bindings[binding])"></strong></div>
-          <div class="cc-price-row"><span>Dostawa</span><strong class="cc-price-status">do wyboru</strong></div>
-          <footer class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(total())"></strong></footer>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  {{-- 06 Product / quality showcase --}}
+  {{-- 05 Gallery --}}
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
-      <x-concept.section-heading label="Jakość">
-        <x-slot:lead>Nie pokazujemy stockowych rójek. Pokazujemy to, co faktycznie odbierzesz — produkt, jego fakturę i detale.</x-slot:lead>
-        Zobacz, co odbierzesz.
+      <x-concept.section-heading label="Galeria">
+        <x-slot:lead>Wybrane realizacje z drukarni w Katowicach: od prac dyplomowych po materiały reklamowe.</x-slot:lead>
+        Zobacz, co u nas powstaje.
       </x-concept.section-heading>
 
-      <div class="cc-showcase">
-        <a href="{{ route('services.diploma') }}" class="cc-showcase-card reveal">
-          <img src="{{ asset('images/carousel-6.jpg') }}" alt="Oprawione prace dyplomowe">
-          <div class="cc-showcase-meta"><strong>Oprawa prac</strong><span aria-hidden="true"><i class="fas fa-arrow-right"></i></span></div>
-        </a>
-        <a href="{{ route('services.business') }}" class="cc-showcase-card reveal reveal-delay-1">
-          <img src="{{ asset('images/produkty/product-02.png') }}" alt="Wizytówki premium">
-          <div class="cc-showcase-meta"><strong>Wizytówki</strong><span aria-hidden="true"><i class="fas fa-arrow-right"></i></span></div>
-        </a>
-        <a href="{{ route('services.business') }}" class="cc-showcase-card reveal reveal-delay-2">
-          <img src="{{ asset('images/produkty/product-06.png') }}" alt="Materiały i banery dla firm">
-          <div class="cc-showcase-meta"><strong>Materiały firmowe</strong><span aria-hidden="true"><i class="fas fa-arrow-right"></i></span></div>
-        </a>
+      <div class="cc-gallery">
+        @foreach ([
+          ['src' => 'images/carousel-6.jpg', 'alt' => 'Oprawione prace dyplomowe', 'title' => 'Prace dyplomowe z oprawą'],
+          ['src' => 'images/produkty/ulotki.png', 'alt' => 'Ulotki reklamowe', 'title' => 'Ulotki'],
+          ['src' => 'images/produkty/plakaty.png', 'alt' => 'Plakaty drukowane', 'title' => 'Plakaty'],
+          ['src' => 'images/produkty/banery.png', 'alt' => 'Banery reklamowe', 'title' => 'Banery'],
+          ['src' => 'images/produkty/rollupy.png', 'alt' => 'Rollupy reklamowe', 'title' => 'Rollupy'],
+          ['src' => 'images/produkty/rysunki-plany-mapycad.png', 'alt' => 'Rysunki techniczne, plany i mapy CAD', 'title' => 'Rysunki, plany, CAD'],
+        ] as $item)
+          <figure class="cc-gallery-card reveal">
+            <img src="{{ asset($item['src']) }}" alt="{{ $item['alt'] }}">
+            <figcaption>{{ $item['title'] }}</figcaption>
+          </figure>
+        @endforeach
       </div>
     </div>
   </section>
 
-  {{-- 07 Local trust --}}
+  {{-- 06 Local trust --}}
   <section class="cc-section cc-section--light">
     <div class="cc-container">
       <x-concept.section-heading label="Lokalność">
-        <x-slot:lead>Realna drukarnia w centrum Katowic. Odbiór osobisty, konkretne godziny i kontakt do ludzi, nie formularza.</x-slot:lead>
+        <x-slot:lead>Drukarnia przy ul. Bankowej 11. Możesz przyjść, zadzwonić albo umówić się osobiście.</x-slot:lead>
         Z Katowic.<br>Dla Twojej pracy i Twojej firmy.
       </x-concept.section-heading>
 
@@ -193,11 +148,11 @@
     </div>
   </section>
 
-  {{-- 08 FAQ --}}
+  {{-- 07 FAQ --}}
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
       <x-concept.section-heading label="FAQ">
-        <x-slot:lead>Najczęstsze pytania przed wysłaniem pliku. Odpowiadamy prosto — bez grafomańskiego języka.</x-slot:lead>
+        <x-slot:lead>Najczęstsze pytania przed drukiem. Odpowiadamy prosto, tak jak przy ladzie w drukarni.</x-slot:lead>
         Zanim wyślesz plik.
       </x-concept.section-heading>
 
@@ -213,7 +168,7 @@
     </div>
   </section>
 
-  {{-- 09 Final CTA --}}
+  {{-- 08 Final CTA --}}
   <x-concept.closing-cta heading="Masz już plik?"
     :items="[
       ['href' => route('services.diploma'), 'title' => 'Praca dyplomowa', 'note' => 'druk + oprawa + odbiór', 'icon' => 'fa-graduation-cap'],

@@ -1,308 +1,135 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Koszyk — CopyCabana</title>
-  <link rel="icon" href="images/favicon.png" type="image/png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&amp;family=Caveat:wght@700&amp;family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            donkerblauw: '#063A60',
-            blauw: '#00456F',
-            geel: '#FFED00',
-            wit: '#F5F5F5',
-            lichtgrijs: '#D9D9DD',
-            magenta: '#D51A70',
-            groen: '#7FBF45',
-            paars: '#6B3FA0',
-          },
-          fontFamily: {
-            heading: ['Montserrat', 'sans-serif'],
-            body: ['Montserrat', 'sans-serif'],
-            logo: ['Caveat', 'cursive'],
-          },
-        },
-      },
-    }
-  </script>
-  <link rel="stylesheet" href="css/custom.css">
-  <link rel="stylesheet" href="css/dynamic-local-service.css">
-  <link rel="stylesheet" href="css/dynamic-site.css">
-</head>
-<body class="concept-dynamic" x-data="cartPage()" x-init="init()">
+@extends('layouts.main')
 
-  <!-- ========== NAVBAR ========== -->
-  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-donkerblauw/95 backdrop-blur-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-      <a href="index.html" class="font-logo text-2xl text-geel no-underline">CopyCabana</a>
-      <div class="hidden md:flex items-center gap-8">
-        <a href="index.html" class="nav-link text-white text-sm no-underline">Home</a>
-        <a href="produkty.html" class="nav-link text-white text-sm no-underline">Produkty</a>
-        <a href="o-nas.html" class="nav-link text-white text-sm no-underline">O nas</a>
-        <a href="kontakt.html" class="nav-link text-white text-sm no-underline">Kontakt</a>
-        <a href="koszyk.html" class="nav-link text-white text-sm no-underline relative">
-          <i class="fas fa-shopping-cart"></i>
-          <span class="cart-badge absolute -top-2 -right-3 bg-magenta text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" x-text="cartCount" x-show="cartCount > 0"></span>
-        </a>
-      </div>
-      <button @click="mobileNav = true" class="md:hidden text-white text-xl bg-transparent border-none cursor-pointer">
-        <i class="fas fa-bars"></i>
-      </button>
-    </div>
-  </nav>
+@section('title', 'Koszyk — CopyCabana')
+@section('description', 'Sprawdź konfigurację, wybierz dostawę i przejdź do bezpiecznej płatności.')
 
-  <!-- ========== MOBILE NAV ========== -->
-  <div class="mobile-nav-overlay" :class="{ 'open': mobileNav }" @click="mobileNav = false"></div>
-  <div class="mobile-nav" :class="{ 'open': mobileNav }">
-    <button @click="mobileNav = false" class="close-btn"><i class="fas fa-times"></i></button>
-    <div class="mt-12">
-      <a href="index.html">Home</a>
-      <a href="produkty.html">Produkty</a>
-      <a href="o-nas.html">O nas</a>
-      <a href="kontakt.html">Kontakt</a>
-      <a href="koszyk.html">Koszyk</a>
-    </div>
-  </div>
-
-  <!-- ========== PAGE HEADER ========== -->
-  <section class="page-header mt-16">
-    <h1>Twój koszyk</h1>
-    <div class="underline"></div>
-  </section>
-
-  <!-- ========== CART CONTENT ========== -->
-  <main class="section-wit py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
-      <!-- Empty Cart -->
-      <template x-if="items.length === 0">
-        <div class="text-center py-16">
-          <i class="fas fa-shopping-cart text-6xl text-lichtgrijs mb-4"></i>
-          <h2 class="text-xl font-semibold mb-2">Koszyk jest pusty</h2>
-          <p class="text-gray-500 mb-6">Dodaj produkty z naszej oferty, aby zobaczyć tutaj swoje zamówienie.</p>
-          <a href="produkty.html" class="btn-magenta inline-block">Przeglądaj produkty <i class="fas fa-arrow-right ml-2"></i></a>
+@section('content')
+<main class="cc-page" x-data="cartPage()" x-init="init()">
+    <section class="cc-container py-12 sm:py-16">
+        <div class="mb-8">
+            <p class="text-sm font-semibold uppercase tracking-wide text-[#D51A70]">Zamówienie</p>
+            <h1 class="mt-2 text-4xl font-bold text-[#063A60]">Twój koszyk</h1>
         </div>
-      </template>
 
-      <!-- Cart Items -->
-      <template x-if="items.length > 0">
-        <div>
-          <div class="space-y-4 mb-8">
-            <template x-for="item in items" :key="item.id">
-              <div class="admin-card p-5 flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
-                  <div class="flex items-start justify-between">
-                    <div>
-                      <h3 class="font-semibold" x-text="item.productName"></h3>
-                      <p class="text-sm text-gray-500 mt-1" x-text="item.summary"></p>
+        <template x-if="items.length === 0">
+            <div class="rounded-2xl bg-white p-10 text-center shadow-sm">
+                <i class="fas fa-shopping-cart text-5xl text-slate-300" aria-hidden="true"></i>
+                <h2 class="mt-4 text-xl font-bold text-[#063A60]">Koszyk jest pusty</h2>
+                <p class="mt-2 text-slate-600">Dodaj produkt z katalogu, aby rozpocząć zamówienie.</p>
+                <a href="{{ route('products.index') }}" class="btn-magenta mt-6 inline-block">Przeglądaj produkty</a>
+            </div>
+        </template>
+
+        <template x-if="items.length > 0">
+            <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+                <section class="grid gap-4">
+                    <template x-for="item in items" :key="item.id">
+                        <article class="rounded-2xl bg-white p-5 shadow-sm">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <h2 class="font-bold text-[#063A60]" x-text="item.productName"></h2>
+                                    <p class="mt-1 text-sm text-slate-500" x-text="item.summary || 'Konfiguracja podstawowa'"></p>
+                                </div>
+                                <button type="button" @click="removeItem(item.id)" class="text-slate-400 hover:text-[#D51A70]" aria-label="Usuń produkt"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between gap-4">
+                                <div class="flex items-center rounded-lg border border-slate-200">
+                                    <button type="button" @click="updateQty(item.id, item.quantity - 1)" class="px-3 py-2 text-slate-600">−</button>
+                                    <span class="min-w-10 px-2 text-center text-sm font-semibold" x-text="item.quantity"></span>
+                                    <button type="button" @click="updateQty(item.id, item.quantity + 1)" class="px-3 py-2 text-slate-600">+</button>
+                                </div>
+                                <strong class="text-[#D51A70]" x-text="formatPrice(Number(item.price) * Number(item.quantity))"></strong>
+                            </div>
+                        </article>
+                    </template>
+                    <button type="button" @click="clearCart()" class="justify-self-start text-sm font-semibold text-slate-500 hover:text-[#D51A70]">Wyczyść koszyk</button>
+                </section>
+
+                <aside class="h-fit rounded-2xl bg-white p-6 shadow-sm">
+                    <h2 class="text-xl font-bold text-[#063A60]">Dane do zamówienia</h2>
+                    <div class="mt-5 grid gap-3">
+                        <input x-model="customer.name" type="text" placeholder="Imię i nazwisko *" class="rounded-lg border border-slate-300 px-3 py-2">
+                        <input x-model="customer.email" type="email" placeholder="E-mail *" class="rounded-lg border border-slate-300 px-3 py-2">
+                        <input x-model="customer.phone" type="tel" placeholder="Telefon" class="rounded-lg border border-slate-300 px-3 py-2">
+                        <input x-model="customer.company" type="text" placeholder="Firma" class="rounded-lg border border-slate-300 px-3 py-2">
+                        <textarea x-model="customer.notes" rows="3" placeholder="Uwagi do zamówienia" class="rounded-lg border border-slate-300 px-3 py-2"></textarea>
+                        <select x-model="customer.shipping_method" class="rounded-lg border border-slate-300 px-3 py-2">
+                            <option value="pickup">Odbiór osobisty — bez dopłaty</option>
+                            <option value="parcel">Paczkomat — 12,00 zł</option>
+                            <option value="courier">Kurier — 18,00 zł</option>
+                        </select>
+                        <template x-if="customer.shipping_method !== 'pickup'">
+                            <div class="grid gap-3 rounded-lg bg-slate-50 p-3">
+                                <input x-model="customer.shipping_address.point_code" x-show="customer.shipping_method === 'parcel'" type="text" placeholder="Kod paczkomatu *" class="rounded-lg border border-slate-300 px-3 py-2">
+                                <input x-model="customer.shipping_address.name" x-show="customer.shipping_method === 'parcel'" type="text" placeholder="Nazwa paczkomatu *" class="rounded-lg border border-slate-300 px-3 py-2">
+                                <input x-model="customer.shipping_address.address" type="text" placeholder="Adres *" class="rounded-lg border border-slate-300 px-3 py-2">
+                                <input x-model="customer.shipping_address.city" type="text" placeholder="Miasto *" class="rounded-lg border border-slate-300 px-3 py-2">
+                                <input x-model="customer.shipping_address.post_code" type="text" placeholder="Kod pocztowy *" class="rounded-lg border border-slate-300 px-3 py-2">
+                            </div>
+                        </template>
+                        <input x-model="customer.nip" type="text" placeholder="NIP do faktury" class="rounded-lg border border-slate-300 px-3 py-2">
+                        <label class="flex gap-2 text-sm text-slate-600"><input x-model="customer.invoice_required" type="checkbox"> Proszę o fakturę VAT</label>
+                        <label class="flex gap-2 text-sm text-slate-600"><input x-model="customer.privacy_policy_accepted" type="checkbox"> Akceptuję <a href="{{ route('privacy') }}" class="text-[#D51A70]" target="_blank" rel="noopener">politykę prywatności</a> *</label>
                     </div>
-                    <button @click="removeItem(item.id)" class="text-gray-400 hover:text-magenta transition">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
-                  </div>
-                  <div class="flex items-center gap-4 mt-3">
-                    <div class="flex items-center border border-lichtgrijs rounded-lg overflow-hidden">
-                      <button @click="updateQty(item.id, item.quantity - 1)" class="px-3 py-1 hover:bg-gray-100 transition text-sm">−</button>
-                      <span class="px-3 py-1 text-sm font-medium min-w-[40px] text-center" x-text="item.quantity"></span>
-                      <button @click="updateQty(item.id, item.quantity + 1)" class="px-3 py-1 hover:bg-gray-100 transition text-sm">+</button>
+
+                    <div class="mt-6 grid gap-2 border-t border-slate-100 pt-5 text-sm">
+                        <div class="flex justify-between"><span>Produkty</span><strong x-text="formatPrice(subtotal)"></strong></div>
+                        <div class="flex justify-between"><span>Dostawa</span><strong x-text="formatPrice(shippingCost())"></strong></div>
+                        <div class="mt-2 flex justify-between text-lg font-bold text-[#D51A70]"><span>Razem</span><strong x-text="formatPrice(subtotal + shippingCost())"></strong></div>
                     </div>
-                    <span class="font-bold text-magenta" x-text="(item.price * item.quantity).toFixed(2).replace('.',',') + ' zł'"></span>
-                  </div>
-                </div>
-              </div>
-            </template>
-          </div>
-
-          <!-- Summary -->
-          <div class="admin-card p-6 mb-8">
-            <div class="flex justify-between text-lg font-bold mb-4">
-              <span>Suma:</span>
-              <span class="text-magenta" x-text="total.toFixed(2).replace('.',',') + ' zł'"></span>
+                    <p x-show="orderError" x-text="orderError" class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"></p>
+                    <button type="button" @click="submitOrder()" :disabled="submitting" class="mt-5 w-full rounded-lg bg-[#7FBF45] px-4 py-3 font-semibold text-white disabled:opacity-60"><span x-text="submitting ? 'Przetwarzamy...' : 'Przejdź do płatności'"></span> <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></button>
+                </aside>
             </div>
-            <p class="text-xs text-gray-400 mb-4">Ceny są orientacyjne. Ostateczna wycena nastąpi po kontakcie z naszym biurem.</p>
+        </template>
+    </section>
+</main>
 
-            <!-- Order Form -->
-            <div class="border-t pt-4 mt-4">
-              <h3 class="font-semibold mb-3">Dane do zamówienia</h3>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="text-xs text-gray-500">Imię i nazwisko *</label>
-                  <input type="text" x-model="customer.name" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1">
-                </div>
-                <div>
-                  <label class="text-xs text-gray-500">Email *</label>
-                  <input type="email" x-model="customer.email" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1">
-                </div>
-                <div>
-                  <label class="text-xs text-gray-500">Telefon</label>
-                  <input type="tel" x-model="customer.phone" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1">
-                </div>
-                <div>
-                  <label class="text-xs text-gray-500">Firma</label>
-                  <input type="text" x-model="customer.company" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1">
-                </div>
-              </div>
-               <div class="mt-4">
-                <label class="text-xs text-gray-500">Uwagi do zamówienia</label>
-                <textarea x-model="customer.notes" rows="3" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1" placeholder="Termin realizacji, dodatkowe informacje..."></textarea>
-              </div>
-              <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                <label class="text-xs text-gray-500">Dostawa
-                  <select x-model="customer.shipping_method" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1"><option value="pickup">Odbiór osobisty</option><option value="parcel">Paczkomat (12 zł)</option><option value="courier">Kurier (18 zł)</option></select>
-                </label>
-                <label class="text-xs text-gray-500">NIP do faktury (opcjonalnie)<input type="text" x-model="customer.nip" class="w-full px-3 py-2 border border-lichtgrijs rounded-lg text-sm mt-1"></label>
-              </div>
-              <label class="mt-4 flex gap-2 text-xs text-gray-600"><input type="checkbox" x-model="customer.invoice_required"> Proszę o fakturę VAT</label>
-              <label class="mt-3 flex gap-2 text-xs text-gray-600"><input type="checkbox" x-model="customer.privacy_policy_accepted"> Zapoznałem/am się z polityką prywatności i akceptuję przetwarzanie danych w celu realizacji zamówienia. *</label>
-              <label class="mt-3 flex gap-2 text-xs text-gray-600"><input type="checkbox" x-model="customer.marketing_consent"> Chcę otrzymywać informacje marketingowe (opcjonalnie).</label>
-              <p class="mt-2 text-xs text-red-600" x-show="orderError" x-text="orderError"></p>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-3 mt-6">
-              <button @click="submitOrder()" class="bg-groen text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition flex-1">
-                <i class="fas fa-paper-plane mr-2"></i> Wyślij zamówienie
-              </button>
-              <button @click="clearCart()" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition">
-                <i class="fas fa-trash mr-2"></i> Wyczyść koszyk
-              </button>
-            </div>
-          </div>
-
-          <!-- Success Message -->
-          <template x-if="orderSubmitted">
-            <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-              <i class="fas fa-check-circle text-green-500 text-4xl mb-3"></i>
-              <h3 class="text-lg font-bold text-green-700 mb-2">Zamówienie wysłane!</h3>
-              <p class="text-sm text-green-600">Dziękujemy! Skontaktujemy się z Tobą w ciągu 24 godzin z potwierdzeniem i finalną wyceną.</p>
-              <a href="produkty.html" class="inline-block mt-4 text-donkerblauw font-semibold hover:underline">Wróć do produktów →</a>
-            </div>
-          </template>
-        </div>
-      </template>
-    </div>
-  </main>
-
-  <!-- ========== FOOTER ========== -->
-  <footer class="py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        <div>
-          <a href="index.html" class="font-logo text-2xl text-geel no-underline block mb-4">CopyCabana</a>
-          <div class="flex flex-col gap-2">
-            <a href="index.html">Home</a>
-            <a href="produkty.html">Produkty</a>
-            <a href="o-nas.html">O nas</a>
-            <a href="kontakt.html">Kontakt</a>
-          </div>
-        </div>
-        <div>
-          <h4 class="text-geel font-semibold text-sm mb-4">Popularne produkty</h4>
-          <div class="flex flex-col gap-2">
-            <a href="produkt.html?slug=wizytowki">Wizytówki</a>
-            <a href="produkt.html?slug=ulotki">Ulotki</a>
-            <a href="produkt.html?slug=plakaty">Plakaty</a>
-            <a href="produkt.html?slug=banery">Banery</a>
-            <a href="produkt.html?slug=oprawa_prac">Oprawa prac</a>
-          </div>
-        </div>
-        <div>
-          <h4 class="text-geel font-semibold text-sm mb-4">Kontakt</h4>
-          <div class="flex flex-col gap-2 text-white/75 text-sm">
-            <p><i class="fas fa-map-marker-alt mr-2 text-geel"></i>ul. Bankowa 11, 40-007 Katowice</p>
-            <p><i class="fas fa-phone mr-2 text-geel"></i><a href="tel:502293849">502 293 849</a> / <a href="tel:504939094">504 939 094</a></p>
-            <p><i class="fas fa-envelope mr-2 text-geel"></i><a href="mailto:biuro@copycabana.pl">biuro@copycabana.pl</a></p>
-            <p><i class="fas fa-clock mr-2 text-geel"></i>Pn–Pt 8:00–16:00, Sob 9:00–15:00</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div class="max-w-7xl mx-auto px-4">&copy; 2024 CopyCabana.pl — Wszelkie prawa zastrzeżone.</div>
-    </div>
-  </footer>
-
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="data/prices.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="{{ asset('js/app.js') }}"></script>
-  <script>
+<script src="{{ asset('js/cart.js') }}"></script>
+<script>
+    window.copyCabanaShipping = @js(config('business.shipping'));
     function cartPage() {
-      return {
-        mobileNav: false,
-        items: [],
-        cartCount: 0,
-        total: 0,
-         customer: { name: '', email: '', phone: '', company: '', notes: '', nip: '', shipping_method: 'pickup', invoice_required: false, privacy_policy_accepted: false, marketing_consent: false },
-         orderSubmitted: false,
-         orderError: '',
-
-        init() {
-          this.loadCart();
-          window.addEventListener('cart-updated', () => this.loadCart());
-        },
-
-        loadCart() {
-          this.items = Cart.getItems();
-          this.cartCount = Cart.getCount();
-          this.total = Cart.getTotal();
-        },
-
-        updateQty(id, newQty) {
-          if (newQty < 1) return;
-          Cart.updateItem(id, { quantity: newQty });
-          this.loadCart();
-        },
-
-        removeItem(id) {
-          Cart.removeItem(id);
-          this.loadCart();
-        },
-
-        clearCart() {
-          if (confirm('Na pewno wyczyścić koszyk?')) {
-            Cart.clear();
-            this.items = [];
-            this.cartCount = 0;
-            this.total = 0;
-          }
-        },
-
-         async submitOrder() {
-           if (!this.customer.name || !this.customer.email || !this.customer.privacy_policy_accepted) {
-             this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.';
-             return;
-           }
-           this.orderError = '';
-           try {
-             const response = await fetch('{{ url('/api/v1/orders') }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({
-               customer: this.customer,
-               shipping_method: this.customer.shipping_method,
-               invoice_required: this.customer.invoice_required,
-               marketing_consent: this.customer.marketing_consent,
-               privacy_policy_accepted: this.customer.privacy_policy_accepted,
-               items: this.items.map(i => ({ product_slug: i.productId, quantity: i.quantity, configuration: i.options || {} }))
-             }) });
-             const data = await response.json();
-             if (!response.ok) throw new Error(data.message || Object.values(data.errors || {}).flat()[0] || 'Nie udało się wysłać zamówienia.');
-             Cart.clear();
-             this.items = [];
-             this.cartCount = 0;
-             this.total = 0;
-             this.orderSubmitted = true;
-           } catch (error) {
-             this.orderError = error.message;
-           }
-         }
-      };
+        return {
+            items: [],
+            subtotal: 0,
+            submitting: false,
+            orderError: '',
+            idempotencyKey: window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+            customer: {
+                name: '', email: '', phone: '', company: '', nip: '', notes: '',
+                shipping_method: 'pickup', invoice_required: false, privacy_policy_accepted: false,
+                shipping_address: { point_code: '', name: '', address: '', city: '', post_code: '' },
+            },
+            init() { this.loadCart(); window.addEventListener('cart-updated', () => this.loadCart()); },
+            loadCart() { this.items = Cart.getItems(); this.subtotal = Cart.getTotal(); },
+            updateQty(id, quantity) { if (quantity < 1) return; Cart.updateItem(id, { quantity: Math.min(100, quantity) }); this.loadCart(); },
+            removeItem(id) { Cart.removeItem(id); this.loadCart(); },
+            clearCart() { Cart.clear(); this.loadCart(); },
+            shippingCost() { return Number(window.copyCabanaShipping[this.customer.shipping_method] || 0); },
+            formatPrice(value) { return Number(value).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł'; },
+            async submitOrder() {
+                if (!this.customer.name || !this.customer.email || !this.customer.privacy_policy_accepted) { this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.'; return; }
+                this.orderError = ''; this.submitting = true;
+                try {
+                    const response = await fetch('{{ url('/api/v1/orders') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': this.idempotencyKey },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            customer: this.customer,
+                            shipping_method: this.customer.shipping_method,
+                            shipping_address: this.customer.shipping_method === 'pickup' ? null : this.customer.shipping_address,
+                            invoice_required: this.customer.invoice_required,
+                            privacy_policy_accepted: this.customer.privacy_policy_accepted,
+                            items: this.items.map((item) => ({ product_slug: item.productId, quantity: item.quantity, option_value_ids: item.option_value_ids || [], configuration: item.options || {} })),
+                        }),
+                    });
+                    const payload = await response.json();
+                    if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się utworzyć zamówienia.');
+                    Cart.clear(); window.location.assign(payload.payment_url);
+                } catch (error) { this.orderError = error.message; } finally { this.submitting = false; }
+            },
+        };
     }
-  </script>
-</body>
-</html>
+</script>
+@endsection

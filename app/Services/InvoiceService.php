@@ -16,7 +16,7 @@ class InvoiceService
             }
 
             $gross = (float) $order->total;
-            $rate = (float) ($order->tax_rate ?: 23);
+            $rate = (float) ($order->tax_rate ?: config('business.tax_rate'));
             $net = round($gross / (1 + ($rate / 100)), 2);
 
             return Invoice::create([

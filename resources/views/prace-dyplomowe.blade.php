@@ -4,6 +4,9 @@
 @section('description', 'Kompletny PDF pracy dyplomowej, wybór oprawy, okładki i odbioru. Konfigurator druku — CopyCabana, Katowice.')
 
 @section('content')
+<script>
+  window.copyCabanaThesisPricing = @js(config('business.thesis'));
+</script>
 <main class="cc-page">
   {{-- Hero --}}
   <section class="cc-hero">
@@ -21,25 +24,13 @@
 
       <div class="cc-hero-visual reveal reveal-delay-2">
         <div class="cc-hero-stack" aria-hidden="true">
-          <div class="cc-hero-card cc-hero-card--b">
-            <img src="{{ asset('images/carousel-6.jpg') }}" alt="">
+          <div class="cc-hero-card cc-hero-card--single">
+            <img src="{{ asset('images/produkty/graduation.png') }}" alt="">
           </div>
-          <div class="cc-hero-card cc-hero-card--a">
-            <div class="cc-hero-mini-report" aria-hidden="true">
-              <span>PDF</span>
-              <strong>84 strony</strong>
-              <p>12 kolorowych · 2 egzemplarze</p>
-            </div>
-          </div>
-          <div class="cc-hero-card cc-hero-card--tag">Druk + oprawa</div>
         </div>
       </div>
     </div>
   </section>
-
-  <div class="cc-container cc-mt" style="padding-top:1.5rem">
-    <x-concept.demo-notice>Wersja demonstracyjna konfiguratora</x-concept.demo-notice>
-  </div>
 
   {{-- Configurator --}}
   <div x-data="ccConfigurator()" class="cc-container cc-config cc-config-page">
@@ -51,7 +42,7 @@
             <div><h2>Zacznij od swojej pracy.</h2><p>Dodaj jeden kompletny PDF. Sprawdź, czy zawiera wszystkie strony we właściwej kolejności.</p></div>
           </div>
 
-          <div x-data="ccDropzone('thesis', { pages: 84, colored: 12 })"
+          <div x-data="ccDropzone('thesis')"
                class="cc-dropzone"
                :class="status === 'invalid' ? 'is-invalid' : (dragging && status === 'empty' ? 'is-dragover' : '')"
                @dragover.prevent="dragenter"
@@ -63,13 +54,12 @@
               <div class="cc-dropzone-inner">
                 <i class="cc-dropzone-icon fas fa-file-pdf" aria-hidden="true"></i>
                 <h3>Przeciągnij PDF albo wybierz plik</h3>
-                <p>Format PDF, limit strony do ustalenia przed produkcją.<br>Demo — pliki nie są wysyłane nigdzie.</p>
+                 <p>Format PDF, maksymalnie {{ config('business.thesis.max_pages') }} stron i 20 MB.</p>
                 <div class="cc-dropzone-actions">
                   <label class="btn-magenta" style="cursor:pointer">
                     <i class="fas fa-folder-open mr-2" aria-hidden="true"></i>Wybierz plik PDF
                     <input type="file" accept=".pdf,application/pdf" class="sr-only" @change="change($event)">
                   </label>
-                  <button type="button" class="brand-upload-button" @click="simulate()">Symuluj analizę PDF</button>
                 </div>
               </div>
             </template>
@@ -79,7 +69,7 @@
                 <i class="cc-dropzone-icon fas fa-cloud-arrow-up" aria-hidden="true"></i>
                 <h3 x-text="'Przesyłamy ' + name"></h3>
                 <div class="cc-dropzone-progress"><span></span></div>
-                <p>Pozostań na tej stronie. Plik jest przeliczany lokalnie.</p>
+                 <p>Pozostań na tej stronie. Plik jest przesyłany bezpiecznie do analizy.</p>
               </div>
             </template>
 
@@ -87,7 +77,7 @@
               <div class="cc-dropzone-inner">
                 <span class="cc-spinner" aria-hidden="true"></span>
                 <h3>Analizujemy dokument</h3>
-                <p>Sprawdzamy liczbę stron, orientację i strony kolorowe.</p>
+                 <p>Sprawdzamy poprawność dokumentu i liczbę stron.</p>
               </div>
             </template>
 
@@ -96,9 +86,9 @@
                 <span class="cc-dropzone-success"><i class="fas fa-check" aria-hidden="true"></i></span>
                 <h3>PDF gotowy do konfiguracji</h3>
                 <p class="cc-file-name"><i class="fas fa-file-pdf" aria-hidden="true"></i><span x-text="name"></span></p>
-                <div class="cc-file-report">
-                  <div><span>Strony</span><strong x-text="pages"></strong></div>
-                  <div><span>Kolorowe</span><strong x-text="colored"></strong></div>
+                 <div class="cc-file-report">
+                   <div><span>Strony</span><strong x-text="pages"></strong></div>
+                   <div><span>Tryb koloru</span><strong>do wyboru</strong></div>
                   <div><span>Status</span><strong>OK</strong></div>
                 </div>
                 <div class="cc-dropzone-actions">
@@ -110,9 +100,9 @@
             <template x-if="status === 'invalid'">
               <div class="cc-dropzone-inner">
                 <i class="cc-dropzone-icon fas fa-triangle-exclamation" aria-hidden="true"></i>
-                <h3>To nie wygląda na PDF</h3>
-                <p class="cc-dropzone-error" x-text="'Plik: ' + name"></p>
-                <p>Wybierz plik w formacie PDF albo skontaktuj się z nami w sprawie innego formatu.</p>
+                 <h3>Nie udało się przygotować pliku</h3>
+                 <p class="cc-dropzone-error" x-text="message || ('Plik: ' + name)"></p>
+                 <p>Wybierz poprawny, niezabezpieczony plik PDF i spróbuj ponownie.</p>
                 <div class="cc-dropzone-actions">
                   <label class="btn-magenta" style="cursor:pointer">
                     Wybierz inny plik
@@ -128,26 +118,19 @@
         <section class="cc-step" id="druk">
           <div class="cc-step-head">
             <span class="cc-step-num">02</span>
-            <div><h2>Wybierz, jak wydrukujemy strony.</h2><p>Ustaw kolor, strony kartki i liczbę egzemplarzy.</p></div>
+            <div><h2>Wybierz, jak wydrukujemy strony.</h2><p>Ustaw kolor i strony kartki.</p></div>
           </div>
 
           <p class="cc-step-label">Kolor</p>
-          <div class="cc-step-grid">
-            <x-concept.option-card group="druk-kolor" value="bw" model="print.color" label="czarno-biały" hint="Standard dla prac dyplomowych." />
-            <x-concept.option-card group="druk-kolor" value="color" model="print.color" label="kolor" hint="Strony kolorowe drukowane w kolorze." />
+           <div class="cc-step-grid">
+             <x-concept.option-card group="druk-kolor" value="bw" model="print.color" label="całość czarno-biała" hint="Wszystkie strony wydrukujemy w czerni i bieli." />
+             <x-concept.option-card group="druk-kolor" value="color" model="print.color" label="całość kolorowa" hint="Wszystkie strony wydrukujemy w kolorze." />
           </div>
 
           <p class="cc-step-label">Strony kartki</p>
           <div class="cc-step-grid">
             <x-concept.option-card group="druk-strony" value="simplex" model="print.sided" label="jednostronnie" hint="Każda strona PDF na osobnej kartce." />
             <x-concept.option-card group="druk-strony" value="duplex" model="print.sided" label="dwustronnie" hint="Druk po obu stronach kartki. Oszczędza papier i objętość." />
-          </div>
-
-          <p class="cc-step-label">Liczba egzemplarzy</p>
-          <div class="cc-qty">
-            <button type="button" @click="print.copies = print.copies > 1 ? print.copies - 1 : 1" aria-label="Mniej egzemplarzy"><i class="fas fa-minus" aria-hidden="true"></i></button>
-            <strong x-text="print.copies"></strong>
-            <button type="button" @click="print.copies = print.copies < 10 ? print.copies + 1 : 10" aria-label="Więcej egzemplarzy"><i class="fas fa-plus" aria-hidden="true"></i></button>
           </div>
 
           <p class="cc-step-micro">Potrzebujesz różnych opraw do każdego egzemplarza? Zgłoś to wcześniej — w konfiguratorze ustawiamy jedną oprawę dla całego nakładu.</p>
@@ -176,7 +159,7 @@
                 thickness="{{ $b['id'] }}"
                 label="{{ $b['label'] }}"
                 hint="{{ $b['hint'] }}"
-                price="{{ $b['price'] }}" />
+                price="{{ number_format((float) config('business.thesis.bindings.'.$b['id'].'.price'), 2, ',', ' ') }} zł" />
             @endforeach
           </div>
 
@@ -198,7 +181,7 @@
                 model="cover"
                 label="{{ ['none' => 'Bez napisu', 'standard' => 'Standardowy napis', 'custom' => 'Własny napis'][$c] }}"
                 hint="{{ ['none' => 'Czysta okładka.', 'standard' => 'Wzór do akceptacji przed produkcją.', 'custom' => 'Dokładna treść, jaką wpiszesz.'][$c] }}"
-                price="{{ ['none' => '0,00 zł', 'standard' => '15,00 zł', 'custom' => '10,00 zł'][$c] }}" />
+                 price="{{ number_format((float) config('business.thesis.covers.'.$c.'.price'), 2, ',', ' ') }} zł" />
             @endforeach
           </div>
 
@@ -268,16 +251,18 @@
           </div>
 
           <div class="cc-step-grid cc-step-grid--3">
-            @foreach (['pickup', 'parcel', 'courier'] as $i => $d)
+             @foreach (['pickup', 'parcel'] as $i => $d)
               <x-concept.option-card
                 group="odbior"
                 value="{{ $d }}"
                 model="delivery"
                 label="{{ ['pickup' => 'Odbiór w Katowicach', 'parcel' => 'Paczkomat', 'courier' => 'Kurier'][$d] }}"
-                hint="{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'demo — integracja do potwierdzenia', 'courier' => 'demo — integracja do potwierdzenia'][$d] }}"
-                price="{{ ['pickup' => '0,00 zł', 'parcel' => '12,00 zł', 'courier' => '18,00 zł'][$d] }}" />
+                hint="{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'Wybierz punkt z listy InPost', 'courier' => 'Dostawa pod wskazany adres'][$d] }}"
+                 price="{{ number_format((float) config('business.shipping.'.$d), 2, ',', ' ') }} zł" />
             @endforeach
           </div>
+
+          <x-concept.inpost-picker prefix="thesis" />
 
           <div class="cc-field">
             <label for="odbior-data">Potrzebuję pracy najpóźniej</label>
@@ -293,7 +278,7 @@
         <section class="cc-step" id="dane">
           <div class="cc-step-head">
             <span class="cc-step-num">06</span>
-            <div><h2>Podaj dane do zamówienia.</h2><p>Na ten e-mail wyślemy potwierdzenie i informacje o realizacji. Demo — nic nie jest wysyłane.</p></div>
+             <div><h2>Podaj dane do zamówienia.</h2><p>Na ten e-mail wyślemy potwierdzenie i informacje o realizacji.</p></div>
           </div>
 
           <div class="cc-field-grid">
@@ -318,6 +303,11 @@
               <span>Potrzebuję faktury</span>
             </label>
           </div>
+
+          <label class="cc-consent">
+            <input type="checkbox" x-model="privacyAccepted">
+            <span>Akceptuję <a href="{{ route('privacy') }}" target="_blank" rel="noopener">politykę prywatności</a> i zgadzam się na przetwarzanie danych w celu realizacji zamówienia.</span>
+          </label>
 
           <template x-if="form.invoice">
             <div class="cc-field-grid" x-transition.opacity.duration.200ms>
@@ -344,12 +334,12 @@
             <div class="cc-review-block">
               <span>Plik</span>
               <strong x-text="file.name || 'nie dodano pliku'"></strong>
-              <small x-show="file.pages"><template x-text="file.pages"></template> stron · <template x-text="file.colored"></template> kolorowych</small>
+              <small x-show="file.pages"><template x-text="file.pages"></template> stron</small>
               <button type="button" class="cc-review-edit" @click="go('#plik')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
             </div>
             <div class="cc-review-block">
               <span>Druk</span>
-              <strong x-text="print.color === 'bw' ? 'czarno-biały' : 'kolor'"></strong>
+              <strong x-text="printColorName()"></strong>
               <small x-text="print.sided === 'simplex' ? 'jednostronnie' : 'dwustronnie'"></small>
               <button type="button" class="cc-review-edit" @click="go('#druk')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
             </div>
@@ -369,29 +359,45 @@
               <span>Odbiór / dostawa</span>
               <strong x-text="deliveryName() || 'nie wybrano'"></strong>
               <small x-text="dateLbl()"></small>
+              <small x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></small>
               <button type="button" class="cc-review-edit" @click="go('#odbiór')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
             </div>
           </div>
 
           <div class="cc-summary-card cc-summary-full">
-            <div class="cc-price-row"><span>Druk</span><strong x-text="fmt(printTotal())"></strong></div>
-            <div class="cc-price-row"><span>Oprawa</span><strong x-text="fmt(bindingPrice())"></strong></div>
-            <div class="cc-price-row"><span>Personalizacja (okładka)</span><strong x-text="fmt(coverPrice())"></strong></div>
+             <div class="cc-price-row"><span>Druk</span><strong x-text="fmt(quoteValue('print_total', printTotal()))"></strong></div>
+             <div class="cc-price-row"><span>Oprawa</span><strong x-text="fmt(quoteValue('binding_total', bindingPrice() * print.copies))"></strong></div>
+             <div class="cc-price-row"><span>Personalizacja (okładka)</span><strong x-text="fmt(quoteValue('cover_total', coverPrice() * print.copies))"></strong></div>
             <template x-if="deliveryPrice() !== null">
-              <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(deliveryPrice())"></strong></div>
+               <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(quoteValue('shipping_total', deliveryPrice()))"></strong></div>
             </template>
             <template x-if="deliveryPrice() === null">
               <div class="cc-price-row"><span>Dostawa</span><strong class="cc-price-status">nie wybrano</strong></div>
             </template>
-            <footer class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(total())"></strong></footer>
+             <footer class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(quoteValue('total', total()))"></strong></footer>
+          </div>
+
+          <div class="cc-summary-copies">
+            <div>
+              <p class="cc-step-label">Liczba egzemplarzy</p>
+              <p class="cc-step-micro">Ustaw nakład dla wybranej oprawy.</p>
+            </div>
+            <div class="cc-qty">
+              <button type="button" @click="print.copies = print.copies > 1 ? print.copies - 1 : 1" aria-label="Mniej egzemplarzy"><i class="fas fa-minus" aria-hidden="true"></i></button>
+              <strong x-text="print.copies"></strong>
+              <button type="button" @click="print.copies = print.copies < 10 ? print.copies + 1 : 10" aria-label="Więcej egzemplarzy"><i class="fas fa-plus" aria-hidden="true"></i></button>
+            </div>
           </div>
 
           <div class="cc-final-actions">
-            <button type="button" class="btn-magenta" disabled>
-              Zobacz przykładowe podsumowanie <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
-            </button>
-            <p class="cc-summary-demo">Wersja demonstracyjna. Nie przesyła plików ani nie składa zamówień.<br>Po wdrożeniu ten przycisk przejdzie do wyceny lub płatności.</p>
-          </div>
+             <button type="button" class="btn-magenta" @click="submitOrder()" :disabled="submitting || quoteLoading">
+               <span x-show="!submitting">Zamawiam i przechodzę do płatności</span>
+               <span x-show="submitting">Przygotowujemy zamówienie...</span>
+               <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
+             </button>
+             <p class="cc-summary-demo" x-show="quoteLoading">Potwierdzamy cenę na podstawie aktualnej konfiguracji.</p>
+             <p class="cc-warning" x-show="quoteError || orderError" x-text="quoteError || orderError"></p>
+           </div>
         </section>
       </div>
     </div>
@@ -403,21 +409,22 @@
           <strong><i class="fas fa-file-pdf mr-2 text-magenta" aria-hidden="true"></i>Twoja praca</strong>
           <ul>
             <li x-text="file.name || 'nie dodano pliku'"></li>
-            <template x-if="file.pages"><li><template x-text="file.pages"></template> stron · <template x-text="file.colored"></template> kolorowych</li></template>
+            <template x-if="file.pages"><li><template x-text="file.pages"></template> stron</li></template>
             <li><template x-text="print.copies"></template> egzemplarz(e) · <span x-text="bindingName() || 'oprawa?'"></span></li>
+            <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
           </ul>
         </div>
 
         <template x-if="!file.name">
           <div class="cc-price-row"><span>Druk</span><strong class="cc-price-status">po analizie PDF</strong></div>
         </template>
-        <template x-if="file.name">
-          <div class="cc-price-row"><span>Druk</span><strong x-text="fmt(printTotal())"></strong></div>
-        </template>
-        <div class="cc-price-row"><span>Oprawa</span><strong x-text="fmt(bindingPrice())"></strong></div>
-        <div class="cc-price-row"><span>Personalizacja</span><strong x-text="fmt(coverPrice())"></strong></div>
-        <template x-if="deliveryPrice() !== null">
-          <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(deliveryPrice())"></strong></div>
+             <template x-if="file.name">
+           <div class="cc-price-row"><span>Druk</span><strong x-text="fmt(quoteValue('print_total', printTotal()))"></strong></div>
+         </template>
+         <div class="cc-price-row"><span>Oprawa</span><strong x-text="fmt(quoteValue('binding_total', bindingPrice() * print.copies))"></strong></div>
+         <div class="cc-price-row"><span>Personalizacja</span><strong x-text="fmt(quoteValue('cover_total', coverPrice() * print.copies))"></strong></div>
+         <template x-if="deliveryPrice() !== null">
+           <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(quoteValue('shipping_total', deliveryPrice()))"></strong></div>
         </template>
         <template x-if="deliveryPrice() === null">
           <div class="cc-price-row"><span>Dostawa</span><strong class="cc-price-status">nie wybrano</strong></div>
@@ -425,11 +432,11 @@
 
         <div class="cc-summary-term"><span>Termin</span><strong x-text="dateLbl()"></strong></div>
 
-        <div class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(total())"></strong></div>
+         <div class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(quoteValue('total', total()))"></strong></div>
 
         <div class="cc-summary-actions">
           <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Przejdź do podsumowania <i class="fas fa-arrow-down ml-2" aria-hidden="true"></i></button>
-          <p class="cc-summary-demo">Wersja demonstracyjna — ceny poglądowe, nie obiegają one żadnego zamówienia.</p>
+           <p class="cc-summary-demo" x-show="quote">Cena potwierdzona przez serwer dla aktualnej konfiguracji.</p>
         </div>
       </div>
     </aside>
@@ -438,7 +445,7 @@
     <div class="cc-mobile-bar">
       <div class="cc-mobile-bar-total">
         <span>Razem brutto</span>
-        <strong x-text="fmt(total())"></strong>
+         <strong x-text="fmt(quoteValue('total', total()))"></strong>
       </div>
       <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Podsumowanie <i class="fas fa-arrow-up ml-2" aria-hidden="true"></i></button>
     </div>
