@@ -42,14 +42,16 @@
         <a href="{{ route('services.business') }}">Dla firm</a>
       </nav>
       <div class="cc-header-actions">
-        <a href="{{ route('contact') }}" class="cc-link-outline">Kontakt</a>
-        <a href="{{ route('cart') }}" class="cc-link-outline">Koszyk</a>
+        <a href="{{ route('cart') }}" class="cc-header-icon" aria-label="Koszyk">
+          <i class="fas fa-cart-shopping" aria-hidden="true"></i>
+          <span class="cart-badge cc-cart-badge" aria-live="polite" style="display:none">0</span>
+        </a>
         @auth
           @if(auth()->user()->isCustomer())
-            <a href="{{ route('customer.dashboard') }}" class="cc-link-outline">Moje konto</a>
+            <a href="{{ route('customer.dashboard') }}" class="cc-header-icon" aria-label="Moje konto"><i class="fas fa-user" aria-hidden="true"></i></a>
           @endif
         @else
-          <a href="{{ route('customer.login') }}" class="cc-link-outline">Zaloguj</a>
+          <a href="{{ route('customer.login') }}" class="cc-header-icon" aria-label="Zaloguj"><i class="fas fa-user" aria-hidden="true"></i></a>
         @endauth
         <button @click="mobileNav = true" class="cc-burger" aria-label="Otwórz menu">
           <i class="fas fa-bars"></i>
@@ -63,11 +65,10 @@
     <button @click="mobileNav = false" class="close-btn" aria-label="Zamknij menu"><i class="fas fa-times"></i></button>
     <div class="mt-12">
       <a href="{{ route('home') }}">Start</a>
-      <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
-      <a href="{{ route('druk-pdf') }}">Druk PDF</a>
-      <a href="{{ route('services.business') }}">Druk dla firm</a>
-      <a href="{{ route('contact') }}">Kontakt</a>
-      <a href="{{ route('cart') }}">Koszyk</a>
+        <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
+        <a href="{{ route('druk-pdf') }}">Druk PDF</a>
+        <a href="{{ route('services.business') }}">Druk dla firm</a>
+        <a href="{{ route('cart') }}">Koszyk</a>
       @auth
         @if(auth()->user()->isCustomer())
           <a href="{{ route('customer.dashboard') }}">Moje konto</a>
@@ -97,6 +98,7 @@
     </div>
   </footer>
 
+  <script src="{{ asset('js/cart.js') }}"></script>
   <script src="{{ asset('js/concept.js') }}"></script>
   <script src="{{ asset('js/app.js') }}"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

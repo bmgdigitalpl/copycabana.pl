@@ -11,33 +11,29 @@
 <main class="cc-page">
   {{-- Hero --}}
   <section class="cc-hero">
-    <div class="cc-container cc-hero-grid">
+    <div class="cc-container cc-container--wide cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk dla firm</p>
         <h1 class="cc-hero-title reveal reveal-delay-1">Zamów taki druk, <em>jakiego potrzebujesz.</em></h1>
         <p class="reveal reveal-delay-2">Wizytówki, ulotki, plakaty, banery, rollupy i dokumenty dla firm oraz agencji. Układasz wiele pozycji w jednym zapytaniu, a my wyceniamy całość.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#produkty" @click.prevent="ccGo('#produkty')" class="btn-magenta inline-block">Zacznij od produktu <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
-          <a href="#pomoc" @click.prevent="ccGo('#pomoc')" class="btn-outline-light inline-block">Masz niestandardowe zlecenie?</a>
+          <a href="{{ route('contact') }}" class="btn-outline-light inline-block">Masz niestandardowe zlecenie?</a>
         </div>
       </div>
 
       <div class="cc-hero-visual reveal reveal-delay-2">
         <div class="cc-hero-stack" aria-hidden="true">
           <div class="cc-hero-card cc-hero-card--single">
-            <img src="{{ asset('images/produkty/product-03.png') }}" alt="">
+            <img src="{{ asset('images/hero-new.webp') }}" alt="">
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <div class="cc-container cc-mt" style="padding-top:1.5rem">
-    <p class="cc-step-micro">Wypełnij brief, dołącz pliki i wyślij zapytanie. Pracownia przygotuje indywidualną wycenę.</p>
-  </div>
-
   {{-- Configurator --}}
-  <div x-data="ccB2bConfigurator()" class="cc-container cc-config cc-config-page">
+  <div x-data="ccB2bConfigurator()" class="cc-container cc-container--wide cc-config cc-config-page">
     <div class="cc-config-main">
       <div class="cc-steps">
 
@@ -209,7 +205,7 @@
               <label class="cc-option">
                 <input type="radio" name="b2b-odbior" value="{{ $delivery['id'] }}" x-model="delivery">
                 <span class="cc-option-body">
-                  <span class="cc-option-check"><i class="fas fa-check" aria-hidden="true"></i><em>Wybrano</em></span>
+                  <span class="cc-option-check"><i class="fas fa-check" aria-hidden="true"></i></span>
                   <span class="cc-option-main">
                      <strong>{{ $delivery['name'] }}</strong>
                      <em>{{ $delivery['hint'] }}</em>
@@ -241,129 +237,6 @@
           <p class="cc-summary-note">Produkcję (e.g. druk 5–7 dni roboczych) zawsze potwierdzimy w wycenie — <strong>tego terminu nie zgadujemy</strong>.</p>
         </section>
 
-        {{-- Step 04 — Dane firmowe --}}
-        <section class="cc-step" id="dane">
-          <div class="cc-step-head">
-            <span class="cc-step-num">04</span>
-             <div><h2>Dokąd wysłać wycenę?</h2><p>Odpowiemy na podany adres e-mail.</p></div>
-          </div>
-
-          <div class="cc-field-grid">
-            <div class="cc-field">
-              <label for="b2b-imie">Imię i nazwisko</label>
-              <input id="b2b-imie" type="text" x-model="company.person" placeholder="Jan Kowalski">
-            </div>
-            <div class="cc-field">
-              <label for="b2b-email">E-mail</label>
-              <input id="b2b-email" type="email" x-model="company.email" placeholder="jan@firma.pl">
-            </div>
-            <div class="cc-field">
-              <label for="b2b-telefon">Telefon</label>
-              <input id="b2b-telefon" type="tel" x-model="company.phone" placeholder="502 000 000">
-            </div>
-            <div class="cc-field">
-              <label for="b2b-firma">Nazwa firmy</label>
-              <input id="b2b-firma" type="text" x-model="company.name" placeholder="Nazwa firmy">
-            </div>
-          </div>
-
-          <div class="cc-field">
-            <label class="cc-toggle">
-              <input type="checkbox" x-model="company.invoice">
-              <span class="cc-toggle-track" aria-hidden="true"></span>
-              <span>Potrzebuję faktury VAT</span>
-            </label>
-          </div>
-
-          <template x-if="company.invoice">
-            <div class="cc-field" x-transition.opacity.duration.200ms>
-              <label for="b2b-nip">NIP</label>
-              <input id="b2b-nip" type="text" x-model="company.nip" placeholder="0000000000">
-            </div>
-          </template>
-
-          <label class="cc-consent">
-            <input type="checkbox" x-model="privacyAccepted">
-            <span>Akceptuję <a href="{{ route('privacy') }}" target="_blank" rel="noopener">politykę prywatności</a> i zgadzam się na przetwarzanie danych w celu przygotowania wyceny.</span>
-          </label>
-        </section>
-
-        {{-- Step 05 — Pomoc / niestandardowe zlecenie --}}
-        <section class="cc-step" id="pomoc">
-          <div class="cc-step-head">
-            <span class="cc-step-num">05</span>
-            <div><h2>Nie widzisz swojego druku?</h2><p>Opisz zlecenie prostymi słowami — pracownia doradzi i dopasuje format, nakład oraz technologię druku.</p></div>
-          </div>
-
-          <div class="cc-brief">
-            <template x-if="!briefOpen">
-              <div>
-                <h3>Mam niestandardowe zlecenie</h3>
-                <p>Plakaty w nietypowym formacie, naklejki, koperty, teczki i podkładki — zaczynamy od rozmowy o celu realizacji.</p>
-                <label class="btn-geel" style="cursor:pointer" @click="toggleBrief()">Opisz zlecenie <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></label>
-              </div>
-            </template>
-
-            <template x-if="briefOpen">
-              <form @submit.prevent="sendBrief()">
-                <h3>Opisz zlecenie</h3>
-                <label for="brief-type">Rodzaj</label>
-                <select id="brief-type" x-model="brief.type">
-                  @foreach (['Naklejki i etykiety', 'Koperty', 'Teczki', 'Podkładki', 'Bramki i konstrukcje', 'Coś zupełnie innego'] as $t)
-                    <option>{{ $t }}</option>
-                  @endforeach
-                </select>
-                <label for="brief-desc">Opis</label>
-                <textarea id="brief-desc" rows="3" x-model="brief.desc" placeholder="Co to jest, w jakim formacie, jaka ilość, jaki deadline…"></textarea>
-                <label for="brief-qty">Ilość</label>
-                <input id="brief-qty" type="text" x-model="brief.qty" placeholder="np. 500 sztuk">
-                <label for="brief-date">Kiedy potrzebne</label>
-                <input id="brief-date" type="date" x-model="brief.date" :min="new Date().toISOString().split('T')[0]">
-                <button type="submit" class="btn-magenta">Zapisz opis do zapytania <i class="fas fa-plus ml-2" aria-hidden="true"></i></button>
-                <p class="cc-brief-note" x-show="briefSent">Opis zostanie dołączony do zapytania.</p>
-              </form>
-            </template>
-          </div>
-        </section>
-
-        {{-- Step 06 — Podsumowanie --}}
-        <section class="cc-step" id="podsumowanie">
-          <div class="cc-step-head">
-            <span class="cc-step-num">06</span>
-            <div><h2>Sprawdź wniosek o wycenę.</h2><p>Pozycje możesz zmienić — do wyceny wraca gotowa lista.</p></div>
-          </div>
-
-          <div class="cc-summary-card cc-summary-full">
-            <div class="cc-summary-head">
-              <strong><i class="fas fa-clipboard-list mr-2 text-magenta" aria-hidden="true"></i>Wniosek o wycenę</strong>
-              <ul>
-                 <li x-text="items.length + (items.length === 1 ? ' pozycja' : items.length > 1 && items.length < 5 ? ' pozycje' : ' pozycji')"></li>
-                 <li x-text="deliveryName() || 'odbiór nie wybrany'"></li>
-                 <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
-               </ul>
-            </div>
-
-            <template x-if="items.length === 0">
-              <div class="cc-price-row"><span>Pozycje</span><strong class="cc-price-status">dodaj przynajmniej jedną</strong></div>
-            </template>
-
-            <template x-for="item in items" :key="item.id">
-              <div class="cc-price-row">
-                <span x-text="item.name"></span>
-                <strong class="cc-price-status" x-text="itemSummary(item)"></strong>
-              </div>
-            </template>
-
-            <div class="cc-summary-term"><span>Produkcja</span><strong>po wycenie</strong></div>
-            <div class="cc-summary-total"><span>Razem</span><strong>wyceny po kontakcie</strong></div>
-          </div>
-
-          <div class="cc-final-actions">
-            <button type="button" class="btn-magenta" @click="submitQuoteRequest()" :disabled="submitting || submitted"><span x-text="submitting ? 'Wysyłamy...' : (submitted ? 'Zapytanie wysłane' : 'Wyślij wniosek o wycenę')"></span> <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
-            <p class="cc-summary-demo" x-show="submitError" x-text="submitError"></p>
-            <p class="cc-summary-demo" x-show="submitted">Dziękujemy. Odpowiemy po analizie zakresu i plików.</p>
-          </div>
-        </section>
       </div>
     </div>
 
@@ -390,7 +263,48 @@
         <div class="cc-summary-term"><span>Produkcja</span><strong>po wycenie</strong></div>
         <div class="cc-summary-total"><span>Razem</span><strong>wyceny po kontakcie</strong></div>
         <div class="cc-summary-actions">
-          <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Przejdź do podsumowania <i class="fas fa-arrow-down ml-2" aria-hidden="true"></i></button>
+          <div class="cc-field-grid">
+            <div class="cc-field">
+              <label for="b2b-imie">Imię i nazwisko</label>
+              <input id="b2b-imie" type="text" x-model="company.person" placeholder="Jan Kowalski">
+            </div>
+            <div class="cc-field">
+              <label for="b2b-firma">Nazwa firmy</label>
+              <input id="b2b-firma" type="text" x-model="company.name" placeholder="Nazwa firmy">
+            </div>
+            <div class="cc-field">
+              <label for="b2b-email">E-mail</label>
+              <input id="b2b-email" type="email" x-model="company.email" placeholder="jan@firma.pl">
+            </div>
+            <div class="cc-field">
+              <label for="b2b-telefon">Telefon (opcjonalnie)</label>
+              <input id="b2b-telefon" type="tel" x-model="company.phone" placeholder="502 000 000">
+            </div>
+          </div>
+
+          <div class="cc-field">
+            <label class="cc-toggle">
+              <input type="checkbox" x-model="company.invoice">
+              <span class="cc-toggle-track" aria-hidden="true"></span>
+              <span>Potrzebuję faktury VAT</span>
+            </label>
+          </div>
+
+          <template x-if="company.invoice">
+            <div class="cc-field" x-transition.opacity.duration.200ms>
+              <label for="b2b-nip">NIP</label>
+              <input id="b2b-nip" type="text" x-model="company.nip" placeholder="0000000000">
+            </div>
+          </template>
+
+          <label class="cc-consent">
+            <input type="checkbox" x-model="privacyAccepted">
+            <span>Akceptuję <a href="{{ route('privacy') }}" target="_blank" rel="noopener">politykę prywatności</a> i zgadzam się na przetwarzanie danych w celu przygotowania wyceny.</span>
+          </label>
+
+          <button type="button" class="btn-magenta" @click="submitQuoteRequest()" :disabled="submitting || submitted"><span x-text="submitting ? 'Wysyłamy...' : (submitted ? 'Zapytanie wysłane' : 'Wyślij wniosek o wycenę')"></span> <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
+          <p class="cc-warning" x-show="submitError" x-text="submitError"></p>
+          <p class="cc-summary-demo" x-show="submitted">Dziękujemy. Odpowiemy po analizie zakresu i plików.</p>
           <p class="cc-summary-demo">Wersja demonstracyjna — wycena po kontakcie.</p>
         </div>
       </div>
@@ -402,7 +316,8 @@
         <span>Pozycje</span>
         <strong x-text="items.length"></strong>
       </div>
-      <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Podsumowanie <i class="fas fa-arrow-up ml-2" aria-hidden="true"></i></button>
+      <button type="button" class="btn-magenta" @click="submitQuoteRequest()" :disabled="submitting || submitted"><span x-text="submitted ? 'Wysłano' : 'Wyślij wycenę'"></span></button>
+      <p class="cc-mobile-bar-message" x-show="submitError" x-text="submitError"></p>
     </div>
   </div>
 </main>

@@ -9,9 +9,7 @@
   <section class="cc-hero">
     <div class="cc-container cc-hero-grid">
       <div class="cc-hero-copy">
-        <p class="cc-hero-overline reveal">CopyCabana · Drukarnia w Katowicach</p>
         <h1 class="cc-hero-title reveal reveal-delay-1">Od pliku do<br><em>gotowego wydruku.</em></h1>
-        <p class="reveal reveal-delay-2">Prace dyplomowe, dokumenty PDF oraz materiały dla firm i agencji. Wybierz usługę, ustaw szczegóły i poznaj kolejne kroki.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block">Skonfiguruj druk <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
           <a href="{{ route('services.business') }}" class="btn-geel inline-block">Druk dla firm</a>
@@ -79,17 +77,14 @@
   {{-- 04 Animated process --}}
   <section class="cc-section cc-section--dark cc-process" data-cc-process>
     <div class="cc-container">
-      <x-concept.section-heading label="Jak to działa" dark align="center">
-        <x-slot:lead>Od pliku do gotowego wydruku. Wybierasz, my dbamy o resztę.</x-slot:lead>
+      <x-concept.section-heading dark>
         Od pliku do gotowego wydruku.
       </x-concept.section-heading>
 
       <div class="cc-process-steps">
-        <article class="cc-process-step"><span class="num">01</span><h3>Dodajesz plik</h3><p>Przeciągasz PDF. Sprawdzamy liczbę stron i podstawowe informacje.</p></article>
-        <article class="cc-process-step"><span class="num">02</span><h3>Wybierasz ustawienia</h3><p>Kolor, druk jednostronny lub dwustronny, liczba egzemplarzy i oprawa.</p></article>
-        <article class="cc-process-step"><span class="num">03</span><h3>Sprawdzasz cenę</h3><p>Podsumowanie pokazuje, z czego składa się kwota. Bez czekania na odpowiedź.</p></article>
-        <article class="cc-process-step"><span class="num">04</span><h3>Wybierasz odbiór</h3><p>Odbiór w Katowicach, paczkomat albo kurier. Termin produkcji oddzielamy od doręczenia.</p></article>
-        <article class="cc-process-step"><span class="num">05</span><h3>My drukujemy</h3><p>Dostajesz jasne zlecenie, a My przygotowujemy Twój druk.</p></article>
+        <article class="cc-process-step"><span class="num">01</span><h3>Konfigurujesz pracę</h3><p>Dodajesz plik, wybierasz ustawienia i od razu widzisz cenę.</p></article>
+        <article class="cc-process-step"><span class="num">02</span><h3>Wybierasz odbiór</h3><p>Odbiór w Katowicach, paczkomat albo kurier. Termin produkcji oddzielamy od doręczenia.</p></article>
+        <article class="cc-process-step"><span class="num">03</span><h3>My drukujemy</h3><p>Dostajesz jasne zlecenie, a my przygotowujemy Twój druk.</p></article>
       </div>
     </div>
   </section>
@@ -97,61 +92,44 @@
   {{-- 05 Gallery --}}
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
-      <x-concept.section-heading label="USŁUGI">
-        <x-slot:lead>Wybrane realizacje z drukarni w Katowicach: od prac dyplomowych po materiały reklamowe.</x-slot:lead>
+      <x-concept.section-heading>
         USŁUGI
       </x-concept.section-heading>
 
       <div class="cc-gallery">
-        @foreach ([
-          ['src' => 'images/produkty/oprawa-prac-i-bindowanie.png', 'alt' => 'Oprawa prac dyplomowych', 'title' => 'Oprawa prac i bindowanie'],
-          ['src' => 'images/produkty/ulotki.png', 'alt' => 'Ulotki reklamowe', 'title' => 'Ulotki'],
-          ['src' => 'images/produkty/plakaty.png', 'alt' => 'Plakaty drukowane', 'title' => 'Plakaty'],
-          ['src' => 'images/produkty/banery.png', 'alt' => 'Banery reklamowe', 'title' => 'Banery'],
-          ['src' => 'images/produkty/rollupy.png', 'alt' => 'Rollupy reklamowe', 'title' => 'Rollupy'],
-          ['src' => 'images/produkty/rysunki-plany-mapycad.png', 'alt' => 'Rysunki techniczne, plany i mapy CAD', 'title' => 'Rysunki, plany, CAD'],
-        ] as $item)
+        @foreach ($services as $item)
           <figure class="cc-gallery-card reveal">
-            <img src="{{ asset($item['src']) }}" alt="{{ $item['alt'] }}">
-            <figcaption>{{ $item['title'] }}</figcaption>
+            <img src="{{ $item['image'] }}" alt="{{ $item['alt'] }}">
+            <figcaption>
+              <span>{{ $item['title'] }}</span>
+              <a href="{{ $item['href'] }}" class="btn-magenta cc-gallery-order">Zamów <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
+            </figcaption>
           </figure>
         @endforeach
       </div>
     </div>
   </section>
 
-  {{-- 06 Local trust --}}
-  <section class="cc-section cc-section--light">
-    <div class="cc-container">
-      <x-concept.section-heading label="Lokalność">
-        <x-slot:lead>Drukarnia przy ul. Bankowej 11. Możesz przyjść, zadzwonić albo przesłać plik zdalnie.</x-slot:lead>
-        Z Katowic.<br>Dla pracy, firmy i agencji.
-      </x-concept.section-heading>
-
-      <div class="cc-local-grid">
-        <div class="cc-local-card reveal">
-          <div class="cc-local-fact">
-            <i class="fas fa-location-dot" aria-hidden="true"></i>
-            <div><strong>Punkt odbioru</strong><em>ul. Bankowa 11, 40-007 Katowice</em></div>
-          </div>
-          <div class="cc-local-fact">
-            <i class="fas fa-clock" aria-hidden="true"></i>
-            <div><strong>Godziny otwarcia</strong><em>Pn–Pt: 8:00–16:00 · Sobota: 9:00–15:00</em></div>
-          </div>
-          <div class="cc-local-fact">
-            <i class="fas fa-phone" aria-hidden="true"></i>
-            <div><strong>Telefon</strong><em>502 293 849</em></div>
-          </div>
-          <div class="cc-local-fact">
-            <i class="fas fa-envelope" aria-hidden="true"></i>
-            <div><strong>Email</strong><em>biuro@copycabana.pl</em></div>
-          </div>
-          <p class="cc-local-note">Pomożemy dobrać format, nakład, papier i wykończenie do zastosowania oraz budżetu Twojego projektu.</p>
-          <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block mt-4" style="width:fit-content">Sprawdź konfigurator pracy</a>
+  {{-- 06 Contact hero --}}
+  <section class="cc-hero">
+    <div class="cc-container cc-hero-grid">
+      <div class="cc-hero-copy">
+        <p class="cc-hero-overline reveal">Kontakt</p>
+        <h2 class="cc-hero-title reveal reveal-delay-1">Jesteśmy w Katowicach.<em>Napisz albo zadzwoń.</em></h2>
+        <p class="reveal reveal-delay-2">Masz plik, pytanie o termin albo niestandardowe zlecenie? Odezwij się do drukarni przy ul. Bankowej 11.</p>
+        <div class="cc-hero-actions reveal reveal-delay-3">
+          <a href="tel:502293849" class="btn-magenta inline-block"><i class="fas fa-phone mr-2" aria-hidden="true"></i>502 293 849</a>
+          <a href="mailto:biuro@copycabana.pl" class="btn-outline-light inline-block">biuro@copycabana.pl</a>
         </div>
+      </div>
 
-        <div class="cc-local-photo reveal reveal-delay-1">
-          <img src="{{ asset('images/carousel-6.jpg') }}" alt="Drukarnia CopyCabana w Katowicach — oprawione prace">
+      <div class="cc-hero-visual reveal reveal-delay-2">
+        <div class="cc-local-map cc-contact-map">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2561.0!2d19.0294!3d50.2601!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4716ce1b1b1b1b1b%3A0x1b1b1b1b1b1b1b1b!2sBankowa%2011%2C%2040-007%20Katowice!5e0!3m2!1spl!2spl!4v1700000000000!5m2!1spl!2spl"
+            title="Mapa dojazdu do CopyCabana przy ul. Bankowej 11 w Katowicach"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
     </div>

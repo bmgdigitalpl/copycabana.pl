@@ -20,12 +20,13 @@ use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Customer\QuoteController as CustomerQuoteController;
 use App\Http\Controllers\Customer\VerificationController as CustomerVerificationController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocalPaymentController;
 use App\Http\Controllers\QuoteOfferAcceptanceController;
 use App\Http\Middleware\OwnerMiddleware;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'home')->name('home');
+Route::get('/', HomeController::class)->name('home');
 Route::redirect('/index.html', '/', 301)->name('home.legacy');
 Route::view('/prace-dyplomowe', 'prace-dyplomowe')->name('services.diploma');
 Route::view('/druk-pdf', 'druk-pdf')->name('druk-pdf');

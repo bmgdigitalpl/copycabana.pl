@@ -75,13 +75,16 @@ class MarketingPagesTest extends TestCase
 
     public function test_homepage_uses_the_main_layout_and_exposes_the_three_order_paths(): void
     {
+        $this->seed(ProductSeeder::class);
+
         $response = $this->get(route('home'));
 
         $response
             ->assertOk()
             ->assertSee('Od pliku do')
             ->assertSee('gotowego wydruku.')
-            ->assertSee('Prace dyplomowe, dokumenty PDF oraz materiały dla firm i agencji.')
+            ->assertDontSee('CopyCabana · Drukarnia w Katowicach')
+            ->assertDontSee('Prace dyplomowe, dokumenty PDF oraz materiały dla firm i agencji.')
             ->assertSee('Dlaczego CopyCabana.')
             ->assertDontSee('Dlaczego my?')
             ->assertDontSee('Możesz nam zaufać.')
@@ -92,7 +95,18 @@ class MarketingPagesTest extends TestCase
             ->assertSee('cc-need-grid', false)
             ->assertSee('Skonfiguruj druk')
             ->assertSee('Druk dla firm')
+            ->assertSee('Od pliku do gotowego wydruku.')
+            ->assertDontSee('Jak to działa')
+            ->assertDontSee('Od pliku do gotowego wydruku. Wybierasz, my dbamy o resztę.')
+            ->assertSee('cc-section-head--left', false)
+            ->assertDontSee('cc-section-head--center', false)
+            ->assertSee('Konfigurujesz pracę')
+            ->assertDontSee('<h3>Dodajesz plik</h3>', false)
+            ->assertDontSee('<h3>Wybierasz ustawienia</h3>', false)
+            ->assertDontSee('<h3>Sprawdzasz cenę</h3>', false)
             ->assertSee('USŁUGI')
+            ->assertDontSee('<p class="cc-section-label">USŁUGI</p>', false)
+            ->assertDontSee('Wybrane realizacje z drukarni w Katowicach: od prac dyplomowych po materiały reklamowe.')
             ->assertSee('cc-gallery', false)
             ->assertSee('cc-marquee-group', false)
             ->assertDontSee('Chcę wydrukować dokumenty PDF')
@@ -103,6 +117,52 @@ class MarketingPagesTest extends TestCase
             ->assertSee(route('druk-pdf'), false);
 
         $this->assertSame(3, substr_count($response->getContent(), 'class="cc-need-icon"'));
+        $this->assertSame(3, substr_count($response->getContent(), 'class="cc-process-step"'));
+    }
+
+    public function test_homepage_lists_all_configurator_services_with_order_actions(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $response = $this->get(route('home'));
+
+        $response
+            ->assertSee('href="'.route('services.diploma').'"', false)
+            ->assertSee('href="'.route('druk-pdf').'"', false);
+
+        foreach ([
+            'wizytowki' => 'Wizytówki',
+            'ulotki' => 'Ulotki',
+            'plakaty' => 'Plakaty',
+            'rollupy' => 'Rollupy',
+            'banery' => 'Banery',
+            'billboardy' => 'Billboardy',
+            'fotoobrazy' => 'Fotoobrazy',
+            'fototapety' => 'Fototapety',
+            'kalendarze' => 'Kalendarze spiralowane',
+            'naklejki' => 'Naklejki',
+            'tabliczki' => 'Tabliczki grawerowane',
+            'rysunki-cad' => 'Rysunki, plany, mapy',
+            'ksero' => 'Ksero',
+            'druk' => 'Druk',
+            'skanowanie' => 'Skanowanie',
+            'zdjecia-dokumenty' => 'Zdjęcia do dokumentów',
+            'pieczatki' => 'Pieczątki',
+            'projektowanie' => 'Projektowanie graficzne',
+        ] as $product => $name) {
+            $response
+                ->assertSee($name)
+                ->assertSee('href="'.route('services.business', ['product' => $product]).'#produkty"', false);
+        }
+
+        $content = $response->getContent();
+
+        $this->assertSame(20, substr_count($content, 'class="cc-gallery-card reveal"'));
+        $this->assertSame(20, substr_count($content, '>Zamów '));
+        $this->assertStringContainsString(asset('images/produkty/oprawa-prac-i-bindowanie.png'), $content);
+        $this->assertStringContainsString(asset('images/produkty/druk.png'), $content);
+        $this->assertStringNotContainsString('Usługi dodatkowe', $content);
+        $this->assertStringNotContainsString('Oprawa prac i bindowanie', $content);
     }
 
     public function test_homepage_hero_renders_static_information_cards(): void
@@ -124,6 +184,34 @@ class MarketingPagesTest extends TestCase
         $this->assertStringNotContainsString('.cc-hero-slider', $conceptCss);
     }
 
+    public function test_homepage_renders_the_contact_hero(): void
+    {
+        $response = $this->get(route('home'));
+
+        $response
+            ->assertSee('Kontakt')
+            ->assertSee('Jesteśmy w Katowicach.')
+            ->assertSee('Napisz albo zadzwoń.')
+            ->assertSee('Masz plik, pytanie o termin albo niestandardowe zlecenie?')
+            ->assertSee('href="tel:502293849"', false)
+            ->assertSee('502 293 849')
+            ->assertSee('href="mailto:biuro@copycabana.pl"', false)
+            ->assertSee('biuro@copycabana.pl')
+            ->assertSee('https://www.google.com/maps/embed?pb=', false)
+            ->assertSee('Mapa dojazdu do CopyCabana przy ul. Bankowej 11 w Katowicach');
+    }
+
+    public function test_header_uses_cart_and_account_icons_without_a_contact_link(): void
+    {
+        $this->get(route('home'))
+            ->assertSee('href="'.route('cart').'" class="cc-header-icon"', false)
+            ->assertSee('fa-cart-shopping', false)
+            ->assertSee('class="cart-badge cc-cart-badge"', false)
+            ->assertSee('href="'.route('customer.login').'" class="cc-header-icon"', false)
+            ->assertSee('fa-user', false)
+            ->assertDontSee('href="'.route('contact').'"', false);
+    }
+
     public function test_marketing_heroes_use_the_single_card_layout(): void
     {
         foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
@@ -137,6 +225,7 @@ class MarketingPagesTest extends TestCase
 
         $this->get(route('druk-pdf'))
             ->assertSee('Zazwyczaj realizujemy dokumenty w 24h.')
+            ->assertSee('Wydruk bez zbędnych kroków.')
             ->assertSee('cc-hero-hint', false);
     }
 
@@ -193,7 +282,7 @@ class MarketingPagesTest extends TestCase
 
         $this->get(route('services.business'))
             ->assertSee('dla firm oraz agencji')
-            ->assertSee('dopasuje format, nakład oraz technologię druku');
+            ->assertSee('Układasz wiele pozycji w jednym zapytaniu');
 
         $this->get(route('portfolio'))
             ->assertSee('Materiały reklamowe dla firm muszą wyglądać profesjonalnie');
@@ -214,6 +303,8 @@ class MarketingPagesTest extends TestCase
             $this->get(route($routeName))
                 ->assertOk()
                 ->assertSee('concept.css', false)
+                ->assertSee('cc-container--wide cc-hero-grid', false)
+                ->assertSee('cc-container--wide cc-config', false)
                 ->assertDontSee('noindex', false);
         }
     }
@@ -237,6 +328,11 @@ class MarketingPagesTest extends TestCase
         $this->get(route('services.business'))
             ->assertOk()
             ->assertSee('<div class="cc-summary-actions">', false)
+            ->assertSee('id="b2b-imie"', false)
+            ->assertSee('id="b2b-firma"', false)
+            ->assertSee('id="b2b-email"', false)
+            ->assertSee('id="b2b-telefon"', false)
+            ->assertDontSee('Dokąd wysłać wycenę?')
             ->assertSee('Wersja demonstracyjna — wycena po kontakcie.');
     }
 
@@ -264,7 +360,7 @@ class MarketingPagesTest extends TestCase
             ->assertSee('zdjecia-do-dokumentow.png')
             ->assertSee('pieczatki.png')
             ->assertSee('projektowanie-graficzne.png')
-            ->assertSee('oprawa-prac-i-bindowanie.png');
+            ->assertDontSee('oprawa-prac-i-bindowanie.png');
     }
 
     public function test_business_configurator_uses_the_configured_shipping_prices(): void
@@ -286,6 +382,15 @@ class MarketingPagesTest extends TestCase
             ->assertDontSee('cc-hero-card--tag', false);
     }
 
+    public function test_business_configurator_uses_the_new_hero_image(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $this->get(route('services.business'))
+            ->assertSee('images/hero-new.webp', false)
+            ->assertDontSee('Wybierz produkty, dołącz pliki i wyślij zapytanie.');
+    }
+
     public function test_business_product_cards_keep_their_full_image_area(): void
     {
         $css = file_get_contents(public_path('css/concept.css'));
@@ -293,6 +398,19 @@ class MarketingPagesTest extends TestCase
         $this->assertSame(true, str_contains($css, '.cc-b2b-card-image img'));
         $this->assertSame(true, str_contains($css, 'object-fit: contain;'));
         $this->assertSame(true, str_contains($css, 'aspect-ratio: 828 / 710;'));
+    }
+
+    public function test_business_configurator_uses_four_product_columns_on_wide_screens(): void
+    {
+        $css = file_get_contents(public_path('css/concept.css'));
+
+        $this->get(route('services.business'))
+            ->assertSee('cc-container--wide cc-hero-grid', false)
+            ->assertSee('cc-container--wide cc-config', false);
+
+        $this->assertStringContainsString('@media (min-width: 1536px)', $css);
+        $this->assertStringContainsString('.cc-container--wide { max-width: 100rem; }', $css);
+        $this->assertStringContainsString('.cc-b2b-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }', $css);
     }
 
     public function test_production_cta_styles_use_the_loaded_body_font(): void
@@ -314,22 +432,88 @@ class MarketingPagesTest extends TestCase
         }
     }
 
-    public function test_diploma_configurator_places_copy_count_in_the_summary_step(): void
+    public function test_configurator_option_cards_keep_the_selection_indicator_compact(): void
+    {
+        foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+            $this->get(route($routeName))
+                ->assertDontSee('>Wybrano</em>', false)
+                ->assertSee('cc-option-check', false);
+        }
+
+        $css = file_get_contents(public_path('css/concept.css'));
+
+        $this->assertStringNotContainsString('width: 4.5rem;', $css);
+    }
+
+    public function test_configurator_option_grids_use_two_desktop_columns(): void
+    {
+        $css = file_get_contents(public_path('css/concept.css'));
+
+        $this->assertStringContainsString('.cc-step-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }', $css);
+        $this->assertStringNotContainsString('.cc-step-grid--3', $css);
+    }
+
+    public function test_diploma_configurator_places_copy_count_in_the_binding_step(): void
     {
         $content = $this->get(route('services.diploma'))->getContent();
         $stepTwoStart = strpos($content, '<section class="cc-step" id="druk">');
         $stepThreeStart = strpos($content, '<section class="cc-step" id="oprawa">');
-        $summaryStart = strpos($content, '<section class="cc-step" id="podsumowanie">');
+        $stepFourStart = strpos($content, '<section class="cc-step" id="okladka">');
         $copyCountPosition = strpos($content, '<div class="cc-summary-copies">');
 
         $this->assertIsInt($stepTwoStart);
         $this->assertIsInt($stepThreeStart);
-        $this->assertIsInt($summaryStart);
+        $this->assertIsInt($stepFourStart);
         $this->assertIsInt($copyCountPosition);
         $this->assertStringNotContainsString('Liczba egzemplarzy', substr($content, $stepTwoStart, $stepThreeStart - $stepTwoStart));
-        $this->assertGreaterThan($summaryStart, $copyCountPosition);
+        $this->assertGreaterThan($stepThreeStart, $copyCountPosition);
+        $this->assertLessThan($stepFourStart, $copyCountPosition);
         $this->assertStringContainsString('value="color"', $content);
         $this->assertStringContainsString('całość kolorowa', $content);
+    }
+
+    public function test_configurators_expose_actions_from_their_side_summaries_without_a_review_step(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $this->get(route('services.diploma'))
+            ->assertDontSee('id="podsumowanie"', false)
+            ->assertSee('@click="addToCart()"', false);
+
+        $this->get(route('druk-pdf'))
+            ->assertDontSee('id="podsumowanie"', false)
+            ->assertSee('@click="addToCart()"', false);
+
+        $this->get(route('services.business'))
+            ->assertDontSee('id="podsumowanie"', false)
+            ->assertDontSee('Nie widzisz swojego druku?')
+            ->assertSee('href="'.route('contact').'"', false)
+            ->assertSee('@click="submitQuoteRequest()"', false);
+    }
+
+    public function test_pdf_and_thesis_configurators_add_configured_orders_to_the_cart(): void
+    {
+        foreach (['services.diploma', 'druk-pdf'] as $routeName) {
+            $this->get(route($routeName))
+                ->assertSee('js/cart.js', false)
+                ->assertSee('@click="addToCart()"', false)
+                ->assertSee('Dodaj do koszyka')
+                ->assertSee('fa-shopping-cart', false)
+                ->assertDontSee('id="dane"', false)
+                ->assertDontSee('Podaj dane do zamówienia.');
+        }
+
+        $this->get(route('cart'))
+            ->assertSee('submitConfiguredOrder', false)
+            ->assertSee('Konfiguracja zapisana')
+            ->assertSee('/api/v1/thesis/orders', false)
+            ->assertSee('/api/v1/pdf/orders', false);
+
+        $conceptJavaScript = file_get_contents(public_path('js/concept.js'));
+
+        $this->assertStringContainsString('Cart.addItem(item)', $conceptJavaScript);
+        $this->assertStringContainsString("orderType: 'thesis'", $conceptJavaScript);
+        $this->assertStringContainsString("orderType: 'pdf'", $conceptJavaScript);
     }
 
     public function test_diploma_configurator_renders_the_live_thesis_binding_preview(): void
@@ -346,6 +530,15 @@ class MarketingPagesTest extends TestCase
             ->assertSee('cc-hero-card--single', false)
             ->assertDontSee('cc-hero-mini-report', false)
             ->assertDontSee('cc-hero-card--tag', false);
+    }
+
+    public function test_diploma_binding_options_render_image_placeholders(): void
+    {
+        $content = $this->get(route('services.diploma'))->getContent();
+
+        $this->assertSame(3, substr_count($content, 'class="cc-binding-image-placeholder"'));
+        $this->assertStringContainsString('Miejsce na zdjęcie', $content);
+        $this->assertStringNotContainsString('cc-book', $content);
     }
 
     public function test_archived_pages_are_reachable_and_linked_from_the_archive_index(): void

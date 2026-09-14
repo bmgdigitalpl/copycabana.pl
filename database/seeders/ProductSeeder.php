@@ -97,8 +97,6 @@ class ProductSeeder extends Seeder
             'zdjecia-dokumenty' => $generic('fa-id-card'),
             'pieczatki' => $generic('fa-stamp'),
             'projektowanie' => $generic('fa-pen-ruler'),
-            'uslugi-dodatkowe' => $generic('fa-layer-group'),
-            'oprawa-prac' => $generic('fa-book-open'),
         ];
         $products = [
             ['wizytowki', 'Wizytówki', 'druk', 'Profesjonalne wizytówki w różnych formatach i wykończeniach.', 'wizytowki.png', 'options', 25],
@@ -119,8 +117,6 @@ class ProductSeeder extends Seeder
             ['zdjecia-dokumenty', 'Zdjęcia do dokumentów', 'uslugi', 'Fotoset do paszportu, dowodu i wizy.', 'zdjecia-do-dokumentow.png', 'fixed', 20],
             ['pieczatki', 'Pieczątki', 'uslugi', 'Pieczątki, stemple i datowniki.', 'pieczatki.png', 'fixed', 45],
             ['projektowanie', 'Projektowanie graficzne', 'reklama', 'Projekty graficzne materiałów reklamowych.', 'projektowanie-graficzne.png', 'fixed', 80],
-            ['uslugi-dodatkowe', 'Usługi dodatkowe', 'uslugi', 'Laminowanie, oprawianie i personalizacja.', 'druk.png', 'fixed', 2],
-            ['oprawa-prac', 'Oprawa prac i bindowanie', 'druk', 'Oprawa twarda i miękka prac dyplomowych w 24h.', 'oprawa-prac-i-bindowanie.png', 'fixed', 8],
             ['praca-dyplomowa', 'Praca dyplomowa', 'druk', 'Druk i oprawa pracy dyplomowej z dostawą lub odbiorem osobistym.', 'graduation.png', 'thesis', 0],
         ];
 

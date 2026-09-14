@@ -10,7 +10,7 @@
 <main class="cc-page">
   {{-- Hero --}}
   <section class="cc-hero">
-    <div class="cc-container cc-hero-grid">
+    <div class="cc-container cc-container--wide cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk i oprawa prac dyplomowych</p>
         <h1 class="cc-hero-title reveal reveal-delay-1">Praca napisana.<em>Teraz druk i oprawa.</em></h1>
@@ -33,7 +33,7 @@
   </section>
 
   {{-- Configurator --}}
-  <div x-data="ccConfigurator()" class="cc-container cc-config cc-config-page">
+  <div x-data="ccConfigurator()" class="cc-container cc-container--wide cc-config cc-config-page">
     <div class="cc-config-main">
       <div class="cc-steps">
         <section class="cc-step" id="plik">
@@ -156,11 +156,22 @@
                 group="oprawa"
                 value="{{ $b['id'] }}"
                 model="binding"
-                thickness="{{ $b['id'] }}"
                 label="{{ $b['label'] }}"
                 hint="{{ $b['hint'] }}"
                 price="{{ number_format((float) config('business.thesis.bindings.'.$b['id'].'.price'), 2, ',', ' ') }} zł" />
             @endforeach
+          </div>
+
+          <div class="cc-summary-copies">
+            <div>
+              <p class="cc-step-label">Liczba egzemplarzy</p>
+              <p class="cc-step-micro">Ustaw nakład dla wybranej oprawy.</p>
+            </div>
+            <div class="cc-qty">
+              <button type="button" @click="print.copies = print.copies > 1 ? print.copies - 1 : 1" aria-label="Mniej egzemplarzy"><i class="fas fa-minus" aria-hidden="true"></i></button>
+              <strong x-text="print.copies"></strong>
+              <button type="button" @click="print.copies = print.copies < 10 ? print.copies + 1 : 10" aria-label="Więcej egzemplarzy"><i class="fas fa-plus" aria-hidden="true"></i></button>
+            </div>
           </div>
 
           <p class="cc-step-micro">Nazwy techniczne podajemy w szczegółach. Cena oprawy jest przykładowa i może się zmienić przed produkcją.</p>
@@ -274,131 +285,6 @@
           </template>
         </section>
 
-        {{-- Step 06 — Dane --}}
-        <section class="cc-step" id="dane">
-          <div class="cc-step-head">
-            <span class="cc-step-num">06</span>
-             <div><h2>Podaj dane do zamówienia.</h2><p>Na ten e-mail wyślemy potwierdzenie i informacje o realizacji.</p></div>
-          </div>
-
-          <div class="cc-field-grid">
-            <div class="cc-field">
-              <label for="dane-imie">Imię i nazwisko</label>
-              <input id="dane-imie" type="text" x-model="form.name" placeholder="Jan Kowalski">
-            </div>
-            <div class="cc-field">
-              <label for="dane-email">E-mail</label>
-              <input id="dane-email" type="email" x-model="form.email" placeholder="jan@example.com">
-            </div>
-            <div class="cc-field">
-              <label for="dane-telefon">Telefon (opcjonalnie)</label>
-              <input id="dane-telefon" type="tel" x-model="form.phone" placeholder="502 000 000">
-            </div>
-          </div>
-
-          <div class="cc-field">
-            <label class="cc-toggle">
-              <input type="checkbox" x-model="form.invoice">
-              <span class="cc-toggle-track" aria-hidden="true"></span>
-              <span>Potrzebuję faktury</span>
-            </label>
-          </div>
-
-          <label class="cc-consent">
-            <input type="checkbox" x-model="privacyAccepted">
-            <span>Akceptuję <a href="{{ route('privacy') }}" target="_blank" rel="noopener">politykę prywatności</a> i zgadzam się na przetwarzanie danych w celu realizacji zamówienia.</span>
-          </label>
-
-          <template x-if="form.invoice">
-            <div class="cc-field-grid" x-transition.opacity.duration.200ms>
-              <div class="cc-field">
-                <label for="dane-firma">Nazwa firmy</label>
-                <input id="dane-firma" type="text" x-model="form.company" placeholder="Nazwa spółki">
-              </div>
-              <div class="cc-field">
-                <label for="dane-nip">NIP</label>
-                <input id="dane-nip" type="text" x-model="form.nip" placeholder="0000000000">
-              </div>
-            </div>
-          </template>
-        </section>
-
-        {{-- Step 07 — Podsumowanie --}}
-        <section class="cc-step" id="podsumowanie">
-          <div class="cc-step-head">
-            <span class="cc-step-num">07</span>
-            <div><h2>Sprawdź wszystko przed drukiem.</h2><p>Każdą sekcję możesz zmienić — kliknij w odpowiednią pozycję.</p></div>
-          </div>
-
-          <div class="cc-final-review">
-            <div class="cc-review-block">
-              <span>Plik</span>
-              <strong x-text="file.name || 'nie dodano pliku'"></strong>
-              <small x-show="file.pages"><template x-text="file.pages"></template> stron</small>
-              <button type="button" class="cc-review-edit" @click="go('#plik')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
-            </div>
-            <div class="cc-review-block">
-              <span>Druk</span>
-              <strong x-text="printColorName()"></strong>
-              <small x-text="print.sided === 'simplex' ? 'jednostronnie' : 'dwustronnie'"></small>
-              <button type="button" class="cc-review-edit" @click="go('#druk')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
-            </div>
-            <div class="cc-review-block">
-              <span>Oprawa</span>
-              <strong x-text="bindingName() || 'nie wybrano'"></strong>
-              <small><template x-text="print.copies"></template> egzemplarz(e)</small>
-              <button type="button" class="cc-review-edit" @click="go('#oprawa')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
-            </div>
-            <div class="cc-review-block">
-              <span>Okładka</span>
-              <strong x-text="coverName() || 'nie wybrano'"></strong>
-              <small x-show="cover === 'custom'" x-text="coverText || '—'"></small>
-              <button type="button" class="cc-review-edit" @click="go('#okladka')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
-            </div>
-            <div class="cc-review-block">
-              <span>Odbiór / dostawa</span>
-              <strong x-text="deliveryName() || 'nie wybrano'"></strong>
-              <small x-text="dateLbl()"></small>
-              <small x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></small>
-              <button type="button" class="cc-review-edit" @click="go('#odbiór')">Zmień <i class="fas fa-pen" aria-hidden="true"></i></button>
-            </div>
-          </div>
-
-          <div class="cc-summary-card cc-summary-full">
-             <div class="cc-price-row"><span>Druk</span><strong x-text="fmt(quoteValue('print_total', printTotal()))"></strong></div>
-             <div class="cc-price-row"><span>Oprawa</span><strong x-text="fmt(quoteValue('binding_total', bindingPrice() * print.copies))"></strong></div>
-             <div class="cc-price-row"><span>Personalizacja (okładka)</span><strong x-text="fmt(quoteValue('cover_total', coverPrice() * print.copies))"></strong></div>
-            <template x-if="deliveryPrice() !== null">
-               <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(quoteValue('shipping_total', deliveryPrice()))"></strong></div>
-            </template>
-            <template x-if="deliveryPrice() === null">
-              <div class="cc-price-row"><span>Dostawa</span><strong class="cc-price-status">nie wybrano</strong></div>
-            </template>
-             <footer class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(quoteValue('total', total()))"></strong></footer>
-          </div>
-
-          <div class="cc-summary-copies">
-            <div>
-              <p class="cc-step-label">Liczba egzemplarzy</p>
-              <p class="cc-step-micro">Ustaw nakład dla wybranej oprawy.</p>
-            </div>
-            <div class="cc-qty">
-              <button type="button" @click="print.copies = print.copies > 1 ? print.copies - 1 : 1" aria-label="Mniej egzemplarzy"><i class="fas fa-minus" aria-hidden="true"></i></button>
-              <strong x-text="print.copies"></strong>
-              <button type="button" @click="print.copies = print.copies < 10 ? print.copies + 1 : 10" aria-label="Więcej egzemplarzy"><i class="fas fa-plus" aria-hidden="true"></i></button>
-            </div>
-          </div>
-
-          <div class="cc-final-actions">
-             <button type="button" class="btn-magenta" @click="submitOrder()" :disabled="submitting || quoteLoading">
-               <span x-show="!submitting">Zamawiam i przechodzę do płatności</span>
-               <span x-show="submitting">Przygotowujemy zamówienie...</span>
-               <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
-             </button>
-             <p class="cc-summary-demo" x-show="quoteLoading">Potwierdzamy cenę na podstawie aktualnej konfiguracji.</p>
-             <p class="cc-warning" x-show="quoteError || orderError" x-text="quoteError || orderError"></p>
-           </div>
-        </section>
       </div>
     </div>
 
@@ -432,11 +318,16 @@
 
         <div class="cc-summary-term"><span>Termin</span><strong x-text="dateLbl()"></strong></div>
 
-         <div class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(quoteValue('total', total()))"></strong></div>
+        <div class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(quoteValue('total', total()))"></strong></div>
 
         <div class="cc-summary-actions">
-          <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Przejdź do podsumowania <i class="fas fa-arrow-down ml-2" aria-hidden="true"></i></button>
-           <p class="cc-summary-demo" x-show="quote">Cena potwierdzona przez serwer dla aktualnej konfiguracji.</p>
+          <button type="button" class="btn-magenta" @click="addToCart()">
+            <span>Dodaj do koszyka</span>
+            <i class="fas fa-shopping-cart ml-2" aria-hidden="true"></i>
+          </button>
+          <p class="cc-summary-demo" x-show="quoteLoading">Potwierdzamy cenę na podstawie aktualnej konfiguracji.</p>
+          <p class="cc-warning" x-show="quoteError || orderError" x-text="quoteError || orderError"></p>
+          <p class="cc-summary-demo" x-show="quote">Cena potwierdzona przez serwer dla aktualnej konfiguracji.</p>
         </div>
       </div>
     </aside>
@@ -447,7 +338,8 @@
         <span>Razem brutto</span>
          <strong x-text="fmt(quoteValue('total', total()))"></strong>
       </div>
-      <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Podsumowanie <i class="fas fa-arrow-up ml-2" aria-hidden="true"></i></button>
+      <button type="button" class="btn-magenta" @click="addToCart()">Dodaj <i class="fas fa-shopping-cart ml-2" aria-hidden="true"></i></button>
+      <p class="cc-mobile-bar-message" x-show="quoteError || orderError" x-text="quoteError || orderError"></p>
     </div>
   </div>
 </main>

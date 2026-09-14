@@ -33,11 +33,16 @@
                                 <button type="button" @click="removeItem(item.id)" class="text-slate-400 hover:text-[#D51A70]" aria-label="Usuń produkt"><i class="fas fa-trash" aria-hidden="true"></i></button>
                             </div>
                             <div class="mt-4 flex items-center justify-between gap-4">
-                                <div class="flex items-center rounded-lg border border-slate-200">
-                                    <button type="button" @click="updateQty(item.id, item.quantity - 1)" class="px-3 py-2 text-slate-600">−</button>
-                                    <span class="min-w-10 px-2 text-center text-sm font-semibold" x-text="item.quantity"></span>
-                                    <button type="button" @click="updateQty(item.id, item.quantity + 1)" class="px-3 py-2 text-slate-600">+</button>
-                                </div>
+                                <template x-if="item.orderType">
+                                    <span class="text-sm text-slate-500">Konfiguracja zapisana</span>
+                                </template>
+                                <template x-if="!item.orderType">
+                                    <div class="flex items-center rounded-lg border border-slate-200">
+                                        <button type="button" @click="updateQty(item.id, item.quantity - 1)" class="px-3 py-2 text-slate-600">−</button>
+                                        <span class="min-w-10 px-2 text-center text-sm font-semibold" x-text="item.quantity"></span>
+                                        <button type="button" @click="updateQty(item.id, item.quantity + 1)" class="px-3 py-2 text-slate-600">+</button>
+                                    </div>
+                                </template>
                                 <strong class="text-[#D51A70]" x-text="formatPrice(Number(item.price) * Number(item.quantity))"></strong>
                             </div>
                         </article>
@@ -56,7 +61,7 @@
                         <select x-model="customer.shipping_method" class="rounded-lg border border-slate-300 px-3 py-2">
                             <option value="pickup">Odbiór osobisty — bez dopłaty</option>
                             <option value="parcel">Paczkomat — 12,00 zł</option>
-                            <option value="courier">Kurier — 18,00 zł</option>
+                            <option value="courier" x-show="allowsCourier()">Kurier — 18,00 zł</option>
                         </select>
                         <template x-if="customer.shipping_method !== 'pickup'">
                             <div class="grid gap-3 rounded-lg bg-slate-50 p-3">
@@ -85,7 +90,6 @@
     </section>
 </main>
 
-<script src="{{ asset('js/cart.js') }}"></script>
 <script>
     window.copyCabanaShipping = @js(config('business.shipping'));
     function cartPage() {
@@ -100,17 +104,32 @@
                 shipping_method: 'pickup', invoice_required: false, privacy_policy_accepted: false,
                 shipping_address: { point_code: '', name: '', address: '', city: '', post_code: '' },
             },
-            init() { this.loadCart(); window.addEventListener('cart-updated', () => this.loadCart()); },
+            init() { this.loadCart(); this.prefillConfiguredOrder(); window.addEventListener('cart-updated', () => this.loadCart()); },
             loadCart() { this.items = Cart.getItems(); this.subtotal = Cart.getTotal(); },
+            prefillConfiguredOrder() {
+                const configuredItem = this.items.find((item) => item.orderType);
+                const configuredCustomer = configuredItem?.configuration?.cartCustomer;
+                if (!configuredCustomer || this.items.length !== 1) return;
+
+                this.customer = { ...this.customer, ...configuredCustomer, shipping_address: { ...this.customer.shipping_address, ...configuredCustomer.shipping_address } };
+            },
             updateQty(id, quantity) { if (quantity < 1) return; Cart.updateItem(id, { quantity: Math.min(100, quantity) }); this.loadCart(); },
             removeItem(id) { Cart.removeItem(id); this.loadCart(); },
             clearCart() { Cart.clear(); this.loadCart(); },
             shippingCost() { return Number(window.copyCabanaShipping[this.customer.shipping_method] || 0); },
+            allowsCourier() { return !this.items.some((item) => item.orderType === 'thesis'); },
             formatPrice(value) { return Number(value).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł'; },
             async submitOrder() {
                 if (!this.customer.name || !this.customer.email || !this.customer.privacy_policy_accepted) { this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.'; return; }
                 this.orderError = ''; this.submitting = true;
                 try {
+                    const configuredItem = this.items.find((item) => item.orderType);
+                    if (configuredItem) {
+                        if (this.items.length !== 1) throw new Error('Skonfigurowany druk opłać osobno. Usuń pozostałe pozycje z koszyka.');
+                        await this.submitConfiguredOrder(configuredItem);
+                        return;
+                    }
+
                     const response = await fetch('{{ url('/api/v1/orders') }}', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': this.idempotencyKey },
@@ -124,10 +143,41 @@
                             items: this.items.map((item) => ({ product_slug: item.productId, quantity: item.quantity, option_value_ids: item.option_value_ids || [], configuration: item.options || {} })),
                         }),
                     });
-                    const payload = await response.json();
-                    if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się utworzyć zamówienia.');
-                    Cart.clear(); window.location.assign(payload.payment_url);
+                    await this.redirectToPayment(response);
                 } catch (error) { this.orderError = error.message; } finally { this.submitting = false; }
+            },
+            async submitConfiguredOrder(item) {
+                const configuration = item.configuration;
+                const payload = {
+                    upload_token: configuration.uploadToken,
+                    customer: {
+                        name: this.customer.name,
+                        email: this.customer.email,
+                        phone: this.customer.phone,
+                        company: this.customer.company,
+                        nip: this.customer.nip,
+                    },
+                    shipping_method: this.customer.shipping_method,
+                    shipping_address: this.customer.shipping_method === 'pickup' ? null : this.customer.shipping_address,
+                    requested_by_date: configuration.requestedByDate || null,
+                    invoice_required: this.customer.invoice_required,
+                    privacy_policy_accepted: this.customer.privacy_policy_accepted,
+                };
+
+                const endpoint = item.orderType === 'thesis' ? '{{ url('/api/v1/thesis/orders') }}' : '{{ url('/api/v1/pdf/orders') }}';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': this.idempotencyKey },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ ...payload, ...configuration }),
+                });
+
+                await this.redirectToPayment(response);
+            },
+            async redirectToPayment(response) {
+                const payload = await response.json();
+                if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się utworzyć zamówienia.');
+                Cart.clear(); window.location.assign(payload.payment_url);
             },
         };
     }

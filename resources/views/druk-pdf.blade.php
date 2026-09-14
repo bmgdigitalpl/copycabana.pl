@@ -11,10 +11,10 @@
 <main class="cc-page">
   {{-- Hero --}}
   <section class="cc-hero">
-    <div class="cc-container cc-hero-grid">
+    <div class="cc-container cc-container--wide cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk dokumentów PDF</p>
-        <h1 class="cc-hero-title reveal reveal-delay-1">Dokument.<em>Wydruk bez narzutu.</em></h1>
+        <h1 class="cc-hero-title reveal reveal-delay-1">Dokument.<em>Wydruk bez zbędnych kroków.</em></h1>
         <p class="reveal reveal-delay-2">Materiały do nauki, instrukcje, umowy i codzienne dokumenty. Wrzucasz kompletny PDF, ustawiasz kolor, strony kartki i odbiór — resztę pokażemy jako jasną cenę.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#plik" @click.prevent="ccGo('#plik')" class="btn-magenta inline-block">Dodaj dokument PDF <i class="fas fa-upload ml-2" aria-hidden="true"></i></a>
@@ -34,7 +34,7 @@
   </section>
 
   {{-- Configurator --}}
-  <div x-data="ccPdfConfigurator()" class="cc-container cc-config cc-config-page">
+  <div x-data="ccPdfConfigurator()" class="cc-container cc-container--wide cc-config cc-config-page">
     <div class="cc-config-main">
       <div class="cc-steps">
 
@@ -202,92 +202,6 @@
           </template>
         </section>
 
-        {{-- Step 05 — Dane --}}
-        <section class="cc-step" id="dane">
-          <div class="cc-step-head">
-            <span class="cc-step-num">05</span>
-             <div><h2>Podaj dane do zamówienia.</h2><p>Po wysłaniu przejdziesz do bezpiecznej płatności.</p></div>
-          </div>
-
-          <div class="cc-field-grid">
-            <div class="cc-field">
-              <label for="pdf-imie">Imię i nazwisko</label>
-              <input id="pdf-imie" type="text" x-model="form.name" placeholder="Jan Kowalski">
-            </div>
-            <div class="cc-field">
-              <label for="pdf-email">E-mail</label>
-              <input id="pdf-email" type="email" x-model="form.email" placeholder="jan@example.com">
-            </div>
-            <div class="cc-field">
-              <label for="pdf-telefon">Telefon</label>
-              <input id="pdf-telefon" type="tel" x-model="form.phone" placeholder="502 000 000">
-            </div>
-          </div>
-
-          <div class="cc-field">
-            <label class="cc-toggle">
-              <input type="checkbox" x-model="form.invoice">
-              <span class="cc-toggle-track" aria-hidden="true"></span>
-              <span>Potrzebuję faktury</span>
-            </label>
-          </div>
-
-          <template x-if="form.invoice">
-            <div class="cc-field-grid" x-transition.opacity.duration.200ms>
-              <div class="cc-field">
-                <label for="pdf-firma">Nazwa firmy</label>
-                <input id="pdf-firma" type="text" x-model="form.company" placeholder="Nazwa spółki">
-              </div>
-              <div class="cc-field">
-                <label for="pdf-nip">NIP</label>
-                <input id="pdf-nip" type="text" x-model="form.nip" placeholder="0000000000">
-              </div>
-            </div>
-          </template>
-          <label class="cc-consent">
-            <input type="checkbox" x-model="privacyAccepted">
-            <span>Akceptuję <a href="{{ route('privacy') }}" target="_blank" rel="noopener">politykę prywatności</a> i zgadzam się na przetwarzanie danych w celu realizacji zamówienia.</span>
-          </label>
-        </section>
-
-        {{-- Step 06 — Podsumowanie --}}
-        <section class="cc-step" id="podsumowanie">
-          <div class="cc-step-head">
-            <span class="cc-step-num">06</span>
-            <div><h2>Sprawdź wszystko przed drukiem.</h2><p>Każdą pozycję możesz zmienić.</p></div>
-          </div>
-
-          <div class="cc-summary-card cc-summary-full">
-            <div class="cc-summary-head">
-              <strong x-text="file.name || 'nie dodano pliku'"></strong>
-              <ul>
-                <template x-if="file.pages"><li><template x-text="file.pages"></template> stron · <template x-text="file.colored"></template> kolorowych</li></template>
-                <li x-text="(print.sided === 'simplex' ? 'jednostronnie' : 'dwustronnie') + ' · ' + print.copies + ' egz.'"></li>
-                <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
-              </ul>
-            </div>
-            <template x-if="!file.name">
-              <div class="cc-price-row"><span>Druk</span><strong class="cc-price-status">po analizie PDF</strong></div>
-            </template>
-            <template x-if="file.name">
-              <div class="cc-price-row"><span>Druk</span><strong x-text="fmt(printTotal())"></strong></div>
-            </template>
-            <div class="cc-price-row"><span>Wykończenie</span><strong x-text="fmt(finishPrice())"></strong></div>
-            <template x-if="deliveryPrice() !== null">
-              <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(deliveryPrice())"></strong></div>
-            </template>
-            <template x-if="deliveryPrice() === null">
-              <div class="cc-price-row"><span>Dostawa</span><strong class="cc-price-status">nie wybrano</strong></div>
-            </template>
-            <div class="cc-summary-term"><span>Termin</span><strong x-text="dateLbl()"></strong></div>
-            <footer class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(total())"></strong></footer>
-          </div>
-
-          <div class="cc-final-actions">
-             <button type="button" class="btn-magenta" @click="submitOrder()" :disabled="submitting || quoteLoading"><span x-text="submitting ? 'Przetwarzamy...' : 'Przejdź do płatności'"></span> <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></button>
-             <p class="cc-summary-demo">Cena jest potwierdzana po stronie serwera przed utworzeniem zamówienia.</p>
-          </div>
-        </section>
       </div>
     </div>
 
@@ -318,8 +232,9 @@
         <div class="cc-summary-term"><span>Termin</span><strong x-text="dateLbl()"></strong></div>
         <div class="cc-summary-total"><span>Razem brutto</span><strong x-text="fmt(total())"></strong></div>
         <div class="cc-summary-actions">
-          <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Przejdź do podsumowania <i class="fas fa-arrow-down ml-2" aria-hidden="true"></i></button>
-           <p class="cc-summary-demo">Ceny i dostępność są potwierdzane przed płatnością.</p>
+          <button type="button" class="btn-magenta" @click="addToCart()">Dodaj do koszyka <i class="fas fa-shopping-cart ml-2" aria-hidden="true"></i></button>
+          <p class="cc-warning" x-show="orderError" x-text="orderError"></p>
+          <p class="cc-summary-demo">Ceny i dostępność są potwierdzane przed płatnością.</p>
         </div>
       </div>
     </aside>
@@ -330,7 +245,8 @@
         <span>Razem brutto</span>
         <strong x-text="fmt(total())"></strong>
       </div>
-      <button type="button" class="btn-magenta" @click="go('#podsumowanie')">Podsumowanie <i class="fas fa-arrow-up ml-2" aria-hidden="true"></i></button>
+      <button type="button" class="btn-magenta" @click="addToCart()">Dodaj <i class="fas fa-shopping-cart ml-2" aria-hidden="true"></i></button>
+      <p class="cc-mobile-bar-message" x-show="orderError" x-text="orderError"></p>
     </div>
   </div>
 </main>

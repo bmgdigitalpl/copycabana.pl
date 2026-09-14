@@ -8,9 +8,20 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) document.documentElement.classList.add('cc-reduced-motion');
 
-  function fmtPL(n) {
-    return Number(n).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł';
-  }
+    function fmtPL(n) {
+      return Number(n).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł';
+    }
+
+    function addConfiguredItemToCart(item) {
+      if (Cart.getItems().length) {
+        return 'Koszyk zawiera już pozycje. Dokończ obecne zamówienie lub opróżnij koszyk przed dodaniem skonfigurowanego druku.';
+      }
+
+      Cart.addItem(item);
+      window.location.assign('/koszyk');
+
+      return null;
+    }
 
   /* --- Header scrolled state --- */
   var header = document.querySelector('.cc-header');
@@ -326,10 +337,7 @@
         quoteError: null,
         quoteRequest: 0,
         quoteTimer: null,
-        submitting: false,
         orderError: null,
-        idempotencyKey: null,
-        privacyAccepted: false,
         print: { color: 'bw', sided: 'duplex', copies: 1 },
         binding: 'hard',
         cover: 'none',
@@ -350,7 +358,6 @@
         ],
         delivery: null,
         byDate: '',
-        form: { name: '', email: '', phone: '', invoice: false, company: '', nip: '' },
 
         bindings: [
           { id: 'soft', name: 'Oprawa miękka', price: Number(bindingPrices.soft?.price ?? 0), hint: 'Klasyczna broszura. Częsty standard wydziałów.', thickness: 'soft' },
@@ -369,8 +376,7 @@
 
          init: function () {
            var self = this;
-           this.idempotencyKey = window.crypto?.randomUUID?.() || String(Date.now()) + Math.random();
-           ['file.uploadToken', 'print.color', 'print.sided', 'binding', 'cover', 'coverText', 'coverColor', 'print.copies', 'delivery', 'parcelLocker'].forEach(function (path) {
+            ['file.uploadToken', 'print.color', 'print.sided', 'binding', 'cover', 'coverText', 'coverColor', 'print.copies', 'delivery', 'parcelLocker'].forEach(function (path) {
              self.$watch(path, function () { self.scheduleQuote(); });
            });
          },
@@ -441,58 +447,46 @@
           };
         },
 
-        async submitOrder() {
+        addToCart: function () {
           if (!this.file.uploadToken) {
             this.orderError = 'Najpierw dodaj plik PDF.';
+
             return;
           }
           if (!this.delivery || (this.delivery === 'parcel' && !this.parcelLocker)) {
             this.orderError = 'Wybierz sposób odbioru i paczkomat, jeśli jest potrzebny.';
+
             return;
           }
-          if (!this.form.name || !this.form.email || !this.privacyAccepted) {
-            this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.';
+          if (this.cover === 'custom' && !this.coverText) {
+            this.orderError = 'Podaj treść własnego napisu na okładce.';
+
             return;
           }
 
-          this.orderError = null;
-          this.submitting = true;
-
-          try {
-            await this.refreshQuote();
-            if (!this.quote) throw new Error('Nie udało się potwierdzić ceny. Spróbuj ponownie.');
-
-            var response = await fetch('/api/v1/thesis/orders', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'Idempotency-Key': this.idempotencyKey
+          this.orderError = addConfiguredItemToCart({
+            productId: 'praca-dyplomowa',
+            productName: 'Praca dyplomowa',
+            quantity: 1,
+            price: this.printTotal() + (this.bindingPrice() * this.print.copies) + (this.coverPrice() * this.print.copies),
+            summary: this.file.name + ' · ' + this.bindingName() + ' · ' + this.print.copies + ' egz.',
+            orderType: 'thesis',
+            configuration: {
+              uploadToken: this.file.uploadToken,
+              color_mode: this.print.color,
+              sided: this.print.sided,
+              binding: this.binding,
+              cover: this.cover,
+              cover_text: this.coverText || null,
+              cover_color: this.coverColor,
+              copies: this.print.copies,
+              requestedByDate: this.byDate || null,
+              cartCustomer: {
+                shipping_method: this.delivery,
+                shipping_address: this.shippingAddress() || {},
               },
-              credentials: 'same-origin',
-              body: JSON.stringify(Object.assign(this.quotePayload(), {
-                customer: {
-                  name: this.form.name,
-                  email: this.form.email,
-                  phone: this.form.phone,
-                  company: this.form.company,
-                  nip: this.form.nip
-                },
-                shipping_address: this.shippingAddress(),
-                requested_by_date: this.byDate || null,
-                invoice_required: this.form.invoice,
-                marketing_consent: false,
-                privacy_policy_accepted: this.privacyAccepted
-              }))
-            });
-            var payload = await response.json();
-            if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się utworzyć zamówienia.');
-            window.location.assign(payload.payment_url);
-          } catch (error) {
-            this.orderError = error.message;
-          } finally {
-            this.submitting = false;
-          }
+            },
+          });
         },
 
         go: ccScroll,
@@ -575,16 +569,12 @@
          quoteError: null,
          quoteRequest: 0,
          quoteTimer: null,
-         submitting: false,
-         orderError: null,
-         idempotencyKey: null,
-         privacyAccepted: false,
-         print: { color: 'bw', sided: 'duplex', copies: 1 },
+          orderError: null,
+          print: { color: 'bw', sided: 'duplex', copies: 1 },
          finish: 'none',
          delivery: null,
          byDate: '',
          courierAddress: { address: '', city: '', post_code: '' },
-         form: { name: '', email: '', phone: '', invoice: false, company: '', nip: '' },
 
          finishes: Object.keys(finishes).map(function (id) {
            return { id: id, name: finishes[id].label, price: Number(finishes[id].price || 0), hint: '' };
@@ -597,8 +587,7 @@
 
          init: function () {
            var self = this;
-           this.idempotencyKey = window.crypto?.randomUUID?.() || String(Date.now()) + Math.random();
-           ['file.uploadToken', 'print.color', 'print.sided', 'print.copies', 'finish', 'delivery', 'parcelLocker', 'byDate'].forEach(function (path) {
+            ['file.uploadToken', 'print.color', 'print.sided', 'print.copies', 'finish', 'delivery', 'parcelLocker', 'byDate'].forEach(function (path) {
              self.$watch(path, function () { self.scheduleQuote(); });
            });
            this.$watch('delivery', function (value) {
@@ -659,44 +648,43 @@
            return this.delivery === 'courier' ? this.courierAddress : null;
          },
 
-         submitOrder: async function () {
-           if (!this.file.uploadToken) { this.orderError = 'Najpierw dodaj plik PDF.'; return; }
-           if (!this.delivery || (this.delivery === 'parcel' && !this.parcelLocker)) { this.orderError = 'Wybierz sposób odbioru i paczkomat, jeśli jest potrzebny.'; return; }
-           if (this.delivery === 'courier' && (!this.courierAddress.address || !this.courierAddress.city || !this.courierAddress.post_code)) { this.orderError = 'Uzupełnij adres dostawy kurierskiej.'; return; }
-           if (!this.form.name || !this.form.email || !this.privacyAccepted) { this.orderError = 'Podaj dane kontaktowe i zaakceptuj politykę prywatności.'; return; }
+          addToCart: function () {
+            if (!this.file.uploadToken) {
+              this.orderError = 'Najpierw dodaj plik PDF.';
 
-           this.orderError = null;
-           this.submitting = true;
-           try {
-             await this.refreshQuote();
-             if (!this.quote) throw new Error('Nie udało się potwierdzić ceny. Spróbuj ponownie.');
-             var response = await fetch('/api/v1/pdf/orders', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Idempotency-Key': this.idempotencyKey },
-               credentials: 'same-origin',
-               body: JSON.stringify({
-                 upload_token: this.file.uploadToken,
-                 color_mode: this.print.color,
-                 sided: this.print.sided,
-                 finish: this.finish,
-                 copies: this.print.copies,
-                 shipping_method: this.delivery,
-                 shipping_address: this.shippingAddress(),
-                 requested_by_date: this.byDate || null,
-                 invoice_required: this.form.invoice,
-                 privacy_policy_accepted: this.privacyAccepted,
-                 customer: { name: this.form.name, email: this.form.email, phone: this.form.phone, company: this.form.company, nip: this.form.nip }
-               })
-             });
-             var payload = await response.json();
-             if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się utworzyć zamówienia.');
-             window.location.assign(payload.payment_url);
-           } catch (error) {
-             this.orderError = error.message;
-           } finally {
-             this.submitting = false;
-           }
-         },
+              return;
+            }
+            if (!this.delivery || (this.delivery === 'parcel' && !this.parcelLocker)) {
+              this.orderError = 'Wybierz sposób odbioru i paczkomat, jeśli jest potrzebny.';
+
+              return;
+            }
+            if (this.delivery === 'courier' && (!this.courierAddress.address || !this.courierAddress.city || !this.courierAddress.post_code)) {
+              this.orderError = 'Uzupełnij adres dostawy kurierskiej.';
+
+              return;
+            }
+            this.orderError = addConfiguredItemToCart({
+              productId: 'druk',
+              productName: 'Druk PDF',
+              quantity: 1,
+              price: this.printTotal() + this.finishPrice(),
+              summary: this.file.name + ' · ' + (this.print.sided === 'simplex' ? 'jednostronnie' : 'dwustronnie') + ' · ' + this.print.copies + ' egz.',
+              orderType: 'pdf',
+              configuration: {
+                uploadToken: this.file.uploadToken,
+                color_mode: this.print.color,
+                sided: this.print.sided,
+                finish: this.finish,
+                copies: this.print.copies,
+                requestedByDate: this.byDate || null,
+                cartCustomer: {
+                  shipping_method: this.delivery,
+                  shipping_address: this.shippingAddress() || {},
+                },
+              },
+            });
+          },
 
          go: ccScroll,
          onFile: function (detail) {
@@ -731,10 +719,6 @@
          helpWanted: false,
          items: [],
 
-        briefOpen: false,
-        brief: { type: '', desc: '', qty: '', date: '' },
-        briefSent: false,
-
          delivery: null,
          byDate: '',
          courierAddress: { address: '', city: '', post_code: '' },
@@ -745,6 +729,13 @@
          submitError: null,
 
         deliveries: B2B_DELIVERIES,
+
+        init: function () {
+          var product = new URLSearchParams(window.location.search).get('product');
+          if (product && this.products.some(function (item) { return item.id === product; })) {
+            this.selectProduct(product);
+          }
+        },
 
         go: ccScroll,
 
@@ -823,15 +814,6 @@
           this.helpWanted = false;
         },
 
-        toggleBrief: function () {
-          this.briefOpen = !this.briefOpen;
-          this.briefSent = false;
-        },
-
-         sendBrief: function () {
-           this.briefSent = true;
-         },
-
          shippingAddress: function () {
            if (this.delivery === 'parcel' && this.parcelLocker) {
              return {
@@ -895,14 +877,8 @@
                  shipping_address: this.shippingAddress(),
                  requested_by_date: this.byDate || null,
                  invoice_required: this.company.invoice,
-                 privacy_policy_accepted: this.privacyAccepted,
-                 brief: this.briefOpen ? {
-                   type: this.brief.type,
-                   description: this.brief.desc,
-                   quantity: this.brief.qty,
-                   requested_by_date: this.brief.date || null
-                 } : null
-               })
+                  privacy_policy_accepted: this.privacyAccepted
+                })
              });
              var payload = await response.json();
              if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat()[0] || 'Nie udało się wysłać zapytania.');

@@ -19,7 +19,7 @@ class ProductCatalogTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonCount(21, 'data')
+            ->assertJsonCount(19, 'data')
             ->assertJsonPath('data.0.slug', 'wizytowki')
             ->assertJsonPath('data.0.name', 'Wizytówki');
     }
@@ -51,10 +51,10 @@ class ProductCatalogTest extends TestCase
     {
         $this->seed(ProductSeeder::class);
 
-        $this->getJson('/api/v1/products/oprawa-prac')
+        $this->getJson('/api/v1/products/druk')
             ->assertOk()
-            ->assertJsonPath('data.slug', 'oprawa-prac')
-            ->assertJsonPath('data.calculator_type', 'fixed');
+            ->assertJsonPath('data.slug', 'druk')
+            ->assertJsonPath('data.calculator_type', 'options');
     }
 
     public function test_legacy_catalog_pages_redirect_permanently_to_the_business_configurator(): void
