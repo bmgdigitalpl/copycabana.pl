@@ -5,6 +5,40 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>@yield('title', 'Panel CopyCabana')</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <style>
+            .admin-shell .bg-white,
+            .admin-shell .bg-gray-50,
+            .admin-shell .bg-slate-50 {
+                background-color: rgb(24 24 27) !important;
+            }
+
+            .admin-shell input,
+            .admin-shell select,
+            .admin-shell textarea {
+                background-color: rgb(39 39 42) !important;
+                border-color: rgb(82 82 91) !important;
+                color: rgb(244 244 245) !important;
+            }
+
+            .admin-shell input::placeholder,
+            .admin-shell textarea::placeholder {
+                color: rgb(161 161 170) !important;
+            }
+
+            .admin-shell .border,
+            .admin-shell .border-b,
+            .admin-shell .border-t,
+            .admin-shell .border-l,
+            .admin-shell .border-r,
+            .admin-shell .border-l-2 {
+                border-color: rgb(63 63 70) !important;
+            }
+
+            .admin-shell .shadow,
+            .admin-shell .shadow-sm {
+                box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(63 63 70 / 0.8) !important;
+            }
+        </style>
         @fluxAppearance
     </head>
     <body class="min-h-screen bg-zinc-100 text-zinc-900 antialiased dark:bg-zinc-800 dark:text-zinc-100">
@@ -33,7 +67,8 @@
                     </flux:sidebar.item>
                     @if(auth()->user()->isOwner())
                         <flux:sidebar.item icon="shield-check" href="{{ route('admin.privacy.index') }}" :current="request()->routeIs('admin.privacy.*')" wire:navigate>Wnioski RODO</flux:sidebar.item>
-                        <flux:sidebar.item icon="photo" href="{{ route('admin.products.index') }}" :current="request()->routeIs('admin.products.*')" wire:navigate>Produkty i zdjęcia</flux:sidebar.item>
+                        <flux:sidebar.item icon="academic-cap" href="{{ route('admin.printing.edit', 'thesis') }}" :current="request()->routeIs('admin.printing.*') && request()->route('type') === 'thesis'" wire:navigate>Prace Dyplomowe</flux:sidebar.item>
+                        <flux:sidebar.item icon="photo" href="{{ route('admin.products.index') }}" :current="request()->routeIs('admin.products.*')" wire:navigate>Produkty</flux:sidebar.item>
                         <flux:sidebar.item icon="adjustments-horizontal" href="{{ route('admin.options.index') }}" :current="request()->routeIs('admin.options.*')" wire:navigate>Opcje i ceny</flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>
@@ -66,7 +101,7 @@
             <flux:profile :initials="auth()->user()->initials()" />
         </flux:header>
 
-        <flux:main class="min-h-screen bg-zinc-100 p-5 dark:bg-zinc-800 sm:p-8">
+        <flux:main class="admin-shell min-h-screen bg-zinc-950 p-5 text-zinc-100 dark:bg-zinc-950 sm:p-8">
             @if(session('status'))
                 <flux:callout variant="success" class="mb-5" icon="check-circle">{{ session('status') }}</flux:callout>
             @endif

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'CopyCabana — koncepcja nowej strony')</title>
-  <meta name="description" content="@yield('description', 'Koncepcja nowej strony CopyCabana: konfigurator druku prac dyplomowych, dokumentów PDF i materiałów dla firm.')">
+  <meta name="description" content="@yield('description', 'Koncepcja nowej strony CopyCabana: konfigurator druku prac dyplomowych i materiałów dla firm.')">
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +48,6 @@
       <nav class="cc-nav" aria-label="Koncepcja strony">
         <a href="{{ route('concept.home') }}">Start</a>
         <a href="{{ route('concept.thesis') }}">Prace dyplomowe</a>
-        <a href="{{ route('concept.pdf') }}">Druk PDF</a>
         <a href="{{ route('concept.b2b') }}">Dla firm</a>
       </nav>
       <div class="cc-header-actions">
@@ -66,7 +65,6 @@
     <div class="mt-12">
       <a href="{{ route('concept.home') }}">Start</a>
       <a href="{{ route('concept.thesis') }}">Prace dyplomowe</a>
-      <a href="{{ route('concept.pdf') }}">Druk PDF</a>
       <a href="{{ route('concept.b2b') }}">Druk dla firm</a>
       <a href="{{ route('brand') }}">→ /brand</a>
       <a href="{{ route('home') }}">→ Strona główna (produkcja)</a>
@@ -81,7 +79,6 @@
       <p>Koncepcja nowej strony — projekt UX i frontendu. Do recenzji przed migracją na produkcyjne adresy.</p>
       <nav class="cc-footer-nav">
         <a href="{{ route('concept.thesis') }}">Prace dyplomowe</a>
-        <a href="{{ route('concept.pdf') }}">Druk PDF</a>
         <a href="{{ route('concept.b2b') }}">Druk dla firm</a>
         <a href="{{ route('brand') }}">/brand</a>
         <a href="{{ route('home') }}">Strona główna</a>

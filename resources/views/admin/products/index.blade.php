@@ -1,10 +1,10 @@
 @extends('layouts.admin')
-@section('title', 'Produkty i zdjęcia | CopyCabana')
+@section('title', 'Produkty | CopyCabana')
 @section('content')
 <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
         <p class="text-sm text-slate-500">Katalog i konfigurator</p>
-        <h1 class="text-3xl font-bold">Produkty i zdjęcia</h1>
+        <h1 class="text-3xl font-bold">Produkty</h1>
     </div>
     <a class="rounded bg-[#D51A70] px-4 py-2 font-semibold text-white" href="{{ route('services.business') }}" target="_blank" rel="noreferrer">Zobacz stronę dla firm</a>
 </div>
@@ -26,7 +26,7 @@
                 </div>
                 <p class="mt-2 text-sm text-slate-500">{{ $product->slug }} · {{ $product->category }}</p>
                 <p class="mt-3 truncate text-xs text-slate-400">{{ $product->image_path ?: 'Nie ustawiono' }}</p>
-                <a class="mt-4 inline-block text-sm font-semibold text-[#D51A70]" href="{{ route('admin.products.edit', $product) }}">Edytuj zdjęcie</a>
+                <a class="mt-4 inline-block text-sm font-semibold text-[#D51A70]" href="{{ route('admin.products.edit', $product) }}">Edytuj zdjęcie, opcje i ceny</a>
             </div>
         </article>
     @empty

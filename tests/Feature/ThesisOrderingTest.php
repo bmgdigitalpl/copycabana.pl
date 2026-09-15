@@ -40,6 +40,7 @@ class ThesisOrderingTest extends TestCase
 
     public function test_customer_can_upload_pdf_and_receive_server_quote(): void
     {
+        $this->seed(ProductSeeder::class);
         Storage::fake('local');
 
         $response = $this->post('/api/v1/uploads', [
@@ -48,22 +49,28 @@ class ThesisOrderingTest extends TestCase
 
         $response->assertCreated()
             ->assertJsonPath('file.pages', 1)
+            ->assertJsonPath('file.color_pages', 0)
+            ->assertJsonPath('file.bw_pages', 1)
             ->assertJsonPath('file.name', 'thesis.pdf');
         $token = $response->json('upload_token');
 
         $this->postJson('/api/v1/thesis/quote', [
             'upload_token' => $token,
-            'color_mode' => 'bw',
+            'color_mode' => 'mixed',
             'sided' => 'duplex',
             'binding' => 'hard',
             'cover' => 'none',
+            'burn_cd' => true,
             'copies' => 1,
             'shipping_method' => 'pickup',
         ])->assertOk()
             ->assertJsonPath('quote.pages', 1)
+            ->assertJsonPath('quote.color_pages', 0)
+            ->assertJsonPath('quote.bw_pages', 1)
             ->assertJsonPath('quote.print_total', 0.2)
             ->assertJsonPath('quote.binding_total', 50)
-            ->assertJsonPath('quote.total', 50.2);
+            ->assertJsonPath('quote.cd_total', 20)
+            ->assertJsonPath('quote.total', 70.2);
     }
 
     public function test_customer_can_create_a_thesis_order_with_a_private_file(): void
@@ -79,7 +86,13 @@ class ThesisOrderingTest extends TestCase
             'color_mode' => 'bw',
             'sided' => 'duplex',
             'binding' => 'hard',
-            'cover' => 'none',
+            'cover' => 'standard',
+            'cover_title' => 'magisterska',
+            'imprint_color' => 'gold',
+            'university' => 'us',
+            'burn_cd' => true,
+            'spine_engraving' => true,
+            'spine_engraving_name' => 'Anna Nowak',
             'copies' => 1,
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
@@ -88,7 +101,7 @@ class ThesisOrderingTest extends TestCase
 
         $response->assertCreated()
             ->assertJsonPath('order.status', 'payment_awaited')
-            ->assertJsonPath('order.total', '50.20')
+            ->assertJsonPath('order.total', '115.20')
             ->assertJsonPath('payment_url', 'https://payu.test/pay');
 
         $order = Order::query()->latest('id')->firstOrFail();
@@ -96,7 +109,19 @@ class ThesisOrderingTest extends TestCase
         $this->assertSame('attached', $file->status);
         $this->assertSame('thesis.pdf', $file->original_name);
         $this->assertSame(1, $file->pages);
-        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'amount' => 50.20]);
+        $configuration = $order->items()->firstOrFail()->configuration['customer_configuration'];
+        $this->assertSame('magisterska', $configuration['cover_title']);
+        $this->assertSame('Praca Magisterska', $configuration['cover_title_label']);
+        $this->assertSame('gold', $configuration['imprint_color']);
+        $this->assertSame('Złoty', $configuration['imprint_color_label']);
+        $this->assertSame('us', $configuration['university']);
+        $this->assertSame('Uniwersytet Śląski w Katowicach', $configuration['university_label']);
+        $this->assertTrue($configuration['burn_cd']);
+        $this->assertTrue($configuration['spine_engraving']);
+        $this->assertSame('Anna Nowak', $configuration['spine_engraving_name']);
+        $this->assertSame(30, $configuration['spine_engraving_total']);
+        $this->assertSame(20, $configuration['cd_total']);
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'amount' => 115.20]);
         Mail::assertQueued(OrderReceivedMail::class);
         Storage::disk('local')->assertExists($file->path);
 
@@ -110,6 +135,7 @@ class ThesisOrderingTest extends TestCase
             'sided' => 'duplex',
             'binding' => 'hard',
             'cover' => 'none',
+            'burn_cd' => false,
             'copies' => 1,
             'shipping_method' => 'pickup',
         ])->assertUnprocessable()->assertJsonValidationErrors('upload_token');
@@ -128,6 +154,7 @@ class ThesisOrderingTest extends TestCase
             'sided' => 'duplex',
             'binding' => 'hard',
             'cover' => 'none',
+            'burn_cd' => false,
             'copies' => 1,
             'shipping_method' => 'pickup',
             'privacy_policy_accepted' => true,
@@ -166,10 +193,96 @@ class ThesisOrderingTest extends TestCase
             'sided' => 'duplex',
             'binding' => 'hard',
             'cover' => 'none',
+            'burn_cd' => false,
             'copies' => 1,
             'shipping_method' => 'parcel',
             'privacy_policy_accepted' => true,
         ])->assertUnprocessable()->assertJsonValidationErrors('shipping_address.point_code');
+    }
+
+    public function test_standard_cover_requires_title_color_and_university(): void
+    {
+        $this->seed(ProductSeeder::class);
+        Storage::fake('local');
+        $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
+
+        $this->postJson('/api/v1/thesis/quote', [
+            'upload_token' => $upload->json('upload_token'),
+            'color_mode' => 'bw',
+            'sided' => 'duplex',
+            'binding' => 'hard',
+            'cover' => 'standard',
+            'burn_cd' => false,
+            'copies' => 1,
+            'shipping_method' => 'pickup',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['cover_title', 'imprint_color', 'university']);
+    }
+
+    public function test_custom_cover_requires_text_and_color_without_university(): void
+    {
+        $this->seed(ProductSeeder::class);
+        Storage::fake('local');
+        $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
+
+        $this->postJson('/api/v1/thesis/quote', [
+            'upload_token' => $upload->json('upload_token'),
+            'color_mode' => 'bw',
+            'sided' => 'duplex',
+            'binding' => 'hard',
+            'cover' => 'custom',
+            'burn_cd' => false,
+            'copies' => 1,
+            'shipping_method' => 'pickup',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['cover_text', 'imprint_color']);
+
+        $this->postJson('/api/v1/thesis/quote', [
+            'upload_token' => $upload->json('upload_token'),
+            'color_mode' => 'bw',
+            'sided' => 'duplex',
+            'binding' => 'hard',
+            'cover' => 'custom',
+            'cover_text' => 'Moja praca',
+            'imprint_color' => 'silver',
+            'burn_cd' => false,
+            'copies' => 1,
+            'shipping_method' => 'pickup',
+        ])->assertOk()
+            ->assertJsonPath('quote.total', 60.2);
+    }
+
+    public function test_spine_engraving_requires_name_and_adds_price_per_copy(): void
+    {
+        $this->seed(ProductSeeder::class);
+        Storage::fake('local');
+        $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
+
+        $this->postJson('/api/v1/thesis/quote', [
+            'upload_token' => $upload->json('upload_token'),
+            'color_mode' => 'bw',
+            'sided' => 'duplex',
+            'binding' => 'hard',
+            'cover' => 'none',
+            'burn_cd' => false,
+            'spine_engraving' => true,
+            'copies' => 2,
+            'shipping_method' => 'pickup',
+        ])->assertUnprocessable()->assertJsonValidationErrors('spine_engraving_name');
+
+        $this->postJson('/api/v1/thesis/quote', [
+            'upload_token' => $upload->json('upload_token'),
+            'color_mode' => 'bw',
+            'sided' => 'duplex',
+            'binding' => 'hard',
+            'cover' => 'none',
+            'burn_cd' => false,
+            'spine_engraving' => true,
+            'spine_engraving_name' => 'Anna Nowak',
+            'copies' => 2,
+            'shipping_method' => 'pickup',
+        ])->assertOk()
+            ->assertJsonPath('quote.spine_engraving_total', 60)
+            ->assertJsonPath('quote.total', 160.4)
+            ->assertJsonPath('quote.configuration.spine_engraving_name', 'Anna Nowak');
     }
 
     private function pdfFile(): UploadedFile

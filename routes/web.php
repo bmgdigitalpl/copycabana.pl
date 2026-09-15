@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OptionController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PrintingConfigurationController;
 use App\Http\Controllers\Admin\PrivacyRequestController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\QuoteOfferController;
@@ -23,13 +24,13 @@ use App\Http\Controllers\Customer\VerificationController as CustomerVerification
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocalPaymentController;
 use App\Http\Controllers\QuoteOfferAcceptanceController;
+use App\Http\Controllers\ThesisController;
 use App\Http\Middleware\OwnerMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 Route::redirect('/index.html', '/', 301)->name('home.legacy');
-Route::view('/prace-dyplomowe', 'prace-dyplomowe')->name('services.diploma');
-Route::view('/druk-pdf', 'druk-pdf')->name('druk-pdf');
+Route::get('/prace-dyplomowe', ThesisController::class)->name('services.diploma');
 Route::get('/druk-dla-firm', BusinessPrintController::class)->name('services.business');
 
 Route::view('/brand', 'brand')->name('brand');
@@ -118,6 +119,8 @@ Route::middleware(['auth', 'admin'])->group(function (): void {
         Route::put('/notifications', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
         Route::middleware(OwnerMiddleware::class)->group(function (): void {
+            Route::get('/printing/{type}', [PrintingConfigurationController::class, 'edit'])->whereIn('type', ['thesis', 'pdf'])->name('printing.edit');
+            Route::put('/printing/{type}', [PrintingConfigurationController::class, 'update'])->whereIn('type', ['thesis', 'pdf'])->name('printing.update');
             Route::resource('clients', ClientController::class)->only(['index', 'show'])->parameters(['clients' => 'client'])->names('clients');
             Route::get('/clients/{client}/export', [ClientController::class, 'export'])->name('clients.export');
             Route::post('/clients/{client}/deletion-request', [ClientController::class, 'requestDeletion'])->name('clients.deletion');
@@ -150,5 +153,4 @@ Route::redirect('/dla-firm', '/druk-dla-firm', 301)->name('services.business.leg
 // Concept playground shorts (kept as redirects for now).
 Route::redirect('/concept/strona', '/', 301)->name('concept.home');
 Route::redirect('/concept/strona/prace-dyplomowe', '/prace-dyplomowe', 301)->name('concept.thesis');
-Route::redirect('/concept/strona/druk-pdf', '/druk-pdf', 301)->name('concept.pdf');
 Route::redirect('/concept/strona/druk-dla-firm', '/druk-dla-firm', 301)->name('concept.b2b');

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'CopyCabana — drukarnia w Katowicach')</title>
-  <meta name="description" content="@yield('description', 'CopyCabana — druk cyfrowy i oprawa prac w Katowicach. Prace dyplomowe, dokumenty PDF i materiały dla firm.')">
+  <meta name="description" content="@yield('description', 'CopyCabana — druk cyfrowy i oprawa prac w Katowicach. Prace dyplomowe i materiały dla firm.')">
   <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,6 @@
       <nav class="cc-nav" aria-label="Główna nawigacja">
         <a href="{{ route('home') }}">Start</a>
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
-        <a href="{{ route('druk-pdf') }}">Druk PDF</a>
         <a href="{{ route('services.business') }}">Dla firm</a>
       </nav>
       <div class="cc-header-actions">
@@ -66,7 +65,6 @@
     <div class="mt-12">
       <a href="{{ route('home') }}">Start</a>
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
-        <a href="{{ route('druk-pdf') }}">Druk PDF</a>
         <a href="{{ route('services.business') }}">Druk dla firm</a>
         <a href="{{ route('cart') }}">Koszyk</a>
       @auth
@@ -86,11 +84,10 @@
   <footer class="cc-footer">
     <div class="cc-container cc-footer-inner">
       <a href="{{ route('home') }}" class="font-logo no-underline cc-logo">CopyCabana</a>
-      <p>Drukarnia w centrum Katowic. Konfigurator prac dyplomowych, dokumentów PDF i materiałów dla firm.</p>
+      <p>Drukarnia w centrum Katowic. Konfigurator prac dyplomowych i materiałów dla firm.</p>
       <nav class="cc-footer-nav">
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
-        <a href="{{ route('druk-pdf') }}">Druk PDF</a>
-       <a href="{{ route('services.business') }}">Druk dla firm</a>
+        <a href="{{ route('services.business') }}">Druk dla firm</a>
        <a href="{{ route('archive') }}">Archiwum</a>
        <a href="{{ route('privacy') }}">Polityka prywatności</a>
       </nav>

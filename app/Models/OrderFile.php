@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'size',
     'sha256',
     'pages',
+    'color_pages',
+    'bw_pages',
     'status',
     'expires_at',
 ])]

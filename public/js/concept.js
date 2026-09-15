@@ -77,6 +77,7 @@
         status: 'empty',
         pages: 0,
         colored: 0,
+        bwPages: 0,
         uploadToken: null,
         message: null,
 
@@ -115,6 +116,7 @@
           self.status = 'uploading';
           self.pages = 0;
           self.colored = 0;
+          self.bwPages = 0;
           self.uploadToken = null;
           self.message = null;
           var formData = new FormData();
@@ -133,7 +135,8 @@
           }).then(function (payload) {
             self.uploadToken = payload.upload_token;
             self.pages = payload.file.pages;
-            self.colored = 0;
+            self.colored = payload.file.color_pages || 0;
+            self.bwPages = payload.file.bw_pages || Math.max(0, self.pages - self.colored);
             self.status = 'ready';
             self.emit();
           }).catch(function (error) {
@@ -147,6 +150,7 @@
           this.name = opts.pages ? 'praca-dyplomowa.pdf' : 'dokument.pdf';
           this.pages = opts.pages || 0;
           this.colored = opts.colored || 0;
+          this.bwPages = Math.max(0, this.pages - this.colored);
           this.status = 'ready';
           this.emit();
         },
@@ -160,7 +164,8 @@
               status: this.status,
               uploadToken: this.uploadToken,
               pages: this.pages,
-              colored: this.colored
+              colored: this.colored,
+              bwPages: this.bwPages
             }
           }));
         }
@@ -327,30 +332,37 @@
       var pagePrices = pricing.page_prices || {};
       var bindingPrices = pricing.bindings || {};
       var coverPrices = pricing.covers || {};
+      var universities = pricing.universities || {};
+      var coverTitles = pricing.cover_titles || {};
+      var imprintColors = pricing.imprint_colors || {};
+      var cdOption = pricing.cd || {};
+      var spineEngravingOption = pricing.spine_engraving || {};
       var deliveryPrices = pricing.shipping || {};
-      var bw = Number(pagePrices.bw ?? 0.2);
-      var color = Number(pagePrices.color ?? 0.5);
+      var bw = Number(pagePrices.bw);
+      var color = Number(pagePrices.color);
+      var firstKey = function (items, fallback) { return Object.keys(items)[0] || fallback; };
       return Object.assign(ccInpostState(), {
-        file: { name: null, pages: 0, colored: 0, uploadToken: null },
+          file: { name: null, pages: 0, colored: 0, bwPages: 0, uploadToken: null },
         quote: null,
         quoteLoading: false,
         quoteError: null,
         quoteRequest: 0,
         quoteTimer: null,
         orderError: null,
-        print: { color: 'bw', sided: 'duplex', copies: 1 },
-        binding: 'hard',
-        cover: 'none',
+           print: { color: 'mixed', sided: 'duplex', copies: 1 },
+        maxCopies: Number(pricing.max_copies),
+        binding: bindingPrices.hard ? 'hard' : firstKey(bindingPrices, ''),
+        cover: coverPrices.none ? 'none' : firstKey(coverPrices, ''),
         coverText: '',
-        coverColor: 'granat',
+        coverColor: firstKey(pricing.cover_colors || {}, ''),
+        coverTitle: firstKey(coverTitles, 'magisterska'),
+        imprintColor: firstKey(imprintColors, 'gold'),
+        university: firstKey(universities, 'us'),
+        burnCd: 'false',
+        spineEngraving: 'false',
+        spineEngravingName: '',
         titleVariant: 0,
-        coverColors: [
-          { id: 'granat', hex: '#063A60' },
-          { id: 'magenta', hex: '#D51A70' },
-          { id: 'zolty', hex: '#FFED00' },
-          { id: 'zielony', hex: '#7FBF45' },
-          { id: 'niebieski', hex: '#00456F' }
-        ],
+        coverColors: Object.entries(pricing.cover_colors || {}).map(function ([id, value]) { return { id: id, hex: value.hex, label: value.label }; }),
         titleVariants: [
           { degree: 'Praca magisterska', title: 'Analiza rynku e-commerce w Polsce', author: 'Jan Kowalski' },
           { degree: 'Praca licencjacka', title: 'Projekt systemu informatycznego dla biblioteki', author: 'Anna Nowak' },
@@ -359,16 +371,8 @@
         delivery: null,
         byDate: '',
 
-        bindings: [
-          { id: 'soft', name: 'Oprawa miękka', price: Number(bindingPrices.soft?.price ?? 0), hint: 'Klasyczna broszura. Częsty standard wydziałów.', thickness: 'soft' },
-          { id: 'channel', name: 'Oprawa kanałowa', price: Number(bindingPrices.channel?.price ?? 25), hint: 'Klejony blok, równy grzbiet.', thickness: 'channel' },
-          { id: 'hard', name: 'Oprawa twarda', price: Number(bindingPrices.hard?.price ?? 50), hint: 'Sztywna oprawa. Premium w obronie.', thickness: 'hard' }
-        ],
-        covers: [
-          { id: 'none', name: 'Bez napisu', price: Number(coverPrices.none?.price ?? 0), hint: 'Czysta okładka.' },
-          { id: 'standard', name: 'Standardowy napis', price: Number(coverPrices.standard?.price ?? 15), hint: 'Tytuł pracy + imię i nazwisko.' },
-          { id: 'custom', name: 'Własny napis', price: Number(coverPrices.custom?.price ?? 10), hint: 'Wpisz dokładnie, co ma być na okładce.' }
-        ],
+        bindings: Object.entries(bindingPrices).map(function ([id, value]) { return { id: id, name: value.label, price: Number(value.price), hint: value.hint || '', thickness: id }; }),
+        covers: Object.entries(coverPrices).map(function ([id, value]) { return { id: id, name: value.label, price: Number(value.price), hint: value.hint || '' }; }),
         deliveries: [
           { id: 'pickup', name: 'Odbiór w Katowicach', price: Number(deliveryPrices.pickup ?? 0), hint: 'ul. Bankowa 11, 40-007 Katowice' },
           { id: 'parcel', name: 'Paczkomat', price: Number(deliveryPrices.parcel ?? 12), hint: 'Wybierz punkt z listy InPost' },
@@ -376,10 +380,10 @@
 
          init: function () {
            var self = this;
-            ['file.uploadToken', 'print.color', 'print.sided', 'binding', 'cover', 'coverText', 'coverColor', 'print.copies', 'delivery', 'parcelLocker'].forEach(function (path) {
-             self.$watch(path, function () { self.scheduleQuote(); });
-           });
-         },
+            ['file.uploadToken', 'print.color', 'print.sided', 'binding', 'cover', 'coverText', 'coverColor', 'coverTitle', 'imprintColor', 'university', 'burnCd', 'spineEngraving', 'spineEngravingName', 'print.copies', 'delivery', 'parcelLocker', 'byDate'].forEach(function (path) {
+              self.$watch(path, function () { self.scheduleQuote(); });
+            });
+          },
 
          scheduleQuote: function () {
            var self = this;
@@ -393,11 +397,17 @@
              color_mode: this.print.color,
              sided: this.print.sided,
              binding: this.binding,
-             cover: this.cover,
-             cover_text: this.coverText,
-             cover_color: this.coverColor,
-              copies: this.print.copies,
-              shipping_method: this.delivery,
+              cover: this.cover,
+              cover_text: this.cover === 'custom' ? this.coverText : null,
+              cover_color: this.coverColor,
+              cover_title: this.cover === 'standard' ? this.coverTitle : null,
+              imprint_color: this.cover !== 'none' ? this.imprintColor : null,
+               university: this.cover === 'standard' ? this.university : null,
+               burn_cd: this.burnCd === 'true',
+               spine_engraving: this.spineEngraving === 'true',
+               spine_engraving_name: this.spineEngraving === 'true' ? this.spineEngravingName : null,
+                copies: this.print.copies,
+               shipping_method: this.delivery,
               requested_by_date: this.byDate || null
            };
          },
@@ -463,13 +473,18 @@
 
             return;
           }
+          if (this.spineEngraving === 'true' && !this.spineEngravingName) {
+            this.orderError = 'Podaj imię i nazwisko do grawerowania na grzbiecie.';
+
+            return;
+          }
 
           this.orderError = addConfiguredItemToCart({
             productId: 'praca-dyplomowa',
             productName: 'Praca dyplomowa',
             quantity: 1,
-            price: this.printTotal() + (this.bindingPrice() * this.print.copies) + (this.coverPrice() * this.print.copies),
-            summary: this.file.name + ' · ' + this.bindingName() + ' · ' + this.print.copies + ' egz.',
+            price: this.printTotal() + (this.bindingPrice() * this.print.copies) + (this.coverPrice() * this.print.copies) + this.spineEngravingPrice() + this.cdPrice(),
+            summary: this.file.name + ' · ' + this.bindingName() + ' · ' + this.coverSummary() + ' · ' + (this.spineEngraving === 'true' ? 'grawer grzbietu: ' + this.spineEngravingName + ' · ' : '') + this.print.copies + ' egz.',
             orderType: 'thesis',
             configuration: {
               uploadToken: this.file.uploadToken,
@@ -477,8 +492,14 @@
               sided: this.print.sided,
               binding: this.binding,
               cover: this.cover,
-              cover_text: this.coverText || null,
+              cover_text: this.cover === 'custom' ? this.coverText : null,
               cover_color: this.coverColor,
+              cover_title: this.cover === 'standard' ? this.coverTitle : null,
+              imprint_color: this.cover !== 'none' ? this.imprintColor : null,
+              university: this.cover === 'standard' ? this.university : null,
+              burn_cd: this.burnCd === 'true',
+              spine_engraving: this.spineEngraving === 'true',
+              spine_engraving_name: this.spineEngraving === 'true' ? this.spineEngravingName : null,
               copies: this.print.copies,
               requestedByDate: this.byDate || null,
               cartCustomer: {
@@ -493,24 +514,58 @@
 
         onFile: function (detail) {
           if (!detail || detail.key !== 'thesis') return;
-          this.file = { name: detail.name, pages: detail.pages, colored: 0, uploadToken: detail.uploadToken };
-          this.print.color = 'bw';
+          this.file = { name: detail.name, pages: detail.pages, colored: detail.colored, bwPages: detail.bwPages, uploadToken: detail.uploadToken };
+          this.print.color = detail.colored > 0 ? 'mixed' : 'bw';
         },
 
         activeVariant: function () {
           return this.titleVariants[this.titleVariant] || this.titleVariants[0];
         },
 
+        universityName: function () {
+          return universities[this.university] || '';
+        },
+
+        coverTitleName: function () {
+          return coverTitles[this.coverTitle] || '';
+        },
+
+        coverHeading: function () {
+          if (this.cover === 'custom') return this.coverText || 'Własny napis';
+          return this.coverTitleName();
+        },
+
+        coverSubheading: function () {
+          return this.cover === 'standard' ? this.universityName() : '';
+        },
+
+        coverSummary: function () {
+          if (this.cover === 'none') return 'bez napisu';
+          if (this.cover === 'custom') return this.coverText || 'własny napis';
+          return this.coverTitleName();
+        },
+
+        imprintColorName: function () {
+          return (imprintColors[this.imprintColor] && imprintColors[this.imprintColor].label) || '';
+        },
+
+        imprintStyle: function () {
+          var color = imprintColors[this.imprintColor] && imprintColors[this.imprintColor].hex;
+          return color ? 'color:' + color : '';
+        },
+
         printTotal: function () {
           if (!this.file.pages) return 0;
           var pages = this.file.pages;
-          var total = this.print.color === 'bw' ? pages * bw : pages * color;
+          var total = this.print.color === 'mixed'
+            ? (this.file.bwPages * bw) + (this.file.colored * color)
+            : pages * bw;
           return total * this.print.copies;
         },
         printColorName: function () {
           return this.print.color === 'bw'
-            ? 'całość czarno-biała'
-            : 'całość kolorowa';
+            ? 'wszystko czarno-białe'
+            : 'kolorowe jako kolorowe';
         },
         bindingName: function () {
           var b = this.bindings.find(function (x) { return x.id === this.binding; }.bind(this));
@@ -528,6 +583,12 @@
           var c = this.covers.find(function (x) { return x.id === this.cover; }.bind(this));
           return c ? c.price : 0;
         },
+        cdPrice: function () {
+          return this.burnCd === 'true' ? Number(cdOption.price) : 0;
+        },
+        spineEngravingPrice: function () {
+          return this.spineEngraving === 'true' ? Number(spineEngravingOption.price) * this.print.copies : 0;
+        },
         deliveryPrice: function () {
           if (!this.delivery) return null;
           var d = this.deliveries.find(function (x) { return x.id === this.delivery; }.bind(this));
@@ -538,8 +599,8 @@
           return d ? d.name : null;
         },
          total: function () {
-           return this.printTotal() + ((this.bindingPrice() + this.coverPrice()) * this.print.copies) + (this.deliveryPrice() ?? 0);
-         },
+           return this.printTotal() + ((this.bindingPrice() + this.coverPrice()) * this.print.copies) + this.spineEngravingPrice() + this.cdPrice() + (this.deliveryPrice() ?? 0);
+          },
         dateLbl: function () { return ccDateLbl(this.byDate); },
         deliveryLate: function () {
           if (!this.delivery || this.delivery === 'pickup' || !this.byDate) return null;
@@ -687,11 +748,12 @@
           },
 
          go: ccScroll,
-         onFile: function (detail) {
-           if (!detail || detail.key !== 'pdf') return;
-           this.file = { name: detail.name, pages: detail.pages, colored: detail.colored, uploadToken: detail.uploadToken };
-         },
-         printTotal: function () { return this.file.pages ? this.file.pages * (this.print.color === 'bw' ? bw : color) * this.print.copies : 0; },
+          onFile: function (detail) {
+            if (!detail || detail.key !== 'pdf') return;
+            this.file = { name: detail.name, pages: detail.pages, colored: detail.colored, bwPages: detail.bwPages, uploadToken: detail.uploadToken };
+            this.print.color = detail.colored > 0 ? 'mixed' : 'bw';
+          },
+          printTotal: function () { return this.file.pages ? (this.print.color === 'mixed' ? (this.file.bwPages * bw) + (this.file.colored * color) : this.file.pages * bw) * this.print.copies : 0; },
          finishPrice: function () { var f = this.finishes.find(function (x) { return x.id === this.finish; }.bind(this)); return f ? f.price * this.print.copies : 0; },
          deliveryPrice: function () { if (!this.delivery) return null; var d = this.deliveries.find(function (x) { return x.id === this.delivery; }.bind(this)); return d ? d.price : 0; },
          total: function () { return this.quote ? Number(this.quote.total) : this.printTotal() + this.finishPrice() + (this.deliveryPrice() ?? 0); },

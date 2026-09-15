@@ -16,12 +16,6 @@ class HomeController extends Controller
                 'image' => asset('images/produkty/oprawa-prac-i-bindowanie.png'),
                 'href' => route('services.diploma'),
             ],
-            [
-                'title' => 'Dokument PDF',
-                'alt' => 'Druk dokumentu PDF',
-                'image' => asset('images/produkty/druk.png'),
-                'href' => route('druk-pdf'),
-            ],
         ];
 
         foreach ($configurator->catalog() as $product) {

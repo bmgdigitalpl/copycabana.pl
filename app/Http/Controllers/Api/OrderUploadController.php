@@ -22,6 +22,8 @@ class OrderUploadController extends Controller
                 'name' => $upload['file']->original_name,
                 'size' => $upload['file']->size,
                 'pages' => $upload['file']->pages,
+                'color_pages' => $upload['file']->color_pages,
+                'bw_pages' => $upload['file']->bw_pages,
             ],
         ], 201);
     }

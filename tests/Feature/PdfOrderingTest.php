@@ -33,6 +33,7 @@ class PdfOrderingTest extends TestCase
 
     public function test_customer_can_receive_a_server_side_pdf_quote(): void
     {
+        $this->seed(ProductSeeder::class);
         Storage::fake('local');
         $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
 
@@ -70,7 +71,7 @@ class PdfOrderingTest extends TestCase
         $response = $this->withHeader('Idempotency-Key', 'pdf-create-key')->postJson('/api/v1/pdf/orders', [
             'upload_token' => $upload->json('upload_token'),
             'customer' => ['name' => 'Jan Kowalski', 'email' => 'jan@example.com'],
-            'color_mode' => 'color',
+            'color_mode' => 'mixed',
             'sided' => 'simplex',
             'finish' => 'staples',
             'copies' => 1,
@@ -80,11 +81,11 @@ class PdfOrderingTest extends TestCase
 
         $response->assertCreated()
             ->assertJsonPath('order.status', 'payment_awaited')
-            ->assertJsonPath('order.total', '4.50')
+            ->assertJsonPath('order.total', '4.20')
             ->assertJsonPath('payment_url', 'https://payu.test/pdf-pay');
         $order = Order::query()->latest('id')->firstOrFail();
         $this->assertSame('attached', $order->files()->firstOrFail()->status);
-        $this->assertDatabaseHas('orders', ['id' => $order->id, 'subtotal' => 4.50]);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'subtotal' => 4.20]);
         Mail::assertQueued(OrderReceivedMail::class, 1);
         Notification::assertSentTo($administrator, AdminActivityNotification::class);
     }
@@ -125,6 +126,7 @@ class PdfOrderingTest extends TestCase
 
     public function test_pdf_order_requires_complete_delivery_address(): void
     {
+        $this->seed(ProductSeeder::class);
         Storage::fake('local');
         $upload = $this->post('/api/v1/uploads', ['file' => $this->pdfFile()]);
 

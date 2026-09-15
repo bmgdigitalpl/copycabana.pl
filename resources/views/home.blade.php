@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
-@section('title', 'Drukarnia CopyCabana w Katowicach — prace dyplomowe, dokumenty PDF, druk dla firm')
-@section('description', 'Prace dyplomowe z oprawą, dokumenty PDF i materiały dla firm. Konfigurator online — CopyCabana, Katowice, ul. Bankowa 11.')
+@section('title', 'Drukarnia CopyCabana w Katowicach — prace dyplomowe, druk dla firm')
+@section('description', 'Prace dyplomowe z oprawą i materiały dla firm. Konfigurator online — CopyCabana, Katowice, ul. Bankowa 11.')
 
 @section('content')
 <main class="cc-page">
@@ -26,10 +26,10 @@
           </div>
         @else
           <div class="hero-stack" style="height: 100%; align-content: center;" aria-hidden="true">
-            <article class="stack-card stack-card-main"><strong>24h</strong><p>Druk i oprawa prac dyplomowych. Dostępność terminu potwierdzamy dla Twojego pliku i wybranej oprawy.</p></article>
-            <article class="stack-card"><strong>PDF</strong><p>Prześlij dokument mailem. Podaj liczbę egzemplarzy oraz druk kolorowy lub czarno-biały.</p></article>
-            <article class="stack-card stack-card-accent"><strong>Katowice</strong><p>Odbiór w centrum miasta przy ul. Bankowej 11.</p></article>
-            <article class="stack-card"><strong>Dla firm</strong><p>Wizytówki, ulotki, plakaty, rollupy, banery i więcej.</p></article>
+            <article class="stack-card stack-card--cyan"><strong>24h</strong><p>Druk i oprawa prac dyplomowych. Dostępność terminu potwierdzamy dla Twojego pliku i wybranej oprawy.</p></article>
+            <article class="stack-card stack-card--magenta"><strong>Druk</strong><p>Prześlij plik mailem. Podaj liczbę egzemplarzy oraz druk kolorowy lub czarno-biały.</p></article>
+            <article class="stack-card stack-card--yellow"><strong>Katowice</strong><p>Odbiór w centrum miasta przy ul. Bankowej 11.</p></article>
+            <article class="stack-card stack-card--black"><strong>Dla firm</strong><p>Wizytówki, ulotki, plakaty, rollupy, banery i więcej.</p></article>
           </div>
         @endif
       </div>
@@ -37,7 +37,14 @@
   </section>
 
   {{-- 02 Service slider --}}
-  <x-concept.marquee :items="['Prace dyplomowe', 'Druk PDF', 'Wizytówki', 'Ulotki', 'Plakaty', 'Banery', 'Rollupy', 'Oprawa']" />
+  <x-concept.marquee :items="[
+    ['label' => 'Prace dyplomowe', 'href' => route('services.diploma')],
+    ['label' => 'Wizytówki', 'href' => route('services.business', ['product' => 'wizytowki']).'#produkty'],
+    ['label' => 'Ulotki', 'href' => route('services.business', ['product' => 'ulotki']).'#produkty'],
+    ['label' => 'Plakaty', 'href' => route('services.business', ['product' => 'plakaty']).'#produkty'],
+    ['label' => 'Banery', 'href' => route('services.business', ['product' => 'banery']).'#produkty'],
+    ['label' => 'Rollupy', 'href' => route('services.business', ['product' => 'rollupy']).'#produkty'],
+  ]" />
 
   {{-- 03 Trust --}}
   <section class="cc-section cc-section--light">
@@ -46,7 +53,7 @@
         Dlaczego CopyCabana.
       </x-concept.section-heading>
 
-      <div class="cc-need-grid">
+        <div class="cc-need-grid">
         <article class="cc-need-card reveal">
           <span class="cc-need-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></span>
           <div class="cc-need-body">
@@ -159,7 +166,6 @@
   <x-concept.closing-cta heading="Masz już plik?"
     :items="[
       ['href' => route('services.diploma'), 'title' => 'Praca dyplomowa', 'note' => 'druk + oprawa + odbiór', 'icon' => 'fa-graduation-cap'],
-      ['href' => route('druk-pdf'), 'title' => 'Dokument PDF', 'note' => 'szybki wydruk', 'icon' => 'fa-file-pdf'],
       ['href' => route('services.business'), 'title' => 'Druk dla firmy', 'note' => 'wizytówki, ulotki, banery', 'icon' => 'fa-building']
     ]" />
 </main>

@@ -221,6 +221,10 @@
   .cc-nav { display: flex; }
 }
 
+@media (max-width: 899px) {
+  .cc-header-actions .cc-header-icon { display: none; }
+}
+
 /* --- Typography helpers ------------------------ */
 .cc-section {
   padding-block: 5rem;
@@ -458,7 +462,7 @@
   padding: 0.9rem 0.425rem;
 }
 
-.cc-marquee-track span {
+.cc-marquee-track :is(a, span) {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -473,11 +477,20 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   text-transform: uppercase;
+  text-decoration: none;
 }
 
-.cc-marquee-track span i {
+.cc-marquee-track :is(a, span) i {
   color: var(--geel);
   font-size: 0.5rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cc-marquee-track a:hover,
+  .cc-marquee-track a:focus-visible {
+    border-color: rgba(255, 237, 0, 0.55);
+    background: rgba(255, 237, 0, 0.18);
+  }
 }
 
 .cc-marquee-fade {
@@ -2457,8 +2470,25 @@
   position: absolute;
   inset: 0 auto 0 0;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(0, 0, 0, 0.22);
   border-radius: 3px 0 0 3px;
+  overflow: hidden;
+}
+
+.cc-thesis-spine-name {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  max-height: 86%;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .cc-thesis--soft .cc-thesis-spine { width: 7px; }

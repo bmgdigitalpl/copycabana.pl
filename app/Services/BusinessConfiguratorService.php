@@ -70,7 +70,7 @@ class BusinessConfiguratorService
 
     /**
      * @param  array<string, string|null>  $configuration
-     * @return array<string, array{label: string, value: string, display: string}>
+     * @return array<string, array{label: string, value: string, display: string, price: float, pricing_unit: string}>
      */
     public function snapshot(Product $product, array $configuration): array
     {
@@ -90,6 +90,8 @@ class BusinessConfiguratorService
                 'label' => $field['label'],
                 'value' => $value,
                 'display' => $display,
+                'price' => (float) ($selectedValue['price'] ?? $field['price'] ?? 0),
+                'pricing_unit' => $field['type'] === 'number' ? 'unit' : 'selection',
             ];
         }
 

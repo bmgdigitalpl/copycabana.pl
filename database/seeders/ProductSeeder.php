@@ -13,7 +13,7 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         $chips = static fn (array $values): array => array_map(
-            static fn (string $value): array => ['value' => $value, 'label' => $value],
+            static fn (string $value): array => ['value' => $value, 'label' => $value, 'price' => 0],
             $values,
         );
         $quantity = static fn (string $label = 'Liczba sztuk', int $max = 1000): array => [
@@ -23,6 +23,7 @@ class ProductSeeder extends Seeder
             'required' => true,
             'min' => 1,
             'max' => $max,
+            'price' => 0,
         ];
         $generic = static fn (string $icon): array => [
             'icon' => $icon,
@@ -121,7 +122,7 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $sortOrder => [$slug, $name, $category, $description, $image, $calculatorType, $startingPrice]) {
-            Product::query()->updateOrCreate(
+            Product::query()->firstOrCreate(
                 ['slug' => $slug],
                 [
                     'name' => $name,
@@ -140,5 +141,7 @@ class ProductSeeder extends Seeder
                 ],
             );
         }
+
+        $this->call(PrintingConfiguratorSeeder::class);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Services\ConfiguratorSettings;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PdfOrderRequest extends FormRequest
 {
@@ -15,8 +17,10 @@ class PdfOrderRequest extends FormRequest
     }
 
     /** @return array<string, array<int, mixed>|string> */
-    public function rules(): array
+    public function rules(ConfiguratorSettings $configurator): array
     {
+        $settings = $configurator->printing('pdf');
+
         return [
             'upload_token' => ['required', 'string', 'size:64'],
             'customer.name' => ['required', 'string', 'max:150'],
@@ -25,10 +29,10 @@ class PdfOrderRequest extends FormRequest
             'customer.company' => ['nullable', 'string', 'max:150'],
             'customer.nip' => ['required_if:invoice_required,true', 'nullable', 'string', 'max:20'],
             'customer.notes' => ['nullable', 'string', 'max:5000'],
-            'color_mode' => ['required', 'string', 'in:bw,color'],
+            'color_mode' => ['required', 'string', 'in:bw,mixed'],
             'sided' => ['required', 'string', 'in:simplex,duplex'],
-            'finish' => ['required', 'string', 'in:none,staples,folder,channel'],
-            'copies' => ['required', 'integer', 'min:1', 'max:50'],
+            'finish' => ['required', 'string', Rule::in(array_keys($settings['finishes']))],
+            'copies' => ['required', 'integer', 'min:1', 'max:'.$settings['max_copies']],
             'shipping_method' => ['required', 'string', 'in:pickup,parcel,courier'],
             'shipping_address' => ['required_unless:shipping_method,pickup', 'array', 'max:10'],
             'shipping_address.point_code' => ['required_if:shipping_method,parcel', 'string', 'max:30'],

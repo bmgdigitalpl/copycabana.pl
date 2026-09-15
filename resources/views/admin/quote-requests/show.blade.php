@@ -13,7 +13,17 @@
                 <article class="border-b pb-4 last:border-0">
                     <div class="flex justify-between gap-4"><div><p class="font-medium">{{ $item->product_name }}</p><p class="text-sm text-slate-500">Ilość: {{ $item->quantity }}{{ $item->help_wanted ? ' · projekt po stronie pracowni' : '' }}</p></div><strong>{{ $item->files->count() }} plik(i)</strong></div>
                     @if($item->configuration)
-                        <dl class="mt-2 grid gap-1 text-sm text-slate-600">@foreach($item->configuration as $key => $value)<div><dt class="inline font-medium">{{ $key }}:</dt> <dd class="inline">{{ is_scalar($value) ? $value : json_encode($value, JSON_UNESCAPED_UNICODE) }}</dd></div>@endforeach</dl>
+                        <dl class="mt-2 grid gap-1 text-sm text-slate-400">
+                            @foreach($item->configuration as $key => $value)
+                                <div><dt class="inline font-medium">{{ is_array($value) ? ($value['label'] ?? $key) : $key }}:</dt>
+                                    <dd class="inline">{{ is_array($value) ? ($value['display'] ?? json_encode($value, JSON_UNESCAPED_UNICODE)) : $value }}
+                                        @if(is_array($value) && isset($value['price']))
+                                            <span> · {{ number_format((float) $value['price'], 2, ',', ' ') }} zł{{ ($value['pricing_unit'] ?? '') === 'unit' ? ' / jednostkę' : ' dopłaty' }}</span>
+                                        @endif
+                                    </dd>
+                                </div>
+                            @endforeach
+                        </dl>
                     @endif
                 </article>
             @endforeach

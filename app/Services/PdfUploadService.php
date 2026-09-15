@@ -17,6 +17,8 @@ use Throwable;
 
 class PdfUploadService
 {
+    public function __construct(private PdfColorAnalyzer $colorAnalyzer) {}
+
     /**
      * @return array{file: OrderFile, token: string}
      */
@@ -30,7 +32,8 @@ class PdfUploadService
         }
 
         try {
-            $pages = count((new Parser)->parseFile($disk->path($path))->getPages());
+            $absolutePath = $disk->path($path);
+            $pages = count((new Parser)->parseFile($absolutePath)->getPages());
 
             if ($pages < 1 || $pages > (int) config('business.thesis.max_pages', 500)) {
                 throw ValidationException::withMessages([
@@ -38,6 +41,7 @@ class PdfUploadService
                 ]);
             }
 
+            $pageColors = $this->colorAnalyzer->analyze($absolutePath, $pages);
             $token = Str::random(64);
             $file = DB::transaction(fn (): OrderFile => OrderFile::create([
                 'token_hash' => hash('sha256', $token),
@@ -46,8 +50,10 @@ class PdfUploadService
                 'original_name' => $uploadedFile->getClientOriginalName(),
                 'mime_type' => $uploadedFile->getMimeType() ?: 'application/pdf',
                 'size' => $uploadedFile->getSize() ?: 0,
-                'sha256' => hash_file('sha256', $disk->path($path)),
+                'sha256' => hash_file('sha256', $absolutePath),
                 'pages' => $pages,
+                'color_pages' => $pageColors['color_pages'],
+                'bw_pages' => $pageColors['bw_pages'],
                 'status' => 'temporary',
                 'expires_at' => now()->addHours((int) config('business.thesis.upload_retention_hours', 24)),
             ]));

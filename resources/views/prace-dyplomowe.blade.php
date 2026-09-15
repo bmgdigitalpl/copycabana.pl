@@ -5,7 +5,7 @@
 
 @section('content')
 <script>
-  window.copyCabanaThesisPricing = @js(config('business.thesis'));
+  window.copyCabanaThesisPricing = @js($thesisPricing);
 </script>
 <main class="cc-page">
   {{-- Hero --}}
@@ -25,7 +25,7 @@
       <div class="cc-hero-visual reveal reveal-delay-2">
         <div class="cc-hero-stack" aria-hidden="true">
           <div class="cc-hero-card cc-hero-card--single">
-            <img src="{{ asset('images/produkty/graduation.png') }}" alt="">
+            <img src="{{ $thesisProduct->imageUrl() }}" alt="">
           </div>
         </div>
       </div>
@@ -88,7 +88,8 @@
                 <p class="cc-file-name"><i class="fas fa-file-pdf" aria-hidden="true"></i><span x-text="name"></span></p>
                  <div class="cc-file-report">
                    <div><span>Strony</span><strong x-text="pages"></strong></div>
-                   <div><span>Tryb koloru</span><strong>do wyboru</strong></div>
+                    <div><span>Czarno-białe</span><strong x-text="bwPages"></strong></div>
+                    <div><span>Kolorowe</span><strong x-text="colored"></strong></div>
                   <div><span>Status</span><strong>OK</strong></div>
                 </div>
                 <div class="cc-dropzone-actions">
@@ -123,8 +124,8 @@
 
           <p class="cc-step-label">Kolor</p>
            <div class="cc-step-grid">
-             <x-concept.option-card group="druk-kolor" value="bw" model="print.color" label="całość czarno-biała" hint="Wszystkie strony wydrukujemy w czerni i bieli." />
-             <x-concept.option-card group="druk-kolor" value="color" model="print.color" label="całość kolorowa" hint="Wszystkie strony wydrukujemy w kolorze." />
+             <x-concept.option-card group="druk-kolor" value="bw" model="print.color" label="wszystko czarno-białe" hint="Także wykryte strony kolorowe wydrukujemy w czerni i bieli." />
+              <x-concept.option-card group="druk-kolor" value="mixed" model="print.color" label="kolorowe jako kolorowe" hint="Strony kolorowe drukujemy w kolorze, pozostałe czarno-biało." />
           </div>
 
           <p class="cc-step-label">Strony kartki</p>
@@ -144,21 +145,14 @@
           </div>
 
           <div class="cc-step-grid cc-step-grid--3">
-            @php
-              $options = [
-                ['id' => 'soft', 'label' => 'Oprawa miękka', 'hint' => 'Klasyczna broszura. Częsty standard wydziałów.', 'price' => '0,00 zł'],
-                ['id' => 'channel', 'label' => 'Oprawa kanałowa', 'hint' => 'Klejony blok, równy grzbiet.', 'price' => '25,00 zł'],
-                ['id' => 'hard', 'label' => 'Oprawa twarda', 'hint' => 'Sztywna oprawa. Premium w obronie.', 'price' => '50,00 zł'],
-              ];
-            @endphp
-            @foreach ($options as $b)
+            @foreach ($thesisPricing['bindings'] as $bindingKey => $b)
               <x-concept.binding-card
                 group="oprawa"
-                value="{{ $b['id'] }}"
+                value="{{ $bindingKey }}"
                 model="binding"
                 label="{{ $b['label'] }}"
-                hint="{{ $b['hint'] }}"
-                price="{{ number_format((float) config('business.thesis.bindings.'.$b['id'].'.price'), 2, ',', ' ') }} zł" />
+                hint="{{ $b['hint'] ?? '' }}"
+                price="{{ number_format((float) $b['price'], 2, ',', ' ') }} zł" />
             @endforeach
           </div>
 
@@ -170,7 +164,7 @@
             <div class="cc-qty">
               <button type="button" @click="print.copies = print.copies > 1 ? print.copies - 1 : 1" aria-label="Mniej egzemplarzy"><i class="fas fa-minus" aria-hidden="true"></i></button>
               <strong x-text="print.copies"></strong>
-              <button type="button" @click="print.copies = print.copies < 10 ? print.copies + 1 : 10" aria-label="Więcej egzemplarzy"><i class="fas fa-plus" aria-hidden="true"></i></button>
+              <button type="button" @click="print.copies = Math.min(maxCopies, print.copies + 1)" aria-label="Więcej egzemplarzy"><i class="fas fa-plus" aria-hidden="true"></i></button>
             </div>
           </div>
 
@@ -185,23 +179,69 @@
           </div>
 
           <div class="cc-step-grid cc-step-grid--3">
-            @foreach (['none', 'standard', 'custom'] as $i => $c)
+            @foreach ($thesisPricing['covers'] as $c => $coverOption)
               <x-concept.option-card
                 group="okladka"
                 value="{{ $c }}"
                 model="cover"
-                label="{{ ['none' => 'Bez napisu', 'standard' => 'Standardowy napis', 'custom' => 'Własny napis'][$c] }}"
-                hint="{{ ['none' => 'Czysta okładka.', 'standard' => 'Wzór do akceptacji przed produkcją.', 'custom' => 'Dokładna treść, jaką wpiszesz.'][$c] }}"
-                 price="{{ number_format((float) config('business.thesis.covers.'.$c.'.price'), 2, ',', ' ') }} zł" />
+                label="{{ $coverOption['label'] }}"
+                hint="{{ $coverOption['hint'] ?? '' }}"
+                 price="{{ number_format((float) $coverOption['price'], 2, ',', ' ') }} zł" />
             @endforeach
           </div>
 
-          <template x-if="cover === 'custom'">
-            <div class="cc-field" x-transition.opacity.duration.200ms>
-              <label for="okladka-tekst">Treść napisu na okładce</label>
-              <input id="okladka-tekst" type="text" x-model="coverText" placeholder="np. tytuł pracy · imię i nazwisko">
+          <div class="cc-field-grid" x-show="cover === 'standard'" x-transition.opacity.duration.200ms>
+            <div class="cc-field">
+              <label for="uczelnia">Uczelnia</label>
+              <select id="uczelnia" x-model="university">
+                @foreach ($thesisPricing['universities'] as $value => $label)
+                  <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+              </select>
             </div>
-          </template>
+
+            <div class="cc-field">
+              <label for="napis-okladka">Napis na okładce</label>
+              <select id="napis-okladka" x-model="coverTitle">
+                @foreach ($thesisPricing['cover_titles'] as $value => $label)
+                  <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+
+          <div class="cc-field" x-show="cover === 'custom'" x-transition.opacity.duration.200ms>
+            <label for="okladka-tekst">Treść napisu na okładce</label>
+            <input id="okladka-tekst" type="text" x-model="coverText" placeholder="np. tytuł pracy · imię i nazwisko">
+          </div>
+
+          <div class="cc-field-grid" x-show="cover === 'standard' || cover === 'custom'" x-transition.opacity.duration.200ms>
+            <div class="cc-field">
+              <label for="kolor-napisu">Kolor napisu</label>
+              <select id="kolor-napisu" x-model="imprintColor">
+                @foreach ($thesisPricing['imprint_colors'] as $value => $color)
+                  <option value="{{ $value }}">{{ $color['label'] }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+
+          <p class="cc-step-label">{{ $thesisPricing['cd']['label'] }}</p>
+          <div class="cc-step-grid">
+            <x-concept.option-card group="cd" value="false" model="burnCd" label="Nie" hint="Bez dodatkowej kopii na płycie." price="0,00 zł" />
+            <x-concept.option-card group="cd" value="true" model="burnCd" label="Tak" hint="Nagramy przesłany plik PDF na CD." price="{{ number_format((float) $thesisPricing['cd']['price'], 2, ',', ' ') }} zł" />
+          </div>
+
+          <p class="cc-step-label">Grawerowanie na grzbiecie</p>
+          <div class="cc-step-grid">
+            <x-concept.option-card group="grzbiet-grawer" value="false" model="spineEngraving" label="Nie" hint="Bez dodatkowego napisu na grzbiecie." price="0,00 zł" />
+            <x-concept.option-card group="grzbiet-grawer" value="true" model="spineEngraving" label="Tak" hint="Imię i nazwisko podane w konfiguratorze wygrawerujemy na grzbiecie." price="{{ number_format((float) $thesisPricing['spine_engraving']['price'], 2, ',', ' ') }} zł" />
+          </div>
+
+          <div class="cc-field" x-show="spineEngraving === 'true'" x-transition.opacity.duration.200ms>
+            <label for="grzbiet-imie-nazwisko">Imię i nazwisko na grzbiecie</label>
+            <input id="grzbiet-imie-nazwisko" type="text" x-model="spineEngravingName" placeholder="np. Jan Kowalski">
+          </div>
 
           <p class="cc-step-micro" x-show="cover === 'standard'">Przykład standardowego napisu: „Tytuł pracy dyplomowej — Imię Nazwisko”.</p>
 
@@ -209,13 +249,15 @@
             <div class="cc-thesis"
               :class="['cc-thesis--' + coverColor, 'cc-thesis--' + binding]"
               aria-hidden="true">
-              <span class="cc-thesis-spine"></span>
+              <span class="cc-thesis-spine">
+                <span class="cc-thesis-spine-name" x-show="spineEngraving === 'true'" :style="imprintStyle()" x-text="spineEngravingName || 'Imię Nazwisko'"></span>
+              </span>
               <span class="cc-thesis-cover">
-                <em class="cc-thesis-degree" x-text="activeVariant().degree"></em>
-                <span class="cc-thesis-center">
-                  <strong class="cc-thesis-title" x-text="activeVariant().title"></strong>
+                <em class="cc-thesis-degree" x-show="cover !== 'none'" :style="imprintStyle()" x-text="coverHeading()"></em>
+                <span class="cc-thesis-center" x-show="cover !== 'none'">
+                  <strong class="cc-thesis-title" :style="imprintStyle()" x-text="activeVariant().title"></strong>
                   <span class="cc-thesis-rule"></span>
-                  <span class="cc-thesis-author" x-text="activeVariant().author"></span>
+                  <span class="cc-thesis-author" :style="imprintStyle()" x-text="coverSubheading()"></span>
                 </span>
               </span>
               <span class="cc-thesis-pages"></span>
@@ -297,6 +339,10 @@
             <li x-text="file.name || 'nie dodano pliku'"></li>
             <template x-if="file.pages"><li><template x-text="file.pages"></template> stron</li></template>
             <li><template x-text="print.copies"></template> egzemplarz(e) · <span x-text="bindingName() || 'oprawa?'"></span></li>
+            <li x-show="cover !== 'none'" x-text="coverSummary() + ' · ' + imprintColorName()"></li>
+            <li x-show="cover === 'standard'" x-text="universityName()"></li>
+            <li x-show="spineEngraving === 'true'" x-text="'Grawer grzbietu: ' + (spineEngravingName || 'uzupełnij imię i nazwisko')"></li>
+            <li x-text="burnCd === 'true' ? 'CD: tak' : 'CD: nie'"></li>
             <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>
           </ul>
         </div>
@@ -307,10 +353,12 @@
              <template x-if="file.name">
            <div class="cc-price-row"><span>Druk</span><strong x-text="fmt(quoteValue('print_total', printTotal()))"></strong></div>
          </template>
-         <div class="cc-price-row"><span>Oprawa</span><strong x-text="fmt(quoteValue('binding_total', bindingPrice() * print.copies))"></strong></div>
-         <div class="cc-price-row"><span>Personalizacja</span><strong x-text="fmt(quoteValue('cover_total', coverPrice() * print.copies))"></strong></div>
-         <template x-if="deliveryPrice() !== null">
-           <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(quoteValue('shipping_total', deliveryPrice()))"></strong></div>
+          <div class="cc-price-row"><span>Oprawa</span><strong x-text="fmt(quoteValue('binding_total', bindingPrice() * print.copies))"></strong></div>
+          <div class="cc-price-row"><span>Personalizacja</span><strong x-text="fmt(quoteValue('cover_total', coverPrice() * print.copies))"></strong></div>
+          <div class="cc-price-row"><span>Grawer grzbietu</span><strong x-text="fmt(quoteValue('spine_engraving_total', spineEngravingPrice()))"></strong></div>
+          <div class="cc-price-row"><span>CD</span><strong x-text="fmt(quoteValue('cd_total', cdPrice()))"></strong></div>
+          <template x-if="deliveryPrice() !== null">
+            <div class="cc-price-row"><span>Dostawa</span><strong x-text="fmt(quoteValue('shipping_total', deliveryPrice()))"></strong></div>
         </template>
         <template x-if="deliveryPrice() === null">
           <div class="cc-price-row"><span>Dostawa</span><strong class="cc-price-status">nie wybrano</strong></div>

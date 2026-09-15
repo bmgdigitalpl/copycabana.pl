@@ -92,13 +92,21 @@ body.concept-dynamic {
   box-shadow: 0 24px 70px rgba(6, 58, 96, 0.14);
 }
 
-.concept-dynamic .stack-card-main {
-  background: linear-gradient(135deg, var(--magenta) 0%, #b9155e 100%);
+.concept-dynamic .stack-card--cyan {
+  background: linear-gradient(135deg, #00AEEF 0%, #0078B8 100%);
 }
 
-.concept-dynamic .stack-card-accent {
+.concept-dynamic .stack-card--magenta {
+  background: linear-gradient(135deg, var(--magenta) 0%, #A81158 100%);
+}
+
+.concept-dynamic .stack-card--yellow {
   background: linear-gradient(135deg, var(--geel) 0%, #ffef66 100%);
   color: var(--donkerblauw);
+}
+
+.concept-dynamic .stack-card--black {
+  background: linear-gradient(135deg, #111827 0%, #030712 100%);
 }
 
 .concept-dynamic .stack-card strong {

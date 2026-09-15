@@ -114,7 +114,9 @@ class MarketingPagesTest extends TestCase
             ->assertDontSee('Jakość')
             ->assertSee(route('services.diploma'), false)
             ->assertSee(route('services.business'), false)
-            ->assertSee(route('druk-pdf'), false);
+            ->assertSee(route('druk-pdf'), false)
+            ->assertSee(route('services.business', ['product' => 'banery']).'#produkty', false)
+            ->assertSee(route('services.business', ['product' => 'rollupy']).'#produkty', false);
 
         $this->assertSame(3, substr_count($response->getContent(), 'class="cc-need-icon"'));
         $this->assertSame(3, substr_count($response->getContent(), 'class="cc-process-step"'));
@@ -170,8 +172,11 @@ class MarketingPagesTest extends TestCase
         $content = $this->get(route('home'))->getContent();
 
         $this->assertSame(1, substr_count($content, 'class="hero-stack"'));
-        $this->assertStringContainsString('stack-card-main', $content);
-        $this->assertStringContainsString('24h', $content);
+        $this->assertStringContainsString('stack-card stack-card--cyan', $content);
+        $this->assertStringContainsString('stack-card stack-card--magenta', $content);
+        $this->assertStringContainsString('stack-card stack-card--yellow', $content);
+        $this->assertStringContainsString('stack-card stack-card--black', $content);
+        $this->assertStringNotContainsString('images/hero-new.webp', $content);
         $this->assertStringNotContainsString('data-cc-hero-slider', $content);
         $this->assertStringNotContainsString('cc-hero-slider-track', $content);
         $this->assertStringNotContainsString('cc-hero-slide', $content);
@@ -180,7 +185,10 @@ class MarketingPagesTest extends TestCase
         $conceptCss = file_get_contents(public_path('css/concept.css'));
 
         $this->assertStringContainsString('.hero-stack', $heroCss);
-        $this->assertStringContainsString('.stack-card-main', $heroCss);
+        $this->assertStringContainsString('.stack-card--cyan', $heroCss);
+        $this->assertStringContainsString('.stack-card--magenta', $heroCss);
+        $this->assertStringContainsString('.stack-card--yellow', $heroCss);
+        $this->assertStringContainsString('.stack-card--black', $heroCss);
         $this->assertStringNotContainsString('.cc-hero-slider', $conceptCss);
     }
 
@@ -214,6 +222,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_marketing_heroes_use_the_single_card_layout(): void
     {
+        $this->seed(ProductSeeder::class);
         foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
             $content = $this->get(route($routeName))->getContent();
 
@@ -425,6 +434,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_configurators_render_the_inpost_point_picker(): void
     {
+        $this->seed(ProductSeeder::class);
         foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
             $this->get(route($routeName))
                 ->assertSee('cc-inpost-picker', false)
@@ -434,6 +444,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_configurator_option_cards_keep_the_selection_indicator_compact(): void
     {
+        $this->seed(ProductSeeder::class);
         foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
             $this->get(route($routeName))
                 ->assertDontSee('>Wybrano</em>', false)
@@ -455,6 +466,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_diploma_configurator_places_copy_count_in_the_binding_step(): void
     {
+        $this->seed(ProductSeeder::class);
         $content = $this->get(route('services.diploma'))->getContent();
         $stepTwoStart = strpos($content, '<section class="cc-step" id="druk">');
         $stepThreeStart = strpos($content, '<section class="cc-step" id="oprawa">');
@@ -468,8 +480,8 @@ class MarketingPagesTest extends TestCase
         $this->assertStringNotContainsString('Liczba egzemplarzy', substr($content, $stepTwoStart, $stepThreeStart - $stepTwoStart));
         $this->assertGreaterThan($stepThreeStart, $copyCountPosition);
         $this->assertLessThan($stepFourStart, $copyCountPosition);
-        $this->assertStringContainsString('value="color"', $content);
-        $this->assertStringContainsString('całość kolorowa', $content);
+        $this->assertStringContainsString('value="mixed"', $content);
+        $this->assertStringContainsString('kolorowe jako kolorowe', $content);
     }
 
     public function test_configurators_expose_actions_from_their_side_summaries_without_a_review_step(): void
@@ -493,6 +505,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_pdf_and_thesis_configurators_add_configured_orders_to_the_cart(): void
     {
+        $this->seed(ProductSeeder::class);
         foreach (['services.diploma', 'druk-pdf'] as $routeName) {
             $this->get(route($routeName))
                 ->assertSee('js/cart.js', false)
@@ -518,6 +531,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_diploma_configurator_renders_the_live_thesis_binding_preview(): void
     {
+        $this->seed(ProductSeeder::class);
         $this->get(route('services.diploma'))
             ->assertOk()
             ->assertSee('cc-thesis-preview', false)
@@ -525,7 +539,19 @@ class MarketingPagesTest extends TestCase
             ->assertSee('cc-title-chip', false)
             ->assertSee('Kolor okładki', false)
             ->assertSee('Przykładowe napisy', false)
-            ->assertSee('activeVariant().degree', false)
+            ->assertSee('Uczelnia', false)
+            ->assertSee('Uniwersytet Śląski w Katowicach', false)
+            ->assertSee('Napis na okładce', false)
+            ->assertSee('Praca Licencjacka', false)
+            ->assertSee('Kolor napisu', false)
+            ->assertSee('Rubinowy', false)
+            ->assertSee('Nagranie pracy na CD', false)
+            ->assertSee('20,00 zł', false)
+            ->assertSee('Grawerowanie na grzbiecie', false)
+            ->assertSee('Imię i nazwisko na grzbiecie', false)
+            ->assertSee('30,00 zł', false)
+            ->assertSee('spineEngravingName', false)
+            ->assertSee('coverHeading()', false)
             ->assertSee('images/produkty/graduation.png', false)
             ->assertSee('cc-hero-card--single', false)
             ->assertDontSee('cc-hero-mini-report', false)
@@ -534,6 +560,7 @@ class MarketingPagesTest extends TestCase
 
     public function test_diploma_binding_options_render_image_placeholders(): void
     {
+        $this->seed(ProductSeeder::class);
         $content = $this->get(route('services.diploma'))->getContent();
 
         $this->assertSame(3, substr_count($content, 'class="cc-binding-image-placeholder"'));
