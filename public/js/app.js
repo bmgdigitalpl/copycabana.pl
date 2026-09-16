@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
   initCartFeedback();
   initBrandPlayground();
+  initCookieConsent();
 });
 
 /* --- Sticky Navbar --- */
@@ -214,6 +215,98 @@ function initBrandProcess(root, isReducedMotion) {
   }, { threshold: 0.62 });
 
   cards.forEach((card) => observer.observe(card));
+}
+
+function initCookieConsent() {
+  const banner = document.querySelector('[data-cookie-consent]');
+  if (!banner) return;
+
+  const storageKey = 'copycabana_cookie_consent';
+  const policyVersion = banner.dataset.policyVersion || 'unknown';
+  const analyticsId = banner.dataset.analyticsId || '';
+  const choices = banner.querySelector('[data-cookie-consent-choices]');
+  const analyticsToggle = banner.querySelector('[data-cookie-analytics-toggle]');
+  const customizeButton = banner.querySelector('[data-cookie-customize]');
+  const acceptButton = banner.querySelector('[data-cookie-accept]');
+  const rejectButton = banner.querySelector('[data-cookie-reject]');
+  const saveButton = banner.querySelector('[data-cookie-save]');
+
+  const readConsent = () => {
+    try {
+      return JSON.parse(window.localStorage.getItem(storageKey));
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const writeConsent = (analytics) => {
+    const consent = {
+      necessary: true,
+      analytics: Boolean(analytics),
+      marketing: false,
+      version: policyVersion,
+      decidedAt: new Date().toISOString(),
+    };
+
+    window.localStorage.setItem(storageKey, JSON.stringify(consent));
+    banner.hidden = true;
+
+    if (consent.analytics) {
+      loadGoogleAnalytics(analyticsId);
+    }
+  };
+
+  const showBanner = () => {
+    banner.hidden = false;
+  };
+
+  const storedConsent = readConsent();
+  if (storedConsent && storedConsent.version === policyVersion) {
+    if (storedConsent.analytics) {
+      loadGoogleAnalytics(analyticsId);
+    }
+  } else {
+    showBanner();
+  }
+
+  acceptButton?.addEventListener('click', () => writeConsent(true));
+  rejectButton?.addEventListener('click', () => writeConsent(false));
+  saveButton?.addEventListener('click', () => writeConsent(analyticsToggle?.checked));
+
+  customizeButton?.addEventListener('click', () => {
+    if (!choices || !saveButton) return;
+
+    choices.hidden = false;
+    saveButton.hidden = false;
+    customizeButton.hidden = true;
+    analyticsToggle.checked = Boolean(readConsent()?.analytics);
+  });
+
+  document.querySelectorAll('[data-cookie-settings]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const consent = readConsent();
+      analyticsToggle.checked = Boolean(consent?.analytics);
+      choices.hidden = false;
+      saveButton.hidden = false;
+      customizeButton.hidden = true;
+      showBanner();
+    });
+  });
+}
+
+function loadGoogleAnalytics(analyticsId) {
+  if (!analyticsId || window.copycabanaAnalyticsLoaded) return;
+
+  window.copycabanaAnalyticsLoaded = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag() { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', analyticsId, { anonymize_ip: true });
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(analyticsId)}`;
+  document.head.appendChild(script);
 }
 
 /* --- Mobile Nav Toggle (Alpine.js handles open/close) --- */

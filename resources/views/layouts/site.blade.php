@@ -77,9 +77,13 @@
         <a href="{{ route('faq') }}">FAQ</a>
         <a href="{{ route('contact') }}">Kontakt</a>
         <a href="{{ route('cart') }}">Koszyk</a>
+        <a href="{{ route('privacy') }}">Polityka prywatności</a>
+        <a href="{{ route('cookies') }}">Polityka cookies</a>
       </div>
     </div>
   </footer>
+
+  @include('components.cookie-consent')
 
   <script src="{{ asset('data/prices.js') }}"></script>
   <script src="{{ asset('js/cart.js') }}"></script>

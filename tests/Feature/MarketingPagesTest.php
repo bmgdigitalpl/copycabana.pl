@@ -89,10 +89,15 @@ class MarketingPagesTest extends TestCase
             ->assertDontSee('Dlaczego my?')
             ->assertDontSee('Możesz nam zaufać.')
             ->assertDontSee('Doświadczenie, zaufanie i lokalna drukarnia, do której możesz przyjść osobiście.')
+            ->assertSee('To, co zaczęło się od pojedynczych punktów ksero, rozrosło się w jedną z najlepszych drukarni w Katowicach.')
+            ->assertSee(asset('images/jarek-jacek.png'), false)
+            ->assertSee('Jarek i Jacek z CopyCabana w drukarni w Katowicach')
             ->assertSee('22 lata doświadczenia')
             ->assertSee('Tysiące zadowolonych klientów')
             ->assertSee('Drukarnia na miejscu')
-            ->assertSee('cc-need-grid', false)
+            ->assertSee('cc-trust-layout', false)
+            ->assertSee('cc-trust-list', false)
+            ->assertDontSee('cc-need-grid', false)
             ->assertSee('Skonfiguruj druk')
             ->assertSee('Druk dla firm')
             ->assertSee('Od pliku do gotowego wydruku.')
@@ -119,6 +124,7 @@ class MarketingPagesTest extends TestCase
             ->assertSee(route('services.business', ['product' => 'rollupy']).'#produkty', false);
 
         $this->assertSame(3, substr_count($response->getContent(), 'class="cc-need-icon"'));
+        $this->assertSame(3, substr_count($response->getContent(), 'class="cc-trust-item'));
         $this->assertSame(3, substr_count($response->getContent(), 'class="cc-process-step"'));
     }
 
@@ -266,6 +272,8 @@ class MarketingPagesTest extends TestCase
             'portfolio' => 'Realizacje',
             'faq' => 'Najczęstsze pytania',
             'delivery' => 'Dostawa i odbiór',
+            'privacy' => 'Polityka prywatności',
+            'cookies' => 'Polityka cookies',
         ];
 
         foreach ($pages as $routeName => $heading) {
@@ -303,6 +311,68 @@ class MarketingPagesTest extends TestCase
         $this->get(route('contact'))
             ->assertSee('LITEKST Jarosław Lipiec')
             ->assertSee('NIP 6342412192');
+    }
+
+    public function test_privacy_policy_lists_the_operational_data_practices(): void
+    {
+        $this->get(route('privacy'))
+            ->assertOk()
+            ->assertSee('LITEKST Jarosław Lipiec')
+            ->assertSee('NIP: 6342412192')
+            ->assertSee('PayU')
+            ->assertSee('UTI.pl')
+            ->assertSee('InPost')
+            ->assertSee('Google Analytics')
+            ->assertSee('7 dni od finalizacji zamówienia')
+            ->assertSee(route('cookies'), false);
+    }
+
+    public function test_cookies_policy_is_reachable_from_new_and_legacy_urls(): void
+    {
+        $this->get(route('cookies'))
+            ->assertOk()
+            ->assertSee('Cookies niezbędne')
+            ->assertSee('Cookies analityczne')
+            ->assertSee('Google Analytics')
+            ->assertSee('CopyCabana nie zakłada aktywnego wykorzystywania cookies marketingowych')
+            ->assertSee('data-cookie-settings', false)
+            ->assertSee(route('privacy'), false);
+
+        $this->get(route('cookies.legacy'))->assertRedirect(route('cookies'));
+    }
+
+    public function test_cookie_consent_banner_is_subtle_and_does_not_eagerly_load_analytics(): void
+    {
+        $this->get(route('privacy'))
+            ->assertOk()
+            ->assertSee('data-cookie-consent', false)
+            ->assertSee('data-cookie-accept', false)
+            ->assertSee('data-cookie-reject', false)
+            ->assertSee('data-cookie-customize', false)
+            ->assertSee('Spokojnie, tylko cookies.')
+            ->assertSee('data-analytics-id=""', false)
+            ->assertDontSee('https://www.googletagmanager.com/gtag/js', false);
+    }
+
+    public function test_cookie_consent_exposes_configured_analytics_id_without_loading_the_script(): void
+    {
+        config(['services.google.analytics_id' => 'G-TEST123']);
+
+        $this->get(route('privacy'))
+            ->assertOk()
+            ->assertSee('data-analytics-id="G-TEST123"', false)
+            ->assertDontSee('https://www.googletagmanager.com/gtag/js?id=G-TEST123', false);
+    }
+
+    public function test_archive_pages_are_not_available_or_linked(): void
+    {
+        $this->get(route('home'))
+            ->assertDontSee('Archiwum')
+            ->assertDontSee('/archive', false);
+
+        foreach (['/archive', '/archive/strona-glowna', '/archive/oprawa-prac', '/archive/dla-firm'] as $path) {
+            $this->get($path)->assertNotFound();
+        }
     }
 
     public function test_configurator_pages_use_the_main_layout(): void
@@ -566,20 +636,6 @@ class MarketingPagesTest extends TestCase
         $this->assertSame(3, substr_count($content, 'class="cc-binding-image-placeholder"'));
         $this->assertStringContainsString('Miejsce na zdjęcie', $content);
         $this->assertStringNotContainsString('cc-book', $content);
-    }
-
-    public function test_archived_pages_are_reachable_and_linked_from_the_archive_index(): void
-    {
-        $this->get(route('archive'))
-            ->assertOk()
-            ->assertSee('Archiwum')
-            ->assertSee(route('archive.home'), false)
-            ->assertSee(route('archive.diploma'), false)
-            ->assertSee(route('archive.business'), false);
-
-        foreach (['archive.home', 'archive.diploma', 'archive.business'] as $routeName) {
-            $this->get(route($routeName))->assertOk();
-        }
     }
 
     public function test_old_duplicated_urls_redirect_to_the_new_slugs(): void

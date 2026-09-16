@@ -48,6 +48,8 @@ Route::redirect('/o-nas.html', '/o-nas', 301)->name('about.legacy');
 Route::view('/kontakt', 'contact')->name('contact');
 Route::post('/kontakt', [ContactMessageController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
 Route::view('/polityka-prywatnosci', 'privacy')->name('privacy');
+Route::view('/polityka-cookies', 'cookies')->name('cookies');
+Route::redirect('/informacje-o-cookies', '/polityka-cookies', 301)->name('cookies.legacy');
 Route::redirect('/kontakt.html', '/kontakt', 301)->name('contact.legacy');
 
 Route::view('/koszyk', 'cart')->name('cart');
@@ -138,13 +140,6 @@ Route::middleware(['auth', 'admin'])->group(function (): void {
 Route::view('/realizacje', 'portfolio')->name('portfolio');
 Route::view('/faq', 'faq')->name('faq');
 Route::view('/dostawa-i-odbior', 'delivery')->name('delivery');
-
-Route::prefix('archive')->group(function (): void {
-    Route::view('/', 'archive')->name('archive');
-    Route::view('/strona-glowna', 'archive.home')->name('archive.home');
-    Route::view('/oprawa-prac', 'archive.services.diploma')->name('archive.diploma');
-    Route::view('/dla-firm', 'archive.services.business')->name('archive.business');
-});
 
 // Old duplicated URLs → new production slugs.
 Route::redirect('/oprawa-prac-dyplomowych-katowice', '/prace-dyplomowe', 301)->name('services.diploma.legacy');

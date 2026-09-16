@@ -2,6 +2,10 @@
    CopyCabana — Custom Styles
    =========================== */
 
+[hidden] {
+  display: none !important;
+}
+
 /* --- Tailwind Config Override --- */
 @layer base {
   :root {
@@ -29,6 +33,141 @@ body {
   font-weight: 400;
   color: #333;
   background-color: var(--wit);
+}
+
+/* --- Cookie consent --- */
+.cc-cookie-consent {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 80;
+  display: grid;
+  max-width: 28rem;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(6, 58, 96, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 50px rgba(6, 58, 96, 0.18);
+  color: var(--donkerblauw);
+  font-family: 'Roboto', 'Montserrat', sans-serif;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.cc-cookie-consent__text {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.cc-cookie-consent__eyebrow {
+  margin: 0;
+  color: var(--magenta);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cc-cookie-consent h2 {
+  margin: 0;
+  color: var(--donkerblauw);
+  font-family: 'Roboto Slab', 'Montserrat', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.cc-cookie-consent p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.cc-cookie-consent a,
+.cc-cookie-consent__link {
+  width: fit-content;
+  border: 0;
+  background: transparent;
+  color: var(--magenta);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 0;
+  text-decoration: none;
+}
+
+.cc-cookie-consent__choices {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cc-cookie-consent__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(6, 58, 96, 0.1);
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.cc-cookie-consent__toggle strong,
+.cc-cookie-consent__toggle small {
+  display: block;
+}
+
+.cc-cookie-consent__toggle strong {
+  font-size: 0.88rem;
+}
+
+.cc-cookie-consent__toggle small {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.cc-cookie-consent__toggle input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--magenta);
+}
+
+.cc-cookie-consent__toggle--locked {
+  opacity: 0.78;
+}
+
+.cc-cookie-consent__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cc-cookie-consent__button {
+  border: 1px solid rgba(6, 58, 96, 0.18);
+  border-radius: 9999px;
+  background: #fff;
+  color: var(--donkerblauw);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0.58rem 0.9rem;
+}
+
+.cc-cookie-consent__button--primary {
+  border-color: var(--donkerblauw);
+  background: var(--donkerblauw);
+  color: #fff;
+}
+
+@media (min-width: 640px) {
+  .cc-cookie-consent {
+    right: auto;
+    left: 1.25rem;
+    bottom: 1.25rem;
+  }
 }
 
 /* --- Headings --- */

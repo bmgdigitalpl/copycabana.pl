@@ -53,30 +53,40 @@
         Dlaczego CopyCabana.
       </x-concept.section-heading>
 
-        <div class="cc-need-grid">
-        <article class="cc-need-card reveal">
-          <span class="cc-need-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></span>
-          <div class="cc-need-body">
-            <h3>22 lata doświadczenia</h3>
-            <p>Od 2002 roku rozwijamy się od punktu ksero w drukarnię obsługującą studentów, klientów indywidualnych, firmy i agencje.</p>
-          </div>
-        </article>
+      <div class="cc-trust-layout">
+        <figure class="cc-trust-photo reveal reveal-delay-1">
+          <img src="{{ asset('images/jarek-jacek.png') }}" alt="Jarek i Jacek z CopyCabana w drukarni w Katowicach">
+        </figure>
 
-        <article class="cc-need-card cc-need-card--yellow reveal reveal-delay-1">
-          <span class="cc-need-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
-          <div class="cc-need-body">
-            <h3>Tysiące zadowolonych klientów</h3>
-            <p>Realizujemy druk cyfrowy, offsetowy i wielkoformatowy: od dokumentów po materiały reklamowe.</p>
-          </div>
-        </article>
+        <div class="cc-trust-copy reveal reveal-delay-2">
+          <p class="cc-trust-lead">To, co zaczęło się od pojedynczych punktów ksero, rozrosło się w jedną z najlepszych drukarni w Katowicach. Dziś obsługujemy studentów, klientów indywidualnych, firmy i agencje z całej Polski, łącząc lokalne podejście z produkcją gotową na większą skalę.</p>
 
-        <article class="cc-need-card cc-need-card--blue reveal reveal-delay-2">
-          <span class="cc-need-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></span>
-          <div class="cc-need-body">
-            <h3>Drukarnia na miejscu</h3>
-            <p>Znajdziesz nas przy ul. Bankowej 11 w Katowicach. Odbierz zamówienie osobiście albo wybierz wysyłkę.</p>
-          </div>
-        </article>
+          <ul class="cc-trust-list" aria-label="Najważniejsze powody, żeby wybrać CopyCabana">
+            <li class="cc-trust-item">
+              <span class="cc-need-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></span>
+              <div class="cc-need-body">
+                <h3>22 lata doświadczenia</h3>
+                <p>Od 2002 roku pomagamy drukować, oprawiać i przygotowywać materiały, które muszą wyglądać profesjonalnie.</p>
+              </div>
+            </li>
+
+            <li class="cc-trust-item cc-trust-item--yellow">
+              <span class="cc-need-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+              <div class="cc-need-body">
+                <h3>Tysiące zadowolonych klientów</h3>
+                <p>Realizujemy druk cyfrowy, offsetowy i wielkoformatowy: od dokumentów po materiały reklamowe.</p>
+              </div>
+            </li>
+
+            <li class="cc-trust-item cc-trust-item--blue">
+              <span class="cc-need-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></span>
+              <div class="cc-need-body">
+                <h3>Drukarnia na miejscu</h3>
+                <p>Znajdziesz nas przy ul. Bankowej 11 w Katowicach. Odbierz zamówienie osobiście albo wybierz wysyłkę.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>

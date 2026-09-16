@@ -88,12 +88,14 @@
       <nav class="cc-footer-nav">
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
         <a href="{{ route('services.business') }}">Druk dla firm</a>
-       <a href="{{ route('archive') }}">Archiwum</a>
-       <a href="{{ route('privacy') }}">Polityka prywatności</a>
+        <a href="{{ route('privacy') }}">Polityka prywatności</a>
+        <a href="{{ route('cookies') }}">Polityka cookies</a>
       </nav>
       <p class="cc-footer-note">CopyCabana · ul. Bankowa 11, 40-007 Katowice · biuro@copycabana.pl</p>
     </div>
   </footer>
+
+  @include('components.cookie-consent')
 
   <script src="{{ asset('js/cart.js') }}"></script>
   <script src="{{ asset('js/concept.js') }}"></script>
