@@ -107,6 +107,7 @@ class BusinessConfiguratorService
         return [
             'id' => $product->slug,
             'name' => $product->name,
+            'category' => $product->category,
             'icon' => $configurator['icon'] ?? 'fa-print',
             'image' => $product->imageUrl(),
             'desc' => $product->description,

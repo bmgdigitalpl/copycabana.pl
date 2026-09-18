@@ -66,7 +66,7 @@ class CustomerAuthTest extends TestCase
             'client_id' => $client->id,
         ]);
 
-        $response = $this->post(route('customer.login.store'), [
+        $response = $this->post(route('login.store'), [
             'email' => $user->email,
             'password' => 'password',
         ]);
@@ -83,12 +83,28 @@ class CustomerAuthTest extends TestCase
             'client_id' => $client->id,
         ]);
 
-        $response = $this->post(route('customer.login.store'), [
+        $response = $this->post(route('login.store'), [
             'email' => $user->email,
             'password' => 'password',
         ]);
 
         $response->assertRedirect(route('customer.dashboard'));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_admin_is_redirected_to_the_dashboard_after_logging_in_through_the_shared_screen(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+        ]);
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect(route('dashboard'));
         $this->assertAuthenticatedAs($user);
     }
 
@@ -114,7 +130,7 @@ class CustomerAuthTest extends TestCase
 
     public function test_guest_is_redirected_to_customer_login_from_the_portal(): void
     {
-        $this->get(route('customer.dashboard'))->assertRedirect(route('customer.login'));
+        $this->get(route('customer.dashboard'))->assertRedirect(route('login'));
     }
 
     public function test_customer_password_reset_uses_the_customer_reset_url(): void

@@ -4,7 +4,7 @@
 <h1 class="text-3xl font-bold">{{ $type === 'thesis' ? 'Prace Dyplomowe' : 'Druk PDF' }}</h1>
 <p class="mt-2 text-slate-400">Opcje i ceny konfiguratora. Zmiany obowiązują dla nowych wycen i zamówień.</p>
 <a href="{{ route('admin.products.edit', $product) }}" class="mt-3 inline-block text-pink-400">Edytuj zdjęcie i dane produktu →</a>
-<form method="post" action="{{ route('admin.printing.update', $type) }}" class="mt-6 grid max-w-5xl gap-6">
+<form method="post" action="{{ route('admin.printing.update', $type) }}" enctype="multipart/form-data" class="mt-6 grid max-w-5xl gap-6">
     @csrf @method('put')
     <section class="grid gap-4 rounded-xl bg-white p-6 sm:grid-cols-3">
         @foreach(['bw' => 'Strona czarno-biała (zł)', 'color' => 'Strona kolorowa (zł)'] as $key => $label)
@@ -27,6 +27,16 @@
                         @endif
                         @if(in_array($group, ['imprint_colors', 'cover_colors']))
                             <label class="text-sm">Kolor<input class="mt-1 block" type="color" :name="'{{ $group }}[' + index + '][hex]'" x-model="row.hex" required></label>
+                        @endif
+                        @if($group === 'cover_colors')
+                            <div class="text-sm sm:col-span-2">
+                                <template x-if="row.photo_url">
+                                    <img :src="row.photo_url" class="mb-2 h-20 w-20 rounded object-cover" alt="">
+                                </template>
+                                <label>Zdjęcie czystej okładki<input class="mt-1 block w-full rounded border p-2 text-sm" type="file" accept=".jpg,.jpeg,.png,.webp" :name="'{{ $group }}[' + index + '][photo]'"></label>
+                                <input type="hidden" :name="'{{ $group }}[' + index + '][existing_photo]'" x-model="row.photo">
+                                <p class="mt-1 text-xs text-slate-400">JPG, PNG lub WEBP, maks. 5 MB. Po wgraniu, po wybraniu tego koloru w konfiguratorze pokaże się całe to zdjęcie zamiast generowanego podglądu.</p>
+                            </div>
                         @endif
                         <button type="button" class="text-left text-sm text-red-400" @click="rows.splice(index, 1)" :disabled="rows.length <= 1">Usuń wariant</button>
                     </div>

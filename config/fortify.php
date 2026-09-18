@@ -92,6 +92,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Fortify Individual Route Paths
+    |--------------------------------------------------------------------------
+    |
+    | Customers and admins share a single login screen. This overrides the
+    | login route's path so it lives at the customer portal's existing URL
+    | instead of the default "/login".
+    |
+    */
+
+    'paths' => [
+        'login' => 'konto/logowanie',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Fortify Routes Middleware
     |--------------------------------------------------------------------------
     |

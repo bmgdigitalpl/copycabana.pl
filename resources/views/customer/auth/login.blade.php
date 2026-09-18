@@ -7,7 +7,7 @@
     <p class="mt-2 text-slate-600">Sprawdź status zamówień i swoich wycen.</p>
     @if(session('status'))<p class="mt-4 rounded-lg bg-green-50 p-3 text-green-800">{{ session('status') }}</p>@endif
     @if($errors->any())<div class="mt-4 rounded-lg bg-red-50 p-3 text-red-800">{{ $errors->first() }}</div>@endif
-    <form method="POST" action="{{ route('customer.login.store') }}" class="mt-6 space-y-4">
+    <form method="POST" action="{{ route('login.store') }}" class="mt-6 space-y-4">
       @csrf
       <label class="block">E-mail<input class="mt-1 w-full rounded-lg border p-3" type="email" name="email" value="{{ old('email') }}" required autofocus></label>
       <label class="block">Hasło<input class="mt-1 w-full rounded-lg border p-3" type="password" name="password" required></label>

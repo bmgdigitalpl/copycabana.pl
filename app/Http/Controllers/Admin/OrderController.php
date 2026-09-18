@@ -6,6 +6,7 @@ use App\Enums\Carrier;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Jobs\GenerateInPostShippingLabel;
 use App\Mail\OrderStatusChangedMail;
 use App\Models\Order;
 use App\Models\OrderFile;
@@ -83,5 +84,29 @@ class OrderController extends Controller
         return Storage::disk($file->disk)->download($file->path, $file->original_name, [
             'Content-Type' => $file->mime_type,
         ]);
+    }
+
+    public function generateInPostLabel(Order $order): RedirectResponse
+    {
+        abort_unless($order->shipping_method === 'parcel', 404);
+
+        GenerateInPostShippingLabel::dispatchSync($order->id);
+
+        $order->refresh();
+
+        if (! $order->shipping_label_path) {
+            return back()->withErrors(['inpost' => 'Nie udało się wygenerować etykiety InPost. Sprawdź logi aplikacji.']);
+        }
+
+        return back()->with('status', 'Etykieta InPost została wygenerowana.');
+    }
+
+    public function downloadInPostLabel(Order $order): StreamedResponse
+    {
+        abort_unless($order->shipping_label_path, 404);
+
+        $extension = pathinfo($order->shipping_label_path, PATHINFO_EXTENSION) ?: 'pdf';
+
+        return Storage::disk('local')->download($order->shipping_label_path, "etykieta-{$order->number}.{$extension}");
     }
 }

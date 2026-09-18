@@ -15,7 +15,7 @@
       <label class="flex items-start gap-2"><input class="mt-1" type="checkbox" name="privacy_policy_accepted" value="1" required> Akceptuję <a class="text-[#D51A70]" href="{{ route('privacy') }}">politykę prywatności</a>.</label>
       <button class="btn-magenta w-full" type="submit">Utwórz konto</button>
     </form>
-    <p class="mt-5 text-center text-sm">Masz już konto? <a class="text-[#D51A70]" href="{{ route('customer.login') }}">Zaloguj się</a></p>
+    <p class="mt-5 text-center text-sm">Masz już konto? <a class="text-[#D51A70]" href="{{ route('login') }}">Zaloguj się</a></p>
   </div>
 </main>
 @endsection

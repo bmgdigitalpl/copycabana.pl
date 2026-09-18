@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\CmsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\NotificationController;
@@ -66,8 +67,6 @@ if (app()->environment('local', 'testing')) {
 }
 
 Route::prefix('konto')->group(function (): void {
-    Route::get('/logowanie', [CustomerAuthController::class, 'createLogin'])->name('customer.login');
-    Route::post('/logowanie', [CustomerAuthController::class, 'login'])->middleware('throttle:login')->name('customer.login.store');
     Route::get('/rejestracja', [CustomerAuthController::class, 'createRegister'])->name('customer.register');
     Route::post('/rejestracja', [CustomerAuthController::class, 'register'])->middleware('throttle:login')->name('customer.register.store');
     Route::get('/reset-hasla', [CustomerAuthController::class, 'forgotPassword'])->name('customer.password.request');
@@ -116,6 +115,8 @@ Route::middleware(['auth', 'admin'])->group(function (): void {
         Route::get('/quotes/{quoteRequest}/files/{file}', [QuoteRequestController::class, 'downloadFile'])->scopeBindings()->name('quote-requests.files.download');
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
         Route::get('/orders/{order}/files/{file}', [OrderController::class, 'downloadFile'])->name('orders.files.download');
+        Route::post('/orders/{order}/inpost-label', [OrderController::class, 'generateInPostLabel'])->name('orders.inpost-label.generate');
+        Route::get('/orders/{order}/inpost-label', [OrderController::class, 'downloadInPostLabel'])->name('orders.inpost-label.download');
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::put('/notifications/{notification}', [NotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::put('/notifications', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
@@ -129,6 +130,9 @@ Route::middleware(['auth', 'admin'])->group(function (): void {
             Route::post('/clients/{client}/anonymize', [ClientController::class, 'anonymize'])->name('clients.anonymize');
             Route::resource('options', OptionController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])->parameters(['options' => 'option'])->names('options');
             Route::resource('products', AdminProductController::class)->only(['index', 'edit', 'update'])->parameters(['products' => 'product'])->names('products');
+            Route::get('/cms', [CmsController::class, 'index'])->name('cms.index');
+            Route::get('/cms/{section}', [CmsController::class, 'edit'])->name('cms.edit');
+            Route::put('/cms/{section}', [CmsController::class, 'update'])->name('cms.update');
             Route::get('/privacy', [PrivacyRequestController::class, 'index'])->name('privacy.index');
             Route::put('/privacy/{dataRequest}', [PrivacyRequestController::class, 'update'])->name('privacy.update');
             Route::get('/exports/orders.csv', [ExportController::class, 'orders'])->name('exports.orders');

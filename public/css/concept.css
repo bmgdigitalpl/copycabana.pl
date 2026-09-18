@@ -689,6 +689,13 @@
   list-style: none;
 }
 
+.cc-trust-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.35rem;
+}
+
 .cc-trust-item {
   display: grid;
   gap: 1rem;
@@ -945,10 +952,13 @@
 }
 
 .cc-gallery-card {
+  display: block;
   overflow: hidden;
   margin: 0;
   border-radius: var(--cc-radius-lg);
   background: #fff;
+  color: inherit;
+  text-decoration: none;
   box-shadow: 0 28px 80px rgba(6, 58, 96, 0.13);
   transition: transform 260ms ease, box-shadow 260ms ease;
 }
@@ -957,7 +967,8 @@
   display: block;
   width: 100%;
   height: 240px;
-  object-fit: cover;
+  object-fit: contain;
+  background-color: #fff;
   transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -965,7 +976,14 @@
   .cc-gallery-card img { height: 310px; }
 }
 
-.cc-gallery-card figcaption {
+.cc-gallery-media {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.cc-gallery-card figcaption,
+.cc-gallery-caption {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -979,13 +997,71 @@
   text-transform: uppercase;
 }
 
+.cc-gallery-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1rem 1.2rem;
+  color: var(--donkerblauw);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.cc-gallery-caption > span:first-child,
+.cc-gallery-card figcaption > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cc-gallery-caption i,
+.cc-gallery-card figcaption i,
+.cc-gallery-title i {
+  color: var(--magenta);
+}
+
+.cc-gallery-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.2rem 1.2rem;
+}
+
 .cc-gallery-order {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  box-sizing: border-box;
   font-size: 0.82rem;
+}
+
+.cc-gallery-help {
+  display: inline-grid;
+  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border: 2px solid var(--donkerblauw);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--donkerblauw);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .cc-gallery-card:hover { box-shadow: 0 38px 100px rgba(6, 58, 96, 0.2); transform: translateY(-5px); }
   .cc-gallery-card:hover img { transform: scale(1.045); }
+  .cc-gallery-help:hover,
+  .cc-gallery-help:focus-visible {
+    background: var(--donkerblauw);
+    color: #fff;
+  }
 }
 
 /* --- Local trust ------------------------------- */
@@ -1975,6 +2051,34 @@
 .cc-demo-badge--green { background: rgba(127, 191, 69, 0.16); color: var(--groen); }
 
 /* --- B2B product grid --------------------------- */
+.cc-b2b-categories {
+  display: flex;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  scrollbar-width: none;
+}
+
+.cc-b2b-categories::-webkit-scrollbar { display: none; }
+
+.cc-b2b-category {
+  flex: 0 0 auto;
+  border: 1px solid var(--cc-border);
+  border-radius: 9999px;
+  background: #fff;
+  color: var(--donkerblauw);
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.65rem 1rem;
+}
+
+.cc-b2b-category.is-active {
+  border-color: var(--magenta);
+  background: var(--magenta);
+  color: #fff;
+}
+
 .cc-b2b-grid {
   display: grid;
   gap: 1rem;
@@ -1983,6 +2087,43 @@
 
 @media (min-width: 600px) {
   .cc-b2b-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 599px) {
+  .cc-b2b-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .cc-b2b-card {
+    min-height: 0;
+    gap: 0.55rem;
+    padding: 0.8rem;
+    border-radius: 22px;
+  }
+
+  .cc-b2b-card-image {
+    margin: -0.8rem -0.8rem 0;
+    padding: 0.45rem;
+  }
+
+  .cc-b2b-card i.cc-b2b-icon {
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 14px;
+    font-size: 0.95rem;
+  }
+
+  .cc-b2b-card strong {
+    font-size: 0.88rem;
+    line-height: 1.15;
+  }
+
+  .cc-b2b-card p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
 }
 
 @media (min-width: 1000px) {
@@ -2385,22 +2526,6 @@
 
 .cc-inpost-picker .cc-field { margin-top: 0; }
 
-.cc-inpost-search {
-  display: flex;
-  align-items: stretch;
-  gap: 0.7rem;
-}
-
-.cc-inpost-search input { flex: 1 1 auto; min-width: 0; }
-
-.cc-inpost-search button {
-  flex: 0 0 auto;
-  align-self: stretch;
-  white-space: nowrap;
-}
-
-.cc-inpost-search button:disabled { cursor: wait; opacity: 0.65; }
-
 .cc-inpost-help {
   margin: 0.55rem 0 0;
   color: #5e6772;
@@ -2408,84 +2533,174 @@
   line-height: 1.45;
 }
 
-.cc-inpost-results {
-  display: grid;
-  gap: 0.65rem;
-  max-height: 22rem;
-  margin-top: 1rem;
-  overflow-y: auto;
-  padding-right: 0.2rem;
-}
-
-.cc-inpost-point {
-  display: grid;
-  grid-template-columns: 1.7rem minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.75rem;
+.cc-inpost-map {
+  display: block;
   width: 100%;
-  padding: 0.8rem 0.9rem;
-  border: 1px solid #dde3e8;
-  border-radius: 14px;
-  background: #fff;
-  color: var(--donkerblauw);
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  text-align: left;
-  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-}
-
-.cc-inpost-point:hover,
-.cc-inpost-point:focus-visible,
-.cc-inpost-point.is-selected {
-  border-color: var(--magenta);
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(213, 26, 112, 0.1);
-  outline: 0;
-}
-
-.cc-inpost-point:focus-visible { outline: 3px solid rgba(213, 26, 112, 0.25); outline-offset: 2px; }
-
-.cc-inpost-point-mark {
-  display: grid;
-  width: 1.7rem;
-  height: 1.7rem;
-  place-items: center;
-  border-radius: 9999px;
-  background: rgba(213, 26, 112, 0.1);
-  color: var(--magenta);
-}
-
-.cc-inpost-point-copy {
-  display: grid;
-  min-width: 0;
-  gap: 0.15rem;
-}
-
-.cc-inpost-point-copy strong {
-  color: var(--donkerblauw);
-  font-family: 'Archivo', sans-serif;
-  font-size: 0.98rem;
-}
-
-.cc-inpost-point-copy > span,
-.cc-inpost-point-copy small {
+  height: 26rem;
+  margin-top: 1rem;
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
   overflow: hidden;
-  color: #5e6772;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(6, 58, 96, 0.08);
 }
 
-.cc-inpost-point-copy small { color: #9aa3ac; }
-
-.cc-inpost-point-check {
-  color: var(--groen);
-  opacity: 0;
-  transition: opacity 180ms ease;
+.cc-inpost-map > div {
+  width: 100%;
+  height: 100%;
 }
 
-.cc-inpost-point.is-selected .cc-inpost-point-check { opacity: 1; }
+/* --- InPost Geowidget re-skin: swap InPost's own chrome for CopyCabana's palette,
+   leaving the map/markers/tiles (Leaflet + OSM) as InPost renders them.
+   InPost's own stylesheet loads after ours and some of its selectors (esp. the
+   mobile-layout ones the widget applies at this container width) are as or more
+   specific than a plain override, so color/background overrides use !important
+   here — the standard, contained way to win against a vendor stylesheet whose
+   specificity and load order aren't ours to control. */
+.cc-inpost-map .easypack-widget,
+.cc-inpost-map .leaflet-popup {
+  font-family: 'Roboto', sans-serif;
+}
+
+.cc-inpost-map .easypack-search-widget {
+  background: #fbfcfd !important;
+  padding: 0;
+}
+
+.cc-inpost-map .easypack-search-widget .search-group {
+  padding: 0.9rem 1rem;
+}
+
+.cc-inpost-map .easypack-search-widget .search-input {
+  height: 2.75rem;
+  padding: 0 1rem;
+  border-radius: 9999px;
+  background: #fff !important;
+  border: 1px solid var(--cc-border);
+  color: var(--donkerblauw) !important;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.cc-inpost-map .easypack-search-widget .btn.btn-search {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-left: 0.5rem;
+  border: none;
+  border-radius: 9999px;
+  background-color: var(--donkerblauw) !important;
+  /* The widget sets a dark magnifying-glass PNG inline as this button's background-image —
+     a filter would invert the navy background too, so swap it for our own white FA icon. */
+  background-image: none !important;
+  position: relative;
+}
+
+.cc-inpost-map .easypack-search-widget .btn.btn-search::after {
+  content: '\f002';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: #fff;
+  font-size: 1rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cc-inpost-map .view-chooser .map-wrapper,
+.cc-inpost-map .view-chooser .list-wrapper {
+  background-color: var(--donkerblauw) !important;
+}
+
+.cc-inpost-map .view-chooser .map-wrapper[data-active='true'],
+.cc-inpost-map .view-chooser .list-wrapper[data-active='true'] {
+  background-color: var(--magenta) !important;
+}
+
+.cc-inpost-map .leaflet-popup-content-wrapper,
+.cc-inpost-map .leaflet-popup-tip {
+  background-color: var(--donkerblauw) !important;
+}
+
+.cc-inpost-map .leaflet-popup-content-wrapper {
+  border-radius: 16px;
+}
+
+.cc-inpost-map .leaflet-popup {
+  width: 240px !important;
+}
+
+/* The photo loads after Leaflet has already positioned the popup against its marker, so
+   Leaflet never re-centers it for the extra height — cap it and let it scroll internally
+   instead, so an enlarged popup can never grow past the map card itself. Only the photo/text
+   portion scrolls; the "Szczegóły"/"Wybierz" actions stay outside it so they're always
+   reachable without having to scroll first. */
+.cc-inpost-map .popup-container .point-wrapper {
+  max-height: 13rem;
+  overflow-y: auto;
+}
+
+.cc-inpost-map .cc-inpost-popup-photo {
+  display: block;
+  width: 100%;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.6rem;
+}
+
+.cc-inpost-map .links a {
+  border-color: var(--magenta) !important;
+  border-radius: 9999px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.cc-inpost-map .links a.select-link {
+  background-color: var(--magenta) !important;
+}
+
+.cc-inpost-map .links a.select-link:hover,
+.cc-inpost-map .links a.details-link:hover {
+  background-color: #c01563 !important;
+  border-color: #c01563 !important;
+}
+
+/* --- "Lista" results panel --- */
+.cc-inpost-map .list-widget {
+  background: #fbfcfd !important;
+}
+
+.cc-inpost-map .list-widget .list-wrapper .scroll-box li {
+  border-top: 1px solid var(--cc-border) !important;
+}
+
+.cc-inpost-map .list-point-link {
+  padding: 0.7rem 0.5rem !important;
+  border-radius: 12px;
+  transition: background-color 150ms ease;
+}
+
+.cc-inpost-map .list-widget .list-wrapper ul li div:hover,
+.cc-inpost-map .list-widget .list-wrapper ul li a:hover {
+  background-color: rgba(213, 26, 112, 0.06) !important;
+}
+
+.cc-inpost-map .list-point-link .title {
+  color: var(--donkerblauw) !important;
+  font-weight: 700 !important;
+}
+
+.cc-inpost-map .list-point-link .address {
+  color: #5e6772 !important;
+}
+
+.cc-inpost-map .scroll-box .track,
+.cc-inpost-map .scroll-box .scrollbar {
+  background-color: #f0eee9 !important;
+}
+
+.cc-inpost-map .scroll-box .thumb {
+  background-color: var(--magenta) !important;
+}
 
 .cc-inpost-selected {
   display: flex;
@@ -2517,9 +2732,8 @@
 .cc-summary-copies .cc-step-micro { margin: 0; padding: 0; background: transparent; }
 
 @media (max-width: 599px) {
-  .cc-inpost-search,
   .cc-summary-copies { align-items: stretch; flex-direction: column; }
-  .cc-inpost-search button { width: 100%; justify-content: center; }
+  .cc-inpost-map { height: 22rem; }
 }
 
 .cc-mt { margin-top: 0; }
@@ -2683,13 +2897,13 @@
 .cc-swatches {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.85rem;
   flex-wrap: wrap;
 }
 
 .cc-swatch {
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 3.1rem;
+  height: 3.1rem;
   padding: 0;
   border: 3px solid transparent;
   border-radius: 9999px;
@@ -2702,7 +2916,7 @@
 
 .cc-swatch.is-active {
   border-color: var(--magenta);
-  box-shadow: 0 0 0 3px rgba(213, 26, 112, 0.14);
+  box-shadow: 0 0 0 4px rgba(213, 26, 112, 0.14);
   transform: scale(1.06);
 }
 
@@ -2711,36 +2925,16 @@
   outline-offset: 2px;
 }
 
-.cc-title-chips {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.cc-title-chip {
-  padding: 0.5rem 0.9rem;
-  border: 2px solid #dde3e8;
-  border-radius: 9999px;
-  background: #fff;
-  color: var(--donkerblauw);
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
-}
-
-.cc-title-chip:hover { border-color: var(--magenta); }
-
-.cc-title-chip.is-active {
-  border-color: var(--magenta);
-  background: var(--magenta);
-  color: #fff;
-}
-
-.cc-title-chip:focus-visible {
-  outline: 3px solid var(--magenta);
-  outline-offset: 2px;
+/* Real photo of the blank cover, shown instead of the code-generated .cc-thesis
+   mockup once a photo exists for the selected color (see ThesisController). */
+.cc-thesis-photo {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  margin-inline: auto;
+  border-radius: var(--cc-radius-sm);
+  box-shadow: 0 18px 50px rgba(6, 58, 96, 0.25);
+  object-fit: contain;
 }
 
 /* Keep the selected pairing consistent across concept-based public pages. */
@@ -2765,3 +2959,208 @@ body.concept-site:not(.font-test-root) :is(button, input, select, textarea) {
 }
 
 [x-cloak] { display: none !important; }
+
+/* --- Service AI chat drawer -------------------- */
+.cc-chat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(6, 58, 96, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+
+.cc-chat-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cc-chat-panel {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  width: min(380px, calc(100% - 3rem));
+  border-radius: var(--cc-radius-lg);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: -20px 20px 60px rgba(6, 58, 96, 0.25);
+  transform: translateX(calc(100% + 1.5rem));
+  transition: transform 300ms ease;
+}
+
+.cc-chat-panel.open {
+  transform: translateX(0);
+}
+
+.cc-chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.2rem 1.4rem;
+  background: var(--donkerblauw);
+  color: #fff;
+}
+
+.cc-chat-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.cc-chat-title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.cc-chat-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.cc-chat-close {
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.cc-chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.2rem 1.4rem;
+  overflow-y: auto;
+  background: var(--wit);
+}
+
+.cc-chat-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--donkerblauw);
+  opacity: 0.6;
+}
+
+.cc-chat-empty i {
+  font-size: 1.8rem;
+  color: var(--magenta);
+}
+
+.cc-chat-empty p {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cc-chat-bubble {
+  max-width: 85%;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--cc-radius-sm);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.cc-chat-bubble.assistant {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--cc-border);
+  color: var(--donkerblauw);
+}
+
+.cc-chat-bubble.user {
+  align-self: flex-end;
+  background: var(--magenta);
+  color: #fff;
+}
+
+.cc-chat-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.4rem;
+  border-top: 1px solid var(--cc-border);
+}
+
+.cc-chat-suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  background: #fff;
+  color: var(--donkerblauw);
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.35;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.cc-chat-suggestion i {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--magenta);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cc-chat-suggestion:hover {
+    border-color: var(--magenta);
+    background: var(--wit);
+  }
+}
+
+.cc-chat-suggestion:focus-visible {
+  outline: 3px solid var(--magenta);
+  outline-offset: 2px;
+}
+
+.cc-chat-form {
+  display: flex;
+  gap: 0.6rem;
+  padding: 1rem 1.4rem;
+  border-top: 1px solid var(--cc-border);
+}
+
+.cc-chat-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  font-size: 0.92rem;
+}
+
+.cc-chat-form .btn-magenta {
+  display: inline-grid;
+  place-items: center;
+  width: 2.8rem;
+  flex-shrink: 0;
+}

@@ -30,7 +30,7 @@ class PrintingConfiguratorSeeder extends Seeder
                 'covers' => [
                     'none' => ['label' => 'Bez napisu', 'price' => 0],
                     'standard' => ['label' => 'Standardowy napis', 'price' => 15],
-                    'custom' => ['label' => 'Własny napis', 'price' => 10],
+                    'custom' => ['label' => 'Własny napis', 'price' => 20],
                 ],
                 'universities' => [
                     'us' => 'Uniwersytet Śląski w Katowicach',

@@ -238,80 +238,127 @@
       return Math.round((d - now) / 86400000);
     }
 
-    var CC_INPOST_POINTS_ENDPOINT = '/api/v1/inpost/points';
+    /**
+     * The InPost Geowidget SDK (window.easyPack) reports a raw point in the same shape as
+     * InPost's own Points API. Normalize it to what the configurators/checkout already expect.
+     */
+    function ccNormalizeGeowidgetPoint(raw) {
+      raw = raw || {};
+      var addressDetails = raw.address_details || {};
+      var address = raw.address || {};
+      var location = raw.location || {};
+      var addressLine = String(address.line1 || '').trim();
+      var street = String(addressDetails.street || '').trim();
+      var buildingNumber = String(addressDetails.building_number || '').trim();
 
-    function ccSearchInpostPoints(searchTerm) {
-      var term = String(searchTerm || '').trim();
-      var compactTerm = term.replace(/\s+/g, '');
-      var isPostCode = /^\d{2}-?\d{3}$/.test(compactTerm);
-      var parameter = isPostCode ? 'post_code' : 'city';
-      var value = isPostCode
-        ? compactTerm.slice(0, 2) + '-' + compactTerm.slice(2)
-        : term;
-
-      return fetch(CC_INPOST_POINTS_ENDPOINT + '?' + parameter + '=' + encodeURIComponent(value), {
-        headers: { Accept: 'application/json' },
-        credentials: 'same-origin'
-      }).then(function (response) {
-        if (!response.ok) throw new Error('InPost points request failed');
-        return response.json();
-      }).then(function (payload) {
-        return Array.isArray(payload.points) ? payload.points : [];
-      });
+      return {
+        name: raw.name,
+        address: addressLine || (street + ' ' + buildingNumber).trim(),
+        city: String(addressDetails.city || '').trim(),
+        post_code: String(addressDetails.post_code || '').trim(),
+        opening_hours: raw.opening_hours || null,
+        description: raw.location_description || null,
+        latitude: location.latitude != null ? parseFloat(location.latitude) : null,
+        longitude: location.longitude != null ? parseFloat(location.longitude) : null
+      };
     }
 
-    function ccInpostState() {
+    /**
+     * The Geowidget SDK loads asynchronously and signals readiness by calling
+     * window.easyPackAsyncInit once its own internals (fonts, config) are set up — it polls
+     * for that hook every 250ms until it's defined, so this must be assigned eagerly. Mount
+     * requests made before that point are queued and flushed once the SDK is ready.
+     */
+    var ccEasyPackReady = false;
+    var ccEasyPackQueue = [];
+
+    window.easyPackAsyncInit = function () {
+      window.easyPack.init({
+        defaultLocale: 'pl',
+        points: { types: ['parcel_locker'] },
+        map: { initialTypes: ['parcel_locker'] }
+      });
+      ccEasyPackReady = true;
+      ccEasyPackQueue.forEach(function (mount) { mount(); });
+      ccEasyPackQueue = [];
+    };
+
+    /**
+     * The small "pick a point" popup the widget shows on marker click has no photo — that
+     * only appears in the separate "Szczegóły" panel. Points do carry a photo though, at a
+     * predictable static.easypack24.net URL keyed by point code (confirmed against the point
+     * payloads the widget's own selection callback returns), so this adds it straight into
+     * the popup instead of making the customer click through for it. Leaflet reuses one popup
+     * DOM node and swaps its content per marker, so watch for the ".point-wrapper" it renders
+     * fresh into that content each time rather than the (stable) popup container itself.
+     */
+    function ccEnhanceInpostPopup(wrapper) {
+      /* Leaflet builds the popup as a detached tree and attaches it level by level, so this
+         observer sees several ancestors "added" in the same content swap — guard against
+         enhancing the same wrapper more than once per render. */
+      if (wrapper.dataset.ccPhotoAdded) return;
+
+      var heading = wrapper.querySelector('h1');
+      var codeEl = heading ? heading.nextElementSibling : null;
+      var code = codeEl ? codeEl.textContent.trim() : '';
+      if (!code) return;
+
+      wrapper.dataset.ccPhotoAdded = '1';
+
+      var img = document.createElement('img');
+      img.className = 'cc-inpost-popup-photo';
+      img.loading = 'lazy';
+      img.alt = 'Zdjęcie paczkomatu ' + code;
+      img.src = 'https://static.easypack24.net/points/pl/images/' + encodeURIComponent(code) + '.jpg';
+      img.onerror = function () { img.remove(); };
+      wrapper.insertBefore(img, heading);
+    }
+
+    function ccObserveInpostPopups(container) {
+      new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          mutation.addedNodes.forEach(function (node) {
+            if (node.nodeType !== 1) return;
+            var wrapper = node.classList && node.classList.contains('point-wrapper')
+              ? node
+              : (node.querySelector ? node.querySelector('.point-wrapper') : null);
+            if (wrapper) ccEnhanceInpostPopup(wrapper);
+          });
+        });
+      }).observe(container, { childList: true, subtree: true });
+    }
+
+    function ccMountInpostMap(elementId, prefix) {
+      var mount = function () {
+        window.easyPack.mapWidget(elementId, function (point) {
+          window.dispatchEvent(new CustomEvent('cc-inpost:point-selected', { detail: { prefix: prefix, point: point } }));
+        });
+        ccObserveInpostPopups(document.getElementById(elementId));
+      };
+
+      if (ccEasyPackReady) mount(); else ccEasyPackQueue.push(mount);
+    }
+    window.ccMountInpostMap = ccMountInpostMap;
+
+    function ccInpostState(prefix) {
       return {
         parcelLocker: null,
-        lockerSearch: '',
-        lockers: [],
-        lockerLoading: false,
         lockerError: null,
-        lockerRequest: 0,
 
         init: function () {
           var self = this;
           this.$watch('delivery', function (value) {
             if (value !== 'parcel') self.resetLocker();
           });
+          window.addEventListener('cc-inpost:point-selected', function (event) {
+            if (!event.detail || event.detail.prefix !== prefix) return;
+            self.pickLocker(ccNormalizeGeowidgetPoint(event.detail.point));
+          });
         },
 
         resetLocker: function () {
           this.parcelLocker = null;
-          this.lockerSearch = '';
-          this.lockers = [];
-          this.lockerLoading = false;
           this.lockerError = null;
-          this.lockerRequest += 1;
-        },
-
-        searchLockers: function () {
-          var term = String(this.lockerSearch || '').trim();
-          if (term.length < 3) {
-            this.lockers = [];
-            this.parcelLocker = null;
-            this.lockerError = 'Wpisz co najmniej 3 znaki: kod pocztowy albo miasto.';
-            return;
-          }
-
-          var self = this;
-          var requestId = ++this.lockerRequest;
-          this.parcelLocker = null;
-          this.lockers = [];
-          this.lockerLoading = true;
-          this.lockerError = null;
-
-          ccSearchInpostPoints(term).then(function (points) {
-            if (requestId !== self.lockerRequest) return;
-            self.lockers = points;
-            if (!points.length) self.lockerError = 'Nie znaleziono paczkomatów dla podanej lokalizacji.';
-          }).catch(function () {
-            if (requestId === self.lockerRequest) {
-              self.lockerError = 'Nie udało się pobrać listy paczkomatów. Spróbuj ponownie.';
-            }
-          }).finally(function () {
-            if (requestId === self.lockerRequest) self.lockerLoading = false;
-          });
         },
 
         pickLocker: function (point) {
@@ -325,6 +372,86 @@
         }
       };
     }
+
+    /**
+     * Each configurator (ccConfigurator/ccPdfConfigurator/ccB2bConfigurator) defines its own
+     * init() to set up its $watch()ers. A plain Object.assign(ccInpostState(prefix), config)
+     * would let config's init silently replace ccInpostState's — dropping the locker
+     * event listener — so both init()s are composed here instead of one overwriting the other.
+     */
+    function ccWithInpost(prefix, config) {
+      var inpost = ccInpostState(prefix);
+      var inpostInit = inpost.init;
+      var configInit = config.init;
+
+      return Object.assign(inpost, config, {
+        init: function () {
+          inpostInit.call(this);
+          if (configInit) configInit.call(this);
+        }
+      });
+    }
+
+    /* --- Per-service AI chat (front-end scaffold, n8n RAG webhook to follow) --- */
+    Alpine.data('ccServiceChat', function () {
+      var nextId = 1;
+
+      return {
+        open: false,
+        context: '',
+        topic: '',
+        messages: [],
+        suggestedQuestions: [],
+        draft: '',
+
+        openFor: function (title, topic, questions) {
+          if (this.context !== title) {
+            this.context = title;
+            this.topic = topic || title;
+            this.suggestedQuestions = questions || [];
+            this.messages = [];
+          }
+
+          this.open = true;
+        },
+
+        close: function () {
+          this.open = false;
+        },
+
+        ask: function (question) {
+          this.draft = question;
+          this.send();
+        },
+
+        scrollToBottom: function () {
+          var el = this.$refs.messages;
+          this.$nextTick(function () {
+            if (el) el.scrollTop = el.scrollHeight;
+          });
+        },
+
+        send: function () {
+          var text = this.draft.trim();
+          if (! text) return;
+
+          this.messages.push({ id: nextId++, role: 'user', text: text });
+          this.draft = '';
+          this.scrollToBottom();
+
+          var self = this;
+          // TODO: podłączyć webhook n8n (RAG) tutaj zamiast mocka poniżej.
+          setTimeout(function () {
+            self.messages.push({
+              id: nextId++,
+              role: 'assistant',
+              text: 'Dzięki za pytanie! Prawdziwy asystent AI pojawi się tu wkrótce — na razie to podgląd interfejsu.'
+            });
+            self.scrollToBottom();
+          }, 500);
+        }
+      };
+    });
 
     /* --- Thesis configurator --- */
     Alpine.data('ccConfigurator', function () {
@@ -341,7 +468,7 @@
       var bw = Number(pagePrices.bw);
       var color = Number(pagePrices.color);
       var firstKey = function (items, fallback) { return Object.keys(items)[0] || fallback; };
-      return Object.assign(ccInpostState(), {
+      return ccWithInpost('thesis', {
           file: { name: null, pages: 0, colored: 0, bwPages: 0, uploadToken: null },
         quote: null,
         quoteLoading: false,
@@ -361,13 +488,8 @@
         burnCd: 'false',
         spineEngraving: 'false',
         spineEngravingName: '',
-        titleVariant: 0,
         coverColors: Object.entries(pricing.cover_colors || {}).map(function ([id, value]) { return { id: id, hex: value.hex, label: value.label }; }),
-        titleVariants: [
-          { degree: 'Praca magisterska', title: 'Analiza rynku e-commerce w Polsce', author: 'Jan Kowalski' },
-          { degree: 'Praca licencjacka', title: 'Projekt systemu informatycznego dla biblioteki', author: 'Anna Nowak' },
-          { degree: 'Praca inżynierska', title: 'Wykorzystanie sztucznej inteligencji w logistyce', author: 'Michał Wiśniewski' }
-        ],
+        coverPhotos: window.copyCabanaThesisCoverPhotos || {},
         delivery: null,
         byDate: '',
 
@@ -375,7 +497,7 @@
         covers: Object.entries(coverPrices).map(function ([id, value]) { return { id: id, name: value.label, price: Number(value.price), hint: value.hint || '' }; }),
         deliveries: [
           { id: 'pickup', name: 'Odbiór w Katowicach', price: Number(deliveryPrices.pickup ?? 0), hint: 'ul. Bankowa 11, 40-007 Katowice' },
-          { id: 'parcel', name: 'Paczkomat', price: Number(deliveryPrices.parcel ?? 12), hint: 'Wybierz punkt z listy InPost' },
+          { id: 'parcel', name: 'Paczkomat', price: Number(deliveryPrices.parcel ?? 12), hint: 'Wybierz paczkomat na mapie InPost' },
         ],
 
          init: function () {
@@ -518,8 +640,13 @@
           this.print.color = detail.colored > 0 ? 'mixed' : 'bw';
         },
 
-        activeVariant: function () {
-          return this.titleVariants[this.titleVariant] || this.titleVariants[0];
+        coverPhotoUrl: function () {
+          return this.coverPhotos[this.coverColor] || null;
+        },
+
+        coverColorName: function () {
+          var c = this.coverColors.find(function (x) { return x.id === this.coverColor; }.bind(this));
+          return c ? c.label : '';
         },
 
         universityName: function () {
@@ -623,7 +750,7 @@
        var bw = Number(pagePrices.bw ?? 0.2);
        var color = Number(pagePrices.color ?? 0.5);
 
-       return Object.assign(ccInpostState(), {
+       return ccWithInpost('pdf', {
          file: { name: null, pages: 0, colored: 0, uploadToken: null },
          quote: null,
          quoteLoading: false,
@@ -642,7 +769,7 @@
          }),
          deliveries: [
            { id: 'pickup', name: 'Odbiór w Katowicach', price: Number(deliveryPrices.pickup || 0), hint: 'ul. Bankowa 11, 40-007 Katowice' },
-           { id: 'parcel', name: 'Paczkomat', price: Number(deliveryPrices.parcel || 0), hint: 'Wybierz punkt z listy InPost' },
+           { id: 'parcel', name: 'Paczkomat', price: Number(deliveryPrices.parcel || 0), hint: 'Wybierz paczkomat na mapie InPost' },
            { id: 'courier', name: 'Kurier', price: Number(deliveryPrices.courier || 0), hint: 'Dostawa pod wskazany adres' }
          ],
 
@@ -772,8 +899,9 @@
     var B2B_DELIVERIES = window.copyCabanaB2bDeliveries || [];
 
     Alpine.data('ccB2bConfigurator', function () {
-      return Object.assign(ccInpostState(), {
+      return ccWithInpost('b2b', {
         products: B2B_PRODUCTS,
+        activeCategory: 'all',
 
         selected: null,
         params: {},
@@ -791,6 +919,27 @@
          submitError: null,
 
         deliveries: B2B_DELIVERIES,
+
+        categoryLabel: function (category) {
+          return {
+            all: 'Wszystkie',
+            druk: 'Druk',
+            reklama: 'Reklama',
+            uslugi: 'Usługi',
+            foto: 'Foto'
+          }[category] || category;
+        },
+
+        categories: function () {
+          var categories = this.products.map(function (product) { return product.category || 'inne'; });
+          return ['all'].concat(categories.filter(function (category, index, list) { return list.indexOf(category) === index; }));
+        },
+
+        visibleProducts: function () {
+          if (this.activeCategory === 'all') return this.products;
+
+          return this.products.filter(function (product) { return product.category === this.activeCategory; }.bind(this));
+        },
 
         init: function () {
           var product = new URLSearchParams(window.location.search).get('product');

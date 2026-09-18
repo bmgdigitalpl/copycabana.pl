@@ -234,15 +234,15 @@ class AdminFeaturesTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_fortify_login_screen_uses_the_flux_auth_view(): void
+    public function test_login_screen_is_shared_between_customers_and_admins(): void
     {
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('Zaloguj się do panelu')
-            ->assertDontSee('Panel administracyjny');
+            ->assertSee('/konto/logowanie', false)
+            ->assertSee('Zaloguj się');
     }
 
-    public function test_customer_cannot_login_through_the_admin_fortify_form(): void
+    public function test_customer_can_login_through_the_shared_login_form(): void
     {
         $user = User::factory()->create([
             'role' => 'customer',
@@ -253,9 +253,9 @@ class AdminFeaturesTest extends TestCase
         $this->post(route('login.store'), [
             'email' => $user->email,
             'password' => 'password',
-        ])->assertInvalid('email');
+        ])->assertRedirect(route('customer.dashboard'));
 
-        $this->assertGuest();
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_admin_can_view_and_mark_notifications_as_read(): void

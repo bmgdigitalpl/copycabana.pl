@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 class PrintingConfigurationRequest extends FormRequest
 {
@@ -27,8 +28,19 @@ class PrintingConfigurationRequest extends FormRequest
             : ['finishes'];
 
         foreach ($groups as $group) {
+            $allowedKeys = ['key', 'label'];
+            if (in_array($group, ['bindings', 'covers', 'finishes'], true)) {
+                $allowedKeys = [...$allowedKeys, 'price', 'hint'];
+            }
+            if (in_array($group, ['imprint_colors', 'cover_colors'], true)) {
+                $allowedKeys[] = 'hex';
+            }
+            if ($group === 'cover_colors') {
+                $allowedKeys = [...$allowedKeys, 'photo', 'existing_photo'];
+            }
+
             $rules[$group] = ['required', 'array', 'min:1', 'max:100'];
-            $rules[$group.'.*'] = ['array:key,label,price,hint,hex'];
+            $rules[$group.'.*'] = ['array:'.implode(',', $allowedKeys)];
             $rules[$group.'.*.key'] = ['required', 'alpha_dash:ascii', 'max:80', 'distinct:strict'];
             $rules[$group.'.*.label'] = ['required', 'string', 'max:255'];
             if (in_array($group, ['bindings', 'covers', 'finishes'], true)) {
@@ -37,6 +49,12 @@ class PrintingConfigurationRequest extends FormRequest
             }
             if (in_array($group, ['imprint_colors', 'cover_colors'], true)) {
                 $rules[$group.'.*.hex'] = ['required', 'regex:/^#[0-9a-fA-F]{6}$/'];
+            }
+            if ($group === 'cover_colors') {
+                // Real photo of the blank cover for this color. Uploading one replaces the
+                // code-generated preview mockup on /prace-dyplomowe with the actual photo.
+                $rules[$group.'.*.photo'] = ['nullable', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max('5mb')];
+                $rules[$group.'.*.existing_photo'] = ['nullable', 'string', 'max:255'];
             }
         }
 

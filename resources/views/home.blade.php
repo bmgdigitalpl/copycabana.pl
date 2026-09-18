@@ -9,10 +9,13 @@
   <section class="cc-hero">
     <div class="cc-container cc-hero-grid">
       <div class="cc-hero-copy">
-        <h1 class="cc-hero-title reveal reveal-delay-1">Od pliku do<br><em>gotowego wydruku.</em></h1>
+        <h1 class="cc-hero-title reveal reveal-delay-1">{{ $cms['hero']['title_before'] }}<br><em>{{ $cms['hero']['title_emphasis'] }}</em></h1>
+        @if(! empty($cms['hero']['semantic_intro']))
+          <p class="cc-hero-hint reveal reveal-delay-2"><i class="fas fa-circle-info" aria-hidden="true"></i> {{ $cms['hero']['semantic_intro'] }}</p>
+        @endif
         <div class="cc-hero-actions reveal reveal-delay-3">
-          <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block">Skonfiguruj druk <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
-          <a href="{{ route('services.business') }}" class="btn-geel inline-block">Druk dla firm</a>
+          <a href="{{ $cms['hero']['primary_url'] }}" class="btn-magenta inline-block"><i class="fas {{ $cms['hero']['primary_icon'] }} mr-2" aria-hidden="true"></i>{{ $cms['hero']['primary_label'] }} <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
+          <a href="{{ $cms['hero']['secondary_url'] }}" class="btn-geel inline-block"><i class="fas {{ $cms['hero']['secondary_icon'] }} mr-2" aria-hidden="true"></i>{{ $cms['hero']['secondary_label'] }}</a>
         </div>
       </div>
 
@@ -25,11 +28,15 @@
             </div>
           </div>
         @else
-          <div class="hero-stack" style="height: 100%; align-content: center;" aria-hidden="true">
-            <article class="stack-card stack-card--cyan"><strong>24h</strong><p>Druk i oprawa prac dyplomowych. Dostępność terminu potwierdzamy dla Twojego pliku i wybranej oprawy.</p></article>
-            <article class="stack-card stack-card--magenta"><strong>Druk</strong><p>Prześlij plik mailem. Podaj liczbę egzemplarzy oraz druk kolorowy lub czarno-biały.</p></article>
-            <article class="stack-card stack-card--yellow"><strong>Katowice</strong><p>Odbiór w centrum miasta przy ul. Bankowej 11.</p></article>
-            <article class="stack-card stack-card--black"><strong>Dla firm</strong><p>Wizytówki, ulotki, plakaty, rollupy, banery i więcej.</p></article>
+          <div class="hero-stack" style="height: 100%; align-content: center;" aria-label="Najważniejsze usługi CopyCabana">
+            @foreach($cms['hero-cards']['items'] as $card)
+              @php($cardClass = 'stack-card stack-card--'.($card['variant'] ?? 'cyan'))
+              @if(! empty($card['url']))
+                <a href="{{ $card['url'] }}" class="{{ $cardClass }} stack-card--linked"><strong>{{ $card['title'] }}</strong><p>{{ $card['body'] }}</p></a>
+              @else
+                <article class="{{ $cardClass }}"><strong>{{ $card['title'] }}</strong><p>{{ $card['body'] }}</p></article>
+              @endif
+            @endforeach
           </div>
         @endif
       </div>
@@ -50,7 +57,7 @@
   <section class="cc-section cc-section--light">
     <div class="cc-container">
       <x-concept.section-heading>
-        Dlaczego CopyCabana.
+        {{ $cms['why']['heading'] }}
       </x-concept.section-heading>
 
       <div class="cc-trust-layout">
@@ -59,33 +66,30 @@
         </figure>
 
         <div class="cc-trust-copy reveal reveal-delay-2">
-          <p class="cc-trust-lead">To, co zaczęło się od pojedynczych punktów ksero, rozrosło się w jedną z najlepszych drukarni w Katowicach. Dziś obsługujemy studentów, klientów indywidualnych, firmy i agencje z całej Polski, łącząc lokalne podejście z produkcją gotową na większą skalę.</p>
+          <p class="cc-trust-lead">{{ $cms['why']['lead_1'] }}</p>
+
+          <p class="cc-trust-lead">{{ $cms['why']['lead_2'] }}</p>
 
           <ul class="cc-trust-list" aria-label="Najważniejsze powody, żeby wybrać CopyCabana">
-            <li class="cc-trust-item">
-              <span class="cc-need-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></span>
-              <div class="cc-need-body">
-                <h3>22 lata doświadczenia</h3>
-                <p>Od 2002 roku pomagamy drukować, oprawiać i przygotowywać materiały, które muszą wyglądać profesjonalnie.</p>
-              </div>
-            </li>
-
-            <li class="cc-trust-item cc-trust-item--yellow">
-              <span class="cc-need-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
-              <div class="cc-need-body">
-                <h3>Tysiące zadowolonych klientów</h3>
-                <p>Realizujemy druk cyfrowy, offsetowy i wielkoformatowy: od dokumentów po materiały reklamowe.</p>
-              </div>
-            </li>
-
-            <li class="cc-trust-item cc-trust-item--blue">
-              <span class="cc-need-icon"><i class="fas fa-location-dot" aria-hidden="true"></i></span>
-              <div class="cc-need-body">
-                <h3>Drukarnia na miejscu</h3>
-                <p>Znajdziesz nas przy ul. Bankowej 11 w Katowicach. Odbierz zamówienie osobiście albo wybierz wysyłkę.</p>
-              </div>
-            </li>
+            @foreach($cms['why']['items'] as $item)
+              <li class="cc-trust-item @if(! empty($item['variant'])) cc-trust-item--{{ $item['variant'] }} @endif">
+                <span class="cc-need-icon"><i class="fas {{ $item['icon'] }}" aria-hidden="true"></i></span>
+                <div class="cc-need-body">
+                  <h3>{{ $item['title'] }}</h3>
+                  <p>{{ $item['body'] }}</p>
+                </div>
+              </li>
+            @endforeach
           </ul>
+
+          <div class="cc-trust-cta">
+            @if(! empty($cms['why']['cta_primary_url']))
+              <a href="{{ $cms['why']['cta_primary_url'] }}" class="btn-magenta inline-block">{{ $cms['why']['cta_primary_label'] }} <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
+            @endif
+            @if(! empty($cms['why']['cta_secondary_url']))
+              <a href="{{ $cms['why']['cta_secondary_url'] }}" class="btn-geel inline-block">{{ $cms['why']['cta_secondary_label'] }}</a>
+            @endif
+          </div>
         </div>
       </div>
     </div>
@@ -95,13 +99,13 @@
   <section class="cc-section cc-section--dark cc-process" data-cc-process>
     <div class="cc-container">
       <x-concept.section-heading dark>
-        Od pliku do gotowego wydruku.
+        {{ $cms['process']['heading'] }}
       </x-concept.section-heading>
 
       <div class="cc-process-steps">
-        <article class="cc-process-step"><span class="num">01</span><h3>Konfigurujesz pracę</h3><p>Dodajesz plik, wybierasz ustawienia i od razu widzisz cenę.</p></article>
-        <article class="cc-process-step"><span class="num">02</span><h3>Wybierasz odbiór</h3><p>Odbiór w Katowicach, paczkomat albo kurier. Termin produkcji oddzielamy od doręczenia.</p></article>
-        <article class="cc-process-step"><span class="num">03</span><h3>My drukujemy</h3><p>Dostajesz jasne zlecenie, a my przygotowujemy Twój druk.</p></article>
+        @foreach($cms['process']['items'] as $step)
+          <article class="cc-process-step"><span class="num">{{ $step['number'] }}</span><h3>{{ $step['title'] }}</h3><p>{{ $step['body'] }}</p></article>
+        @endforeach
       </div>
     </div>
   </section>
@@ -110,33 +114,59 @@
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
       <x-concept.section-heading>
-        USŁUGI
+        {{ $cms['services']['heading'] }}
       </x-concept.section-heading>
 
       <div class="cc-gallery">
-        @foreach ($services as $item)
-          <figure class="cc-gallery-card reveal">
-            <img src="{{ $item['image'] }}" alt="{{ $item['alt'] }}">
-            <figcaption>
-              <span>{{ $item['title'] }}</span>
-              <a href="{{ $item['href'] }}" class="btn-magenta cc-gallery-order">Zamów <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
-            </figcaption>
-          </figure>
+        @foreach ($cms['services']['items'] as $item)
+          @if(! empty($item['url']))
+            <div class="cc-gallery-card reveal">
+              <a class="cc-gallery-media" href="{{ $item['url'] }}">
+                <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}">
+                <span class="cc-gallery-title"><i class="fas {{ $item['icon'] ?? 'fa-print' }}" aria-hidden="true"></i>{{ $item['title'] }}</span>
+              </a>
+              <div class="cc-gallery-actions">
+                <a class="btn-magenta cc-gallery-order" href="{{ $item['url'] }}"><i class="fas fa-cart-shopping mr-2" aria-hidden="true"></i>Zamów <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
+                <button type="button" class="cc-gallery-help" aria-label="Zapytaj o {{ $item['accusative'] ?? $item['title'] }}" @click="$dispatch('open-service-chat', { title: @js($item['title']), topic: @js($item['accusative'] ?? $item['title']), questions: @js($item['questions'] ?? []) })">
+                  <i class="fas fa-question" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          @else
+            <figure class="cc-gallery-card reveal">
+              <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}">
+              <figcaption><span><i class="fas {{ $item['icon'] ?? 'fa-print' }}" aria-hidden="true"></i>{{ $item['title'] }}</span></figcaption>
+            </figure>
+          @endif
         @endforeach
       </div>
     </div>
+
+    <x-concept.chat-widget />
   </section>
 
-  {{-- 06 Contact hero --}}
+  {{-- 06 FAQ --}}
+  <section class="cc-section cc-section--muted">
+    <div class="cc-container">
+      <x-concept.section-heading :label="$cms['faq']['label']">
+        <x-slot:lead>{{ $cms['faq']['lead'] }}</x-slot:lead>
+        {{ $cms['faq']['heading'] }}
+      </x-concept.section-heading>
+
+      <x-concept.faq-list :items="$cms['faq']['items']" />
+    </div>
+  </section>
+
+  {{-- 07 Contact hero --}}
   <section class="cc-hero">
     <div class="cc-container cc-hero-grid">
       <div class="cc-hero-copy">
-        <p class="cc-hero-overline reveal">Kontakt</p>
-        <h2 class="cc-hero-title reveal reveal-delay-1">Jesteśmy w Katowicach.<em>Napisz albo zadzwoń.</em></h2>
-        <p class="reveal reveal-delay-2">Masz plik, pytanie o termin albo niestandardowe zlecenie? Odezwij się do drukarni przy ul. Bankowej 11.</p>
+        <p class="cc-hero-overline reveal">{{ $cms['contact']['overline'] }}</p>
+        <h2 class="cc-hero-title reveal reveal-delay-1">{{ $cms['contact']['title_before'] }}<em>{{ $cms['contact']['title_emphasis'] }}</em></h2>
+        <p class="reveal reveal-delay-2">{{ $cms['contact']['body'] }}</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
-          <a href="tel:502293849" class="btn-magenta inline-block"><i class="fas fa-phone mr-2" aria-hidden="true"></i>502 293 849</a>
-          <a href="mailto:biuro@copycabana.pl" class="btn-outline-light inline-block">biuro@copycabana.pl</a>
+          <a href="{{ $cms['contact']['phone_url'] }}" class="btn-magenta inline-block"><i class="fas fa-phone mr-2" aria-hidden="true"></i>{{ $cms['contact']['phone_label'] }}</a>
+          <a href="{{ $cms['contact']['email_url'] }}" class="btn-outline-light inline-block">{{ $cms['contact']['email_label'] }}</a>
         </div>
       </div>
 
@@ -149,26 +179,6 @@
             referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
-    </div>
-  </section>
-
-  {{-- 07 FAQ --}}
-  <section class="cc-section cc-section--muted">
-    <div class="cc-container">
-      <x-concept.section-heading label="FAQ">
-        <x-slot:lead>Najczęstsze pytania przed drukiem. Odpowiadamy prosto, tak jak przy ladzie w drukarni.</x-slot:lead>
-        Zanim wyślesz plik.
-      </x-concept.section-heading>
-
-      <x-concept.faq-list :items="[
-        ['q' => 'W jakim formacie wysłać plik?', 'a' => 'Najbezpieczniej kompletny PDF. Przed zamówieniem sprawdź stronnicowanie, kolejność i numerację stron.'],
-        ['q' => 'Czy mogę wydrukować dokument dwustronnie?', 'a' => 'Tak. W konfiguratorze wybierzesz druk jednostronny lub dwustronny — z krótkim opisem, co to oznacza w praktyce.'],
-        ['q' => 'Jak szybko będzie gotowe zamówienie?', 'a' => 'Standardowo rozmawiamy o realizacji w 24h. Konkretny termin pokażemy po wyborze pliku, oprawy i metody dostawy.'],
-        ['q' => 'Czy mogę odebrać je w Katowicach?', 'a' => 'Tak. Odbiór osobisty działa w punkcie przy ul. Bankowej 11.'],
-        ['q' => 'Czy wysyłacie zamówienia?', 'a' => 'Tak — paczkomat i kurier są opcjami roboczymi. Integrację i koszty potwierdzimy przed produkcją.'],
-        ['q' => 'Czy zobaczę cenę przed złożeniem zamówienia?', 'a' => 'Tak, to punkt wyjścia tego projektu. Cena i termin mają być widoczne w podsumowaniu, zanim cokolwiek zatwierdzisz.'],
-        ['q' => 'Co jeśli mój PDF ma błąd?', 'a' => 'Zamiast suchego komunikatu pokażemy przyczynę i następny możliwy krok. Kontrola techniczna nie obejmuje treści pracy ani wymagań wydziału.']
-      ]" />
     </div>
   </section>
 

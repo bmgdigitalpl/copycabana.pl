@@ -68,6 +68,7 @@
                     @if(auth()->user()->isOwner())
                         <flux:sidebar.item icon="shield-check" href="{{ route('admin.privacy.index') }}" :current="request()->routeIs('admin.privacy.*')" wire:navigate>Wnioski RODO</flux:sidebar.item>
                         <flux:sidebar.item icon="academic-cap" href="{{ route('admin.printing.edit', 'thesis') }}" :current="request()->routeIs('admin.printing.*') && request()->route('type') === 'thesis'" wire:navigate>Prace Dyplomowe</flux:sidebar.item>
+                        <flux:sidebar.item icon="document-text" href="{{ route('admin.cms.index') }}" :current="request()->routeIs('admin.cms.*')" wire:navigate>CMS</flux:sidebar.item>
                         <flux:sidebar.item icon="photo" href="{{ route('admin.products.index') }}" :current="request()->routeIs('admin.products.*')" wire:navigate>Produkty</flux:sidebar.item>
                         <flux:sidebar.item icon="adjustments-horizontal" href="{{ route('admin.options.index') }}" :current="request()->routeIs('admin.options.*')" wire:navigate>Opcje i ceny</flux:sidebar.item>
                     @endif

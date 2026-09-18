@@ -12,7 +12,7 @@
       <label class="block">E-mail<input class="mt-1 w-full rounded-lg border p-3" type="email" name="email" value="{{ old('email') }}" required autofocus></label>
       <button class="btn-magenta w-full" type="submit">Wyślij instrukcję</button>
     </form>
-    <p class="mt-5 text-center text-sm"><a class="text-[#D51A70]" href="{{ route('customer.login') }}">Wróć do logowania</a></p>
+    <p class="mt-5 text-center text-sm"><a class="text-[#D51A70]" href="{{ route('login') }}">Wróć do logowania</a></p>
   </div>
 </main>
 @endsection

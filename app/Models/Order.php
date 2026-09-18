@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Auth;
     'shipping_method',
     'carrier',
     'tracking_number',
+    'shipping_label_path',
     'shipping_address',
     'requested_by_date',
     'subtotal',

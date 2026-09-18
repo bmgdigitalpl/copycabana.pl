@@ -18,32 +18,6 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function createLogin(): View
-    {
-        return view('customer.auth.login');
-    }
-
-    public function login(Request $request): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
-        $credentials['email'] = Str::lower($credentials['email']);
-        $credentials['role'] = 'customer';
-        $credentials['disabled_at'] = null;
-
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors(['email' => 'Nieprawidłowy adres e-mail lub hasło.'])->onlyInput('email');
-        }
-
-        $request->session()->regenerate();
-
-        return $request->user()->hasVerifiedEmail()
-            ? redirect()->intended(route('customer.dashboard'))
-            : redirect()->route('verification.notice');
-    }
-
     public function createRegister(): View
     {
         return view('customer.auth.register');
@@ -144,7 +118,7 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Nie udało się zmienić hasła. Link mógł wygasnąć.']);
         }
 
-        return redirect()->route('customer.login')->with('status', 'Hasło zostało zmienione. Możesz się zalogować.');
+        return redirect()->route('login')->with('status', 'Hasło zostało zmienione. Możesz się zalogować.');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -153,6 +127,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('customer.login');
+        return redirect()->route('login');
     }
 }

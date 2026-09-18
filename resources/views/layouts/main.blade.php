@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="{{ asset('css/dynamic-local-service.css') }}">
   <link rel="stylesheet" href="{{ asset('css/dynamic-site.css') }}">
   <link rel="stylesheet" href="{{ asset('css/concept.css') }}?v={{ filemtime(public_path('css/concept.css')) }}">
+  @stack('head')
 </head>
 <body class="concept-dynamic concept-site {{ request()->routeIs('test.fonts') ? 'font-test-root' : '' }}" x-data="{ mobileNav: false }">
   <header class="cc-header">
@@ -50,7 +51,7 @@
             <a href="{{ route('customer.dashboard') }}" class="cc-header-icon" aria-label="Moje konto"><i class="fas fa-user" aria-hidden="true"></i></a>
           @endif
         @else
-          <a href="{{ route('customer.login') }}" class="cc-header-icon" aria-label="Zaloguj"><i class="fas fa-user" aria-hidden="true"></i></a>
+          <a href="{{ route('login') }}" class="cc-header-icon" aria-label="Zaloguj"><i class="fas fa-user" aria-hidden="true"></i></a>
         @endauth
         <button @click="mobileNav = true" class="cc-burger" aria-label="Otwórz menu">
           <i class="fas fa-bars"></i>
@@ -74,7 +75,7 @@
           <a href="{{ route('dashboard') }}">Panel administracyjny</a>
         @endif
       @else
-        <a href="{{ route('customer.login') }}">Zaloguj</a>
+        <a href="{{ route('login') }}">Zaloguj</a>
       @endauth
     </div>
   </div>
@@ -101,5 +102,6 @@
   <script src="{{ asset('js/concept.js') }}"></script>
   <script src="{{ asset('js/app.js') }}"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  @stack('scripts')
 </body>
 </html>

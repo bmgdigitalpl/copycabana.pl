@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateInPostShippingLabel;
 use App\Mail\PaymentConfirmedMail;
 use App\Models\Order;
 use App\Models\Payment;
@@ -80,6 +81,10 @@ class PayuWebhookController extends Controller
 
         if ($paymentConfirmed) {
             Mail::to($changedOrder->customer_email)->queue(new PaymentConfirmedMail($changedOrder->refresh()));
+
+            if ($changedOrder->shipping_method === 'parcel') {
+                GenerateInPostShippingLabel::dispatch($changedOrder->id);
+            }
         }
 
         if ($changedOrder !== null) {

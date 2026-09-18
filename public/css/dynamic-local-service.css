@@ -84,12 +84,22 @@ body.concept-dynamic {
 }
 
 .concept-dynamic .stack-card {
+  display: block;
   min-height: 200px;
   padding: 1.5rem;
   border-radius: 30px;
   background: linear-gradient(135deg, var(--donkerblauw) 0%, var(--blauw) 100%);
   color: #fff;
+  text-decoration: none;
   box-shadow: 0 24px 70px rgba(6, 58, 96, 0.14);
+  transition: box-shadow 260ms ease, transform 260ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .concept-dynamic .stack-card--linked:hover {
+    box-shadow: 0 34px 90px rgba(6, 58, 96, 0.22);
+    transform: scale(1.025) rotate(2deg);
+  }
 }
 
 .concept-dynamic .stack-card--cyan {

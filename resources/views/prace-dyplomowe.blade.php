@@ -6,6 +6,7 @@
 @section('content')
 <script>
   window.copyCabanaThesisPricing = @js($thesisPricing);
+  window.copyCabanaThesisCoverPhotos = @js($coverPhotos);
 </script>
 <main class="cc-page">
   {{-- Hero --}}
@@ -243,25 +244,28 @@
             <input id="grzbiet-imie-nazwisko" type="text" x-model="spineEngravingName" placeholder="np. Jan Kowalski">
           </div>
 
-          <p class="cc-step-micro" x-show="cover === 'standard'">Przykład standardowego napisu: „Tytuł pracy dyplomowej — Imię Nazwisko”.</p>
-
           <div class="cc-thesis-preview" x-transition.opacity.duration.200ms>
-            <div class="cc-thesis"
-              :class="['cc-thesis--' + coverColor, 'cc-thesis--' + binding]"
-              aria-hidden="true">
-              <span class="cc-thesis-spine">
-                <span class="cc-thesis-spine-name" x-show="spineEngraving === 'true'" :style="imprintStyle()" x-text="spineEngravingName || 'Imię Nazwisko'"></span>
-              </span>
-              <span class="cc-thesis-cover">
-                <em class="cc-thesis-degree" x-show="cover !== 'none'" :style="imprintStyle()" x-text="coverHeading()"></em>
-                <span class="cc-thesis-center" x-show="cover !== 'none'">
-                  <strong class="cc-thesis-title" :style="imprintStyle()" x-text="activeVariant().title"></strong>
-                  <span class="cc-thesis-rule"></span>
-                  <span class="cc-thesis-author" :style="imprintStyle()" x-text="coverSubheading()"></span>
+            <template x-if="coverPhotoUrl()">
+              <img class="cc-thesis-photo" :src="coverPhotoUrl()" :alt="'Podgląd okładki: ' + coverColorName()">
+            </template>
+
+            <template x-if="!coverPhotoUrl()">
+              <div class="cc-thesis"
+                :class="['cc-thesis--' + coverColor, 'cc-thesis--' + binding]"
+                aria-hidden="true">
+                <span class="cc-thesis-spine">
+                  <span class="cc-thesis-spine-name" x-show="spineEngraving === 'true'" :style="imprintStyle()" x-text="spineEngravingName || 'Imię Nazwisko'"></span>
                 </span>
-              </span>
-              <span class="cc-thesis-pages"></span>
-            </div>
+                <span class="cc-thesis-cover">
+                  <em class="cc-thesis-degree" x-show="cover !== 'none'" :style="imprintStyle()" x-text="coverHeading()"></em>
+                  <span class="cc-thesis-center" x-show="cover !== 'none'">
+                    <span class="cc-thesis-rule"></span>
+                    <span class="cc-thesis-author" :style="imprintStyle()" x-text="coverSubheading()"></span>
+                  </span>
+                </span>
+                <span class="cc-thesis-pages"></span>
+              </div>
+            </template>
 
             <div class="cc-thesis-controls">
               <div class="cc-thesis-control">
@@ -274,19 +278,6 @@
                             :style="'background:' + c.hex"
                             :aria-label="'Kolor okładki: ' + c.id"
                             @click="coverColor = c.id"></button>
-                  </template>
-                </div>
-              </div>
-
-              <div class="cc-thesis-control">
-                <p class="cc-thesis-label">Przykładowe napisy</p>
-                <div class="cc-title-chips" role="group" aria-label="Przykładowe napisy na okładce">
-                  <template x-for="(v, i) in titleVariants" :key="i">
-                    <button type="button"
-                            class="cc-title-chip"
-                            :class="{ 'is-active': titleVariant === i }"
-                            x-text="v.degree"
-                            @click="titleVariant = i"></button>
                   </template>
                 </div>
               </div>
@@ -310,7 +301,7 @@
                 value="{{ $d }}"
                 model="delivery"
                 label="{{ ['pickup' => 'Odbiór w Katowicach', 'parcel' => 'Paczkomat', 'courier' => 'Kurier'][$d] }}"
-                hint="{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'Wybierz punkt z listy InPost', 'courier' => 'Dostawa pod wskazany adres'][$d] }}"
+                hint="{{ ['pickup' => 'ul. Bankowa 11, 40-007 Katowice', 'parcel' => 'Wybierz paczkomat na mapie InPost', 'courier' => 'Dostawa pod wskazany adres'][$d] }}"
                  price="{{ number_format((float) config('business.shipping.'.$d), 2, ',', ' ') }} zł" />
             @endforeach
           </div>

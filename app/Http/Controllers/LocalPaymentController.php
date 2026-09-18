@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateInPostShippingLabel;
 use App\Mail\PaymentConfirmedMail;
 use App\Models\Order;
 use App\Models\Payment;
@@ -49,6 +50,10 @@ class LocalPaymentController extends Controller
         if ($changedOrder !== null) {
             Mail::to($changedOrder->customer_email)->queue(new PaymentConfirmedMail($changedOrder->refresh()));
             $notifications->paymentStatusChanged($changedOrder->refresh());
+
+            if ($changedOrder->shipping_method === 'parcel') {
+                GenerateInPostShippingLabel::dispatch($changedOrder->id);
+            }
         }
 
         return redirect()->to($continueUrl);

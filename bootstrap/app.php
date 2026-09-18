@@ -22,9 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'customer' => CustomerMiddleware::class,
         ]);
         $middleware->append(SecurityHeaders::class);
-        $middleware->redirectGuestsTo(fn (Request $request): string => $request->is('konto*')
-            ? route('customer.login')
-            : route('login'));
+        $middleware->redirectGuestsTo(fn (): string => route('login'));
 
         $middleware->trustHosts(at: fn (): array => config('app.trusted_hosts', []), subdomains: false);
     })

@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\CmsSection;
 use App\Models\Product;
+use App\Models\User;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -10,6 +12,41 @@ use Tests\TestCase;
 class MarketingPagesTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_owner_can_update_homepage_cms_texts(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->put(route('admin.cms.update', 'hero'), [
+            'payload' => [
+                'title_before' => 'Testowy nagłówek',
+                'title_emphasis' => 'z CMS.',
+                'primary_label' => 'Zamawiam pracę',
+                'primary_link' => 'services.diploma',
+                'primary_icon' => 'fa-graduation-cap',
+                'secondary_label' => 'Druk dla firm',
+                'secondary_link' => 'services.business',
+                'secondary_icon' => 'fa-building',
+                'semantic_intro' => 'Opis zapisany w CMS.',
+            ],
+        ])->assertRedirect(route('admin.cms.edit', 'hero'))->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('cms_sections', ['key' => 'hero']);
+        $this->assertSame('Zamawiam pracę', CmsSection::query()->where('key', 'hero')->firstOrFail()->payload['primary_label']);
+
+        $this->get(route('home'))
+            ->assertSee('Testowy nagłówek')
+            ->assertSee('z CMS.')
+            ->assertSee('Zamawiam pracę')
+            ->assertSee('Opis zapisany w CMS.');
+    }
+
+    public function test_staff_cannot_update_cms_sections(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'staff']))
+            ->put(route('admin.cms.update', 'hero'), ['payload' => []])
+            ->assertForbidden();
+    }
 
     public function test_business_configurator_and_cart_load_the_shared_interactions(): void
     {
@@ -90,6 +127,7 @@ class MarketingPagesTest extends TestCase
             ->assertDontSee('Możesz nam zaufać.')
             ->assertDontSee('Doświadczenie, zaufanie i lokalna drukarnia, do której możesz przyjść osobiście.')
             ->assertSee('To, co zaczęło się od pojedynczych punktów ksero, rozrosło się w jedną z najlepszych drukarni w Katowicach.')
+            ->assertSee('Dbamy o jasną komunikację, realne terminy i efekt, który możesz odebrać albo wysłać dalej bez poprawek.')
             ->assertSee(asset('images/jarek-jacek.png'), false)
             ->assertSee('Jarek i Jacek z CopyCabana w drukarni w Katowicach')
             ->assertSee('22 lata doświadczenia')
@@ -98,14 +136,16 @@ class MarketingPagesTest extends TestCase
             ->assertSee('cc-trust-layout', false)
             ->assertSee('cc-trust-list', false)
             ->assertDontSee('cc-need-grid', false)
-            ->assertSee('Skonfiguruj druk')
+            ->assertSee('Skonfiguruj swoją pracę')
+            ->assertSee('fa-graduation-cap', false)
+            ->assertSee('fa-building', false)
             ->assertSee('Druk dla firm')
-            ->assertSee('Od pliku do gotowego wydruku.')
+            ->assertSee('Jak zamienić plik w gotowy wydruk.')
             ->assertDontSee('Jak to działa')
             ->assertDontSee('Od pliku do gotowego wydruku. Wybierasz, my dbamy o resztę.')
             ->assertSee('cc-section-head--left', false)
             ->assertDontSee('cc-section-head--center', false)
-            ->assertSee('Konfigurujesz pracę')
+            ->assertSee('Wybierasz usługę')
             ->assertDontSee('<h3>Dodajesz plik</h3>', false)
             ->assertDontSee('<h3>Wybierasz ustawienia</h3>', false)
             ->assertDontSee('<h3>Sprawdzasz cenę</h3>', false)
@@ -119,7 +159,6 @@ class MarketingPagesTest extends TestCase
             ->assertDontSee('Jakość')
             ->assertSee(route('services.diploma'), false)
             ->assertSee(route('services.business'), false)
-            ->assertSee(route('druk-pdf'), false)
             ->assertSee(route('services.business', ['product' => 'banery']).'#produkty', false)
             ->assertSee(route('services.business', ['product' => 'rollupy']).'#produkty', false);
 
@@ -136,7 +175,7 @@ class MarketingPagesTest extends TestCase
 
         $response
             ->assertSee('href="'.route('services.diploma').'"', false)
-            ->assertSee('href="'.route('druk-pdf').'"', false);
+            ->assertSee('href="'.route('services.business', ['product' => 'druk']).'#produkty"', false);
 
         foreach ([
             'wizytowki' => 'Wizytówki',
@@ -165,8 +204,8 @@ class MarketingPagesTest extends TestCase
 
         $content = $response->getContent();
 
-        $this->assertSame(20, substr_count($content, 'class="cc-gallery-card reveal"'));
-        $this->assertSame(20, substr_count($content, '>Zamów '));
+        $this->assertSame(19, substr_count($content, 'class="cc-gallery-card cc-gallery-card--linked reveal"'));
+        $this->assertSame(19, substr_count($content, '>Zamów '));
         $this->assertStringContainsString(asset('images/produkty/oprawa-prac-i-bindowanie.png'), $content);
         $this->assertStringContainsString(asset('images/produkty/druk.png'), $content);
         $this->assertStringNotContainsString('Usługi dodatkowe', $content);
@@ -215,21 +254,20 @@ class MarketingPagesTest extends TestCase
             ->assertSee('Mapa dojazdu do CopyCabana przy ul. Bankowej 11 w Katowicach');
     }
 
-    public function test_header_uses_cart_and_account_icons_without_a_contact_link(): void
+    public function test_header_uses_cart_and_account_icons(): void
     {
         $this->get(route('home'))
             ->assertSee('href="'.route('cart').'" class="cc-header-icon"', false)
             ->assertSee('fa-cart-shopping', false)
             ->assertSee('class="cart-badge cc-cart-badge"', false)
-            ->assertSee('href="'.route('customer.login').'" class="cc-header-icon"', false)
-            ->assertSee('fa-user', false)
-            ->assertDontSee('href="'.route('contact').'"', false);
+            ->assertSee('href="'.route('login').'" class="cc-header-icon"', false)
+            ->assertSee('fa-user', false);
     }
 
     public function test_marketing_heroes_use_the_single_card_layout(): void
     {
         $this->seed(ProductSeeder::class);
-        foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+        foreach (['services.diploma', 'services.business'] as $routeName) {
             $content = $this->get(route($routeName))->getContent();
 
             $this->assertSame(1, substr_count($content, 'class="cc-hero-card cc-hero-card--single"'));
@@ -238,9 +276,8 @@ class MarketingPagesTest extends TestCase
             $this->assertStringNotContainsString('cc-hero-card--tag', $content);
         }
 
-        $this->get(route('druk-pdf'))
-            ->assertSee('Zazwyczaj realizujemy dokumenty w 24h.')
-            ->assertSee('Wydruk bez zbędnych kroków.')
+        $this->get(route('services.diploma'))
+            ->assertSee('Zazwyczaj realizujemy zamówienia w 24h.')
             ->assertSee('cc-hero-hint', false);
     }
 
@@ -267,7 +304,6 @@ class MarketingPagesTest extends TestCase
         $pages = [
             'services.diploma' => 'Praca napisana.',
             'services.business' => 'Zamów taki druk,',
-            'druk-pdf' => 'Dokument.',
             'contact' => 'Jesteśmy w Katowicach.',
             'portfolio' => 'Realizacje',
             'faq' => 'Najczęstsze pytania',
@@ -293,9 +329,6 @@ class MarketingPagesTest extends TestCase
 
         $this->get(route('services.diploma'))
             ->assertSee('oprawę twardą, miękką lub kanałową');
-
-        $this->get(route('druk-pdf'))
-            ->assertSee('Wrzucasz kompletny PDF');
 
         $this->get(route('services.business'))
             ->assertSee('dla firm oraz agencji')
@@ -378,7 +411,7 @@ class MarketingPagesTest extends TestCase
     public function test_configurator_pages_use_the_main_layout(): void
     {
         $this->seed(ProductSeeder::class);
-        foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+        foreach (['services.diploma', 'services.business'] as $routeName) {
             $this->get(route($routeName))
                 ->assertOk()
                 ->assertSee('concept.css', false)
@@ -452,15 +485,6 @@ class MarketingPagesTest extends TestCase
             ->assertSee('19,50 zł');
     }
 
-    public function test_pdf_configurator_uses_the_hands_hero_image(): void
-    {
-        $this->get(route('druk-pdf'))
-            ->assertSee('images/produkty/hands.png', false)
-            ->assertSee('cc-hero-card--single', false)
-            ->assertDontSee('cc-hero-mini-report', false)
-            ->assertDontSee('cc-hero-card--tag', false);
-    }
-
     public function test_business_configurator_uses_the_new_hero_image(): void
     {
         $this->seed(ProductSeeder::class);
@@ -502,20 +526,22 @@ class MarketingPagesTest extends TestCase
         $this->assertSame(true, str_contains($css, 'text-transform: none;'));
     }
 
-    public function test_configurators_render_the_inpost_point_picker(): void
+    public function test_configurators_render_the_inpost_geowidget_picker(): void
     {
         $this->seed(ProductSeeder::class);
-        foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+        foreach (['services.diploma', 'services.business'] as $routeName) {
             $this->get(route($routeName))
                 ->assertSee('cc-inpost-picker', false)
-                ->assertSee('Wybierz punkt z listy InPost');
+                ->assertSee('easypack-map', false)
+                ->assertSee('https://geowidget.easypack24.net/js/sdk-for-javascript.js', false)
+                ->assertSee('Wybierz paczkomat na mapie InPost');
         }
     }
 
     public function test_configurator_option_cards_keep_the_selection_indicator_compact(): void
     {
         $this->seed(ProductSeeder::class);
-        foreach (['services.diploma', 'druk-pdf', 'services.business'] as $routeName) {
+        foreach (['services.diploma', 'services.business'] as $routeName) {
             $this->get(route($routeName))
                 ->assertDontSee('>Wybrano</em>', false)
                 ->assertSee('cc-option-check', false);
@@ -562,10 +588,6 @@ class MarketingPagesTest extends TestCase
             ->assertDontSee('id="podsumowanie"', false)
             ->assertSee('@click="addToCart()"', false);
 
-        $this->get(route('druk-pdf'))
-            ->assertDontSee('id="podsumowanie"', false)
-            ->assertSee('@click="addToCart()"', false);
-
         $this->get(route('services.business'))
             ->assertDontSee('id="podsumowanie"', false)
             ->assertDontSee('Nie widzisz swojego druku?')
@@ -576,7 +598,7 @@ class MarketingPagesTest extends TestCase
     public function test_pdf_and_thesis_configurators_add_configured_orders_to_the_cart(): void
     {
         $this->seed(ProductSeeder::class);
-        foreach (['services.diploma', 'druk-pdf'] as $routeName) {
+        foreach (['services.diploma'] as $routeName) {
             $this->get(route($routeName))
                 ->assertSee('js/cart.js', false)
                 ->assertSee('@click="addToCart()"', false)
@@ -648,7 +670,7 @@ class MarketingPagesTest extends TestCase
     {
         $this->get('/concept/strona')->assertRedirect('/');
         $this->get('/concept/strona/prace-dyplomowe')->assertRedirect('/prace-dyplomowe');
-        $this->get('/concept/strona/druk-pdf')->assertRedirect('/druk-pdf');
+        $this->get('/concept/strona/druk-dla-firm')->assertRedirect('/druk-dla-firm');
         $this->get('/concept/strona/druk-dla-firm')->assertRedirect('/druk-dla-firm');
     }
 }

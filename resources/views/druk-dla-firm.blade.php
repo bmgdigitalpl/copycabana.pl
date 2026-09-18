@@ -44,8 +44,14 @@
             <div><h2>Wybierz pozycje do zamówienia.</h2><p>Zaczyna się od produktu. Dodajemy każdą pozycję osobno, więc nic się nie nadpisze.</p></div>
           </div>
 
+          <div class="cc-b2b-categories" aria-label="Kategorie usług">
+            <template x-for="category in categories()" :key="category">
+              <button type="button" class="cc-b2b-category" :class="activeCategory === category ? 'is-active' : ''" @click="activeCategory = category" x-text="categoryLabel(category)"></button>
+            </template>
+          </div>
+
           <div class="cc-b2b-grid">
-            <template x-for="p in products" :key="p.id">
+            <template x-for="p in visibleProducts()" :key="p.id">
                <button type="button" class="cc-b2b-card"
                        :class="selected === p.id ? 'is-selected' : ''"
                        @click="selectProduct(p.id)">

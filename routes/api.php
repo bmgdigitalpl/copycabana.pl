@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\B2bQuoteRequestController;
-use App\Http\Controllers\Api\InPostController;
 use App\Http\Controllers\Api\OrderUploadController;
 use App\Http\Controllers\Api\PayuWebhookController;
 use App\Http\Controllers\Api\PdfOrderController;
@@ -12,9 +11,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/products', [ProductController::class, 'index'])->name('api.products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('api.products.show');
-Route::get('/inpost/points', [InPostController::class, 'points'])
-    ->middleware('throttle:inpost')
-    ->name('api.inpost.points');
 Route::post('/orders', [CheckoutController::class, 'store'])->middleware('throttle:orders')->name('api.orders.store');
 Route::post('/uploads', OrderUploadController::class)->middleware('throttle:orders')->name('api.uploads.store');
 Route::post('/b2b/uploads', [B2bQuoteRequestController::class, 'upload'])->middleware('throttle:orders')->name('api.b2b.uploads.store');
