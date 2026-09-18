@@ -45,13 +45,13 @@
   <!-- ========== NAVBAR ========== -->
   <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-donkerblauw/95 backdrop-blur-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-      <a href="index.html" class="font-logo text-2xl text-geel no-underline">CopyCabana</a>
+      <a href="{{ route('home') }}" class="font-logo text-2xl text-geel no-underline">CopyCabana</a>
       <div class="hidden md:flex items-center gap-8">
-        <a href="index.html" class="nav-link text-white text-sm no-underline">Home</a>
+        <a href="{{ route('home') }}" class="nav-link text-white text-sm no-underline">Home</a>
         <a href="{{ route('services.business') }}" class="nav-link text-white text-sm no-underline">Druk dla firm</a>
-        <a href="o-nas.html" class="nav-link text-white text-sm no-underline">O nas</a>
-        <a href="kontakt.html" class="nav-link text-white text-sm no-underline">Kontakt</a>
-        <a href="koszyk.html" class="nav-link text-white text-sm no-underline relative">
+        <a href="{{ route('about') }}" class="nav-link text-white text-sm no-underline">O nas</a>
+        <a href="{{ route('contact') }}" class="nav-link text-white text-sm no-underline">Kontakt</a>
+        <a href="{{ route('cart') }}" class="nav-link text-white text-sm no-underline relative">
           <i class="fas fa-shopping-cart"></i>
           <span class="cart-badge absolute -top-2 -right-3 bg-magenta text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" style="display:none">0</span>
         </a>
@@ -67,11 +67,11 @@
   <div class="mobile-nav" :class="{ 'open': mobileNav }">
     <button @click="mobileNav = false" class="close-btn"><i class="fas fa-times"></i></button>
     <div class="mt-12">
-      <a href="index.html">Home</a>
+      <a href="{{ route('home') }}">Home</a>
       <a href="{{ route('services.business') }}">Druk dla firm</a>
-      <a href="o-nas.html">O nas</a>
-      <a href="kontakt.html">Kontakt</a>
-      <a href="koszyk.html">Koszyk</a>
+      <a href="{{ route('about') }}">O nas</a>
+      <a href="{{ route('contact') }}">Kontakt</a>
+      <a href="{{ route('cart') }}">Koszyk</a>
     </div>
   </div>
 
@@ -170,7 +170,7 @@
     <div class="max-w-4xl mx-auto px-4 text-center">
       <h2 class="text-2xl sm:text-3xl font-light text-white mb-4 reveal">Skontaktuj się z nami</h2>
       <p class="text-white/70 mb-6 reveal reveal-delay-1">Pomożemy dobrać najlepsze rozwiązanie dla Twojego projektu.</p>
-      <a href="kontakt.html" class="btn-geel inline-block reveal reveal-delay-2">
+      <a href="{{ route('contact') }}" class="btn-geel inline-block reveal reveal-delay-2">
         Napisz do nas <i class="fas fa-arrow-right ml-2"></i>
       </a>
     </div>
@@ -181,12 +181,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         <div>
-          <a href="index.html" class="font-logo text-2xl text-geel no-underline block mb-4">CopyCabana</a>
+          <a href="{{ route('home') }}" class="font-logo text-2xl text-geel no-underline block mb-4">CopyCabana</a>
           <div class="flex flex-col gap-2">
-            <a href="index.html">Home</a>
+            <a href="{{ route('home') }}">Home</a>
             <a href="{{ route('services.business') }}">Druk dla firm</a>
-            <a href="o-nas.html">O nas</a>
-            <a href="kontakt.html">Kontakt</a>
+            <a href="{{ route('about') }}">O nas</a>
+            <a href="{{ route('contact') }}">Kontakt</a>
           </div>
         </div>
         <div>
@@ -211,7 +211,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="max-w-7xl mx-auto px-4">&copy; 2024 CopyCabana.pl — Wszelkie prawa zastrzeżone.</div>
+      <div class="max-w-7xl mx-auto px-4">&copy; {{ now()->year }} CopyCabana.pl — Wszelkie prawa zastrzeżone.</div>
     </div>
   </footer>
 

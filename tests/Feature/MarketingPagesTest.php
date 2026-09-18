@@ -131,7 +131,7 @@ class MarketingPagesTest extends TestCase
             ->assertSee(asset('images/jarek-jacek.png'), false)
             ->assertSee('Jarek i Jacek z CopyCabana w drukarni w Katowicach')
             ->assertSee('22 lata doświadczenia')
-            ->assertSee('Tysiące zadowolonych klientów')
+            ->assertSee('Klienci z całej Polski')
             ->assertSee('Drukarnia na miejscu')
             ->assertSee('cc-trust-layout', false)
             ->assertSee('cc-trust-list', false)
@@ -139,7 +139,7 @@ class MarketingPagesTest extends TestCase
             ->assertSee('Skonfiguruj swoją pracę')
             ->assertSee('fa-graduation-cap', false)
             ->assertSee('fa-building', false)
-            ->assertSee('Druk dla firm')
+            ->assertSee('Wyceń druk dla firmy')
             ->assertSee('Jak zamienić plik w gotowy wydruk.')
             ->assertDontSee('Jak to działa')
             ->assertDontSee('Od pliku do gotowego wydruku. Wybierasz, my dbamy o resztę.')
@@ -303,7 +303,7 @@ class MarketingPagesTest extends TestCase
         $this->seed(ProductSeeder::class);
         $pages = [
             'services.diploma' => 'Praca napisana.',
-            'services.business' => 'Zamów taki druk,',
+            'services.business' => 'Wiele produktów,',
             'contact' => 'Jesteśmy w Katowicach.',
             'portfolio' => 'Realizacje',
             'faq' => 'Najczęstsze pytania',
@@ -445,7 +445,7 @@ class MarketingPagesTest extends TestCase
             ->assertSee('id="b2b-email"', false)
             ->assertSee('id="b2b-telefon"', false)
             ->assertDontSee('Dokąd wysłać wycenę?')
-            ->assertSee('Wersja demonstracyjna — wycena po kontakcie.');
+            ->assertDontSee('Wersja demonstracyjna — wycena po kontakcie.');
     }
 
     public function test_business_configurator_uses_the_editable_product_images(): void

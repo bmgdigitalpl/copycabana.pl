@@ -66,9 +66,9 @@
         </figure>
 
         <div class="cc-trust-copy reveal reveal-delay-2">
-          <p class="cc-trust-lead">{{ $cms['why']['lead_1'] }}</p>
+          <p class="cc-trust-lead">{!! $cms['why']['lead_1'] !!}</p>
 
-          <p class="cc-trust-lead">{{ $cms['why']['lead_2'] }}</p>
+          <p class="cc-trust-lead">{!! $cms['why']['lead_2'] !!}</p>
 
           <ul class="cc-trust-list" aria-label="Najważniejsze powody, żeby wybrać CopyCabana">
             @foreach($cms['why']['items'] as $item)
@@ -113,7 +113,7 @@
   {{-- 05 Gallery --}}
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
-      <x-concept.section-heading>
+      <x-concept.section-heading label="Co drukujemy">
         {{ $cms['services']['heading'] }}
       </x-concept.section-heading>
 
@@ -148,7 +148,7 @@
   {{-- 06 FAQ --}}
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
-      <x-concept.section-heading :label="$cms['faq']['label']">
+      <x-concept.section-heading :label="$cms['faq']['label']" align="center">
         <x-slot:lead>{{ $cms['faq']['lead'] }}</x-slot:lead>
         {{ $cms['faq']['heading'] }}
       </x-concept.section-heading>

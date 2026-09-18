@@ -120,7 +120,7 @@
         <section class="cc-step" id="druk">
           <div class="cc-step-head">
             <span class="cc-step-num">02</span>
-            <div><h2>Wybierz, jak wydrukujemy strony.</h2><p>Ustaw kolor i strony kartki.</p></div>
+            <div><h2>Wybierz, jak wydrukujemy strony.</h2><p>Ustaw kolor druku i strony kartki do wydruku.</p></div>
           </div>
 
           <p class="cc-step-label">Kolor</p>
@@ -366,7 +366,7 @@
           </button>
           <p class="cc-summary-demo" x-show="quoteLoading">Potwierdzamy cenę na podstawie aktualnej konfiguracji.</p>
           <p class="cc-warning" x-show="quoteError || orderError" x-text="quoteError || orderError"></p>
-          <p class="cc-summary-demo" x-show="quote">Cena potwierdzona przez serwer dla aktualnej konfiguracji.</p>
+          <p class="cc-summary-demo" x-show="quote">Cena poniżej jest aktualna dla wybranej konfiguracji.</p>
         </div>
       </div>
     </aside>

@@ -50,8 +50,8 @@
     @elseif($section === 'why')
         <div class="grid gap-4 sm:grid-cols-2">
             <label class="sm:col-span-2">Nagłówek<input name="payload[heading]" value="{{ old('payload.heading', $payload['heading'] ?? '') }}" class="mt-1 w-full rounded border p-2" required></label>
-            <label class="sm:col-span-2">Lead 1<textarea name="payload[lead_1]" rows="3" class="mt-1 w-full rounded border p-2">{{ old('payload.lead_1', $payload['lead_1'] ?? '') }}</textarea></label>
-            <label class="sm:col-span-2">Lead 2<textarea name="payload[lead_2]" rows="4" class="mt-1 w-full rounded border p-2">{{ old('payload.lead_2', $payload['lead_2'] ?? '') }}</textarea></label>
+            <label class="sm:col-span-2">Lead 1 (obsługuje <code>&lt;strong&gt;</code>/<code>&lt;em&gt;</code> do pogrubień/kursywy)<textarea name="payload[lead_1]" rows="3" class="mt-1 w-full rounded border p-2">{{ old('payload.lead_1', $payload['lead_1'] ?? '') }}</textarea></label>
+            <label class="sm:col-span-2">Lead 2 (obsługuje <code>&lt;strong&gt;</code>/<code>&lt;em&gt;</code> do pogrubień/kursywy)<textarea name="payload[lead_2]" rows="4" class="mt-1 w-full rounded border p-2">{{ old('payload.lead_2', $payload['lead_2'] ?? '') }}</textarea></label>
             <label>CTA główne<input name="payload[cta_primary_label]" value="{{ old('payload.cta_primary_label', $payload['cta_primary_label'] ?? '') }}" class="mt-1 w-full rounded border p-2"></label>
             <label>Link CTA głównego<input name="payload[cta_primary_link]" value="{{ old('payload.cta_primary_link', $payload['cta_primary_link'] ?? '') }}" class="mt-1 w-full rounded border p-2"></label>
             <label>CTA drugie<input name="payload[cta_secondary_label]" value="{{ old('payload.cta_secondary_label', $payload['cta_secondary_label'] ?? '') }}" class="mt-1 w-full rounded border p-2"></label>

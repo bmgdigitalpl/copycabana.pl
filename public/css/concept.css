@@ -97,7 +97,7 @@
   background: rgba(213, 26, 112, 0.1);
   color: var(--magenta);
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -113,7 +113,7 @@
   position: relative;
   color: var(--donkerblauw);
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-decoration: none;
   text-transform: uppercase;
@@ -149,7 +149,7 @@
   border-radius: 9999px;
   color: var(--donkerblauw);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   text-transform: uppercase;
   transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
@@ -182,7 +182,7 @@
   background: var(--magenta);
   color: #fff;
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -256,7 +256,7 @@
 .cc-section-label {
   color: var(--magenta);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   margin: 0 0 0.7rem;
@@ -269,7 +269,7 @@
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
   font-size: clamp(2rem, 5vw, 4rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 0.95;
   text-transform: uppercase;
@@ -319,7 +319,7 @@
   gap: 0.5rem;
   color: var(--magenta);
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -329,7 +329,7 @@
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
   font-size: clamp(2.7rem, 7vw, 6.2rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.05em;
   line-height: 0.88;
   text-transform: uppercase;
@@ -427,7 +427,7 @@
   background: var(--geel);
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
@@ -474,7 +474,7 @@
   color: #fff;
   font-family: 'Archivo', sans-serif;
   font-size: clamp(1rem, 2vw, 1.4rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   text-transform: uppercase;
   text-decoration: none;
@@ -588,7 +588,7 @@
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
   font-size: clamp(1.5rem, 3vw, 2.1rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   text-transform: uppercase;
 }
@@ -607,7 +607,7 @@
   margin-top: auto;
   padding-top: 1.5rem;
   color: var(--magenta);
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   text-transform: uppercase;
 }
@@ -758,7 +758,7 @@
   color: var(--geel);
   font-family: 'Archivo', sans-serif;
   font-size: 2.6rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.04em;
 }
 
@@ -767,15 +767,15 @@
   color: #fff;
   font-family: 'Archivo', sans-serif;
   font-size: 1.2rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .cc-process-step p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.92rem;
-  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.97rem;
+  line-height: 1.6;
 }
 
 .cc-process-step.is-active,
@@ -884,7 +884,7 @@
   margin-bottom: 0.4rem;
   color: #5e6772;
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -992,7 +992,7 @@
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
   font-size: 0.92rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
   text-transform: uppercase;
 }
@@ -1004,9 +1004,9 @@
   padding: 1rem 1.2rem;
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
@@ -1062,6 +1062,66 @@
     background: var(--donkerblauw);
     color: #fff;
   }
+}
+
+/* --- FAQ (concept pages) -----------------------
+   x-concept.faq-list renders <div class="faq-list cc-faq">. The base
+   ".faq-list" look also serves faq.blade.php/brand.blade.php (layouts.site,
+   no concept.css), so it stays in dynamic-site.css for those. These rules
+   target the concept-only ".cc-faq" hook and match that selector's
+   specificity (two classes) so they win the cascade on concept pages
+   without touching the shared, cross-layout styles. */
+.concept-site .cc-faq {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.concept-site .cc-faq details {
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  background: #fff;
+}
+
+.concept-site .cc-faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem;
+  color: var(--donkerblauw);
+  cursor: pointer;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  list-style: none;
+  text-transform: uppercase;
+}
+
+.concept-site .cc-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.concept-site .cc-faq summary::after {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  background:
+    linear-gradient(var(--magenta), var(--magenta)) center / 14px 2px no-repeat,
+    linear-gradient(var(--magenta), var(--magenta)) center / 2px 14px no-repeat;
+  content: '';
+  transition: transform 220ms ease;
+}
+
+.concept-site .cc-faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.concept-site .cc-faq details p {
+  margin: 0;
+  padding: 0 1.4rem 1.3rem;
+  color: #5e6772;
+  line-height: 1.7;
 }
 
 /* --- Local trust ------------------------------- */
@@ -1171,7 +1231,7 @@
   color: #fff;
   font-family: 'Archivo', sans-serif;
   font-size: clamp(2.6rem, 7vw, 6.4rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.05em;
   line-height: 0.92;
   text-transform: uppercase;
@@ -1340,7 +1400,7 @@
   background: var(--magenta);
   color: #fff;
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .cc-step-head h2 {
@@ -1348,7 +1408,7 @@
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
   font-size: clamp(1.4rem, 3vw, 1.9rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.05;
   text-transform: uppercase;
@@ -1364,7 +1424,7 @@
 .cc-step-label {
   color: #5e6772;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin: 1.4rem 0 0.6rem;
@@ -1384,7 +1444,7 @@
 }
 
 .cc-detection-note i { color: var(--magenta); margin-top: 0.2rem; }
-.cc-detection-note strong { font-weight: 800; }
+.cc-detection-note strong { font-weight: 700; }
 
 .cc-step-grid {
   display: grid;
@@ -1457,7 +1517,7 @@
   margin-left: auto;
   flex: 0 0 auto;
   color: var(--donkerblauw);
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -1552,7 +1612,7 @@
   color: var(--donkerblauw);
   cursor: pointer;
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 700;
   transition: border-color 200ms ease, background-color 200ms ease;
 }
 
@@ -1580,7 +1640,7 @@
   margin-bottom: 0.4rem;
   color: #5e6772;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -1725,7 +1785,7 @@
   color: var(--donkerblauw);
   font-family: 'Archivo', sans-serif;
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -1818,7 +1878,7 @@
 .cc-file-report span {
   color: #5e6772;
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1986,7 +2046,7 @@
 .cc-mobile-bar-total span {
   color: #5e6772;
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -2042,7 +2102,7 @@
   background: var(--geel);
   color: var(--donkerblauw);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -2069,7 +2129,7 @@
   background: #fff;
   color: var(--donkerblauw);
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 700;
   padding: 0.65rem 1rem;
 }
 
@@ -2090,39 +2150,98 @@
 }
 
 @media (max-width: 599px) {
-  .cc-b2b-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cc-b2b-grid { grid-template-columns: 1fr; }
 
-  .cc-b2b-card {
+  .cc-b2b-grid .cc-b2b-card {
+    flex-direction: row;
+    align-items: center;
     min-height: 0;
-    gap: 0.55rem;
-    padding: 0.8rem;
-    border-radius: 22px;
+    gap: 0.7rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 18px;
+    text-align: left;
   }
 
-  .cc-b2b-card-image {
-    margin: -0.8rem -0.8rem 0;
-    padding: 0.45rem;
+  .cc-b2b-grid .cc-b2b-card-image {
+    flex: 0 0 auto;
+    width: 3.4rem;
+    aspect-ratio: 1;
+    margin: 0;
+    padding: 0.3rem;
+    border-radius: 12px;
   }
 
-  .cc-b2b-card i.cc-b2b-icon {
+  .cc-b2b-grid .cc-b2b-card-image ~ i.cc-b2b-icon {
+    display: none;
+  }
+
+  .cc-b2b-grid .cc-b2b-card i.cc-b2b-icon {
+    flex: 0 0 auto;
     width: 2.35rem;
     height: 2.35rem;
+    margin: 0;
     border-radius: 14px;
     font-size: 0.95rem;
   }
 
-  .cc-b2b-card strong {
-    font-size: 0.88rem;
+  .cc-b2b-grid .cc-b2b-card strong {
+    font-size: 0.9rem;
     line-height: 1.15;
   }
 
-  .cc-b2b-card p {
+  .cc-b2b-grid .cc-b2b-card p {
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    font-size: 0.76rem;
+    font-size: 0.78rem;
     line-height: 1.35;
+  }
+
+  .cc-b2b-grid .cc-b2b-card .cc-b2b-check {
+    top: 50%;
+    right: 0.6rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    transform: translateY(-50%);
+  }
+
+  /* Delivery options (step 03): keep all three in one row instead of stacking */
+  #odbior .cc-step-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  #odbior .cc-option-body {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 0;
+    padding: 0.7rem 0.5rem;
+    text-align: center;
+  }
+
+  #odbior .cc-option-main {
+    align-items: center;
+  }
+
+  #odbior .cc-option-main strong {
+    font-size: 0.7rem;
+    line-height: 1.15;
+  }
+
+  #odbior .cc-option-main em {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 0.6rem;
+    line-height: 1.25;
+  }
+
+  #odbior .cc-option-price {
+    margin-left: 0;
+    font-size: 0.72rem;
   }
 }
 
@@ -2181,6 +2300,12 @@
   background: rgba(6, 58, 96, 0.07);
   color: var(--donkerblauw);
   font-size: 1.2rem;
+}
+
+.cc-b2b-card-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .cc-b2b-card strong {
@@ -2284,7 +2409,7 @@
   background: rgba(213, 26, 112, 0.1);
   color: var(--magenta);
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.8rem;
 }
 
@@ -2300,7 +2425,7 @@
   margin-bottom: 0.45rem;
   color: var(--donkerblauw);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -2381,7 +2506,7 @@
   color: var(--magenta);
   cursor: pointer;
   font-family: 'Inter', sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.86rem;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -2465,7 +2590,7 @@
   color: var(--magenta);
   font-family: 'Archivo', sans-serif;
   font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .cc-hero-mini-report strong {
@@ -2714,7 +2839,7 @@
 
 .cc-inpost-selected > i { margin-top: 0.15rem; color: var(--groen); }
 
-.cc-inpost-selected strong { font-weight: 800; }
+.cc-inpost-selected strong { font-weight: 700; }
 
 .cc-summary-copies {
   display: flex;
@@ -2843,7 +2968,7 @@
 .cc-thesis-title {
   font-family: 'Archivo', sans-serif;
   font-size: 1.02rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.18;
   hyphens: auto;
 }
@@ -3016,7 +3141,7 @@ body.concept-site:not(.font-test-root) :is(button, input, select, textarea) {
 
 .cc-chat-title {
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.02em;

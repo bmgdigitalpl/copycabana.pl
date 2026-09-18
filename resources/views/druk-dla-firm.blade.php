@@ -14,11 +14,11 @@
     <div class="cc-container cc-container--wide cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk dla firm</p>
-        <h1 class="cc-hero-title reveal reveal-delay-1">Zamów taki druk, <em>jakiego potrzebujesz.</em></h1>
+        <h1 class="cc-hero-title reveal reveal-delay-1">Wiele produktów, <em>jedna wycena.</em></h1>
         <p class="reveal reveal-delay-2">Wizytówki, ulotki, plakaty, banery, rollupy i dokumenty dla firm oraz agencji. Układasz wiele pozycji w jednym zapytaniu, a my wyceniamy całość.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#produkty" @click.prevent="ccGo('#produkty')" class="btn-magenta inline-block">Zacznij od produktu <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
-          <a href="{{ route('contact') }}" class="btn-outline-light inline-block">Masz niestandardowe zlecenie?</a>
+          <a href="{{ route('contact') }}" class="btn-outline-light inline-block">Napisz o niestandardowym zleceniu</a>
         </div>
       </div>
 
@@ -60,8 +60,10 @@
                    <span class="cc-b2b-card-image"><img :src="p.image" :alt="p.name" loading="lazy"></span>
                  </template>
                  <i :class="'fas ' + p.icon" class="cc-b2b-icon" aria-hidden="true"></i>
-                <strong x-text="p.name"></strong>
-                <p x-text="p.desc"></p>
+                <span class="cc-b2b-card-body">
+                  <strong x-text="p.name"></strong>
+                  <p x-text="p.desc"></p>
+                </span>
               </button>
             </template>
           </div>
@@ -240,7 +242,7 @@
           <template x-if="deliveryLate()">
             <p class="cc-warning" x-transition.opacity.duration.200ms x-text="deliveryLate()"></p>
           </template>
-          <p class="cc-summary-note">Produkcję (e.g. druk 5–7 dni roboczych) zawsze potwierdzimy w wycenie — <strong>tego terminu nie zgadujemy</strong>.</p>
+          <p class="cc-summary-note">Produkcję (np. druk 5–7 dni roboczych) zawsze potwierdzimy w wycenie — <strong>tego terminu nie zgadujemy</strong>.</p>
         </section>
 
       </div>
@@ -311,7 +313,6 @@
           <button type="button" class="btn-magenta" @click="submitQuoteRequest()" :disabled="submitting || submitted"><span x-text="submitting ? 'Wysyłamy...' : (submitted ? 'Zapytanie wysłane' : 'Wyślij wniosek o wycenę')"></span> <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i></button>
           <p class="cc-warning" x-show="submitError" x-text="submitError"></p>
           <p class="cc-summary-demo" x-show="submitted">Dziękujemy. Odpowiemy po analizie zakresu i plików.</p>
-          <p class="cc-summary-demo">Wersja demonstracyjna — wycena po kontakcie.</p>
         </div>
       </div>
     </aside>

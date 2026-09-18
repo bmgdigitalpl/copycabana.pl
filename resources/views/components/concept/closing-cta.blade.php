@@ -16,6 +16,6 @@
         </a>
       @endforeach
     </div>
-    <p class="cc-closing-note">Każda ścieżka to osobny konfigurator. Wersja demonstracyjna — żaden przycisk nie składa prawdziwego zamówienia.</p>
+    <p class="cc-closing-note">Każda ścieżka to osobny konfigurator.</p>
   </div>
 </section>
