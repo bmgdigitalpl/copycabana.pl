@@ -51,8 +51,8 @@ class PrintingConfigurationRequest extends FormRequest
                 $rules[$group.'.*.hex'] = ['required', 'regex:/^#[0-9a-fA-F]{6}$/'];
             }
             if ($group === 'cover_colors') {
-                // Real photo of the blank cover for this color. Uploading one replaces the
-                // code-generated preview mockup on /prace-dyplomowe with the actual photo.
+                // Photo of the blank cover for this color. The colour and the cloth texture of the
+                // /prace-dyplomowe preview are taken from it (see CoverTextureExtractor).
                 $rules[$group.'.*.photo'] = ['nullable', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max('5mb')];
                 $rules[$group.'.*.existing_photo'] = ['nullable', 'string', 'max:255'];
             }

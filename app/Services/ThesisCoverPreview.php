@@ -14,15 +14,16 @@ class ThesisCoverPreview
 
     /**
      * Everything the live cover preview on /prace-dyplomowe needs: where each element goes
-     * on the photo (config/cover_preview.php) and which of the optional files exist yet.
+     * on the cover (config/cover_preview.php) and which of the optional files exist yet.
      *
      * @param  array<string, mixed>  $printing  thesis printing settings
      * @return array{
      *     aspect: array{width: int, height: int},
+     *     textureSize: float,
      *     zones: array<string, array{style: string, tint: bool}>,
      *     font: array{family: string, url: string, format: string}|null,
      *     logos: array<string, string>,
-     *     photos: array<string, string>,
+     *     textures: array<string, string>,
      *     mapping: bool
      * }
      */
@@ -30,13 +31,14 @@ class ThesisCoverPreview
     {
         return [
             'aspect' => [
-                'width' => max(1, (int) config('cover_preview.image.width')),
-                'height' => max(1, (int) config('cover_preview.image.height')),
+                'width' => max(1, (int) config('cover_preview.cover.width')),
+                'height' => max(1, (int) config('cover_preview.cover.height')),
             ],
+            'textureSize' => max(1, (float) config('cover_preview.texture.size')),
             'zones' => $this->zones(),
             'font' => $this->font(),
             'logos' => $this->logos(array_keys($printing['universities'] ?? [])),
-            'photos' => $this->photos($printing['cover_colors'] ?? []),
+            'textures' => $this->textures($printing['cover_colors'] ?? []),
             'mapping' => $mapping,
         ];
     }
@@ -142,25 +144,33 @@ class ThesisCoverPreview
     }
 
     /**
-     * Real photos of the blank covers, keyed by cover color code, as uploaded by an admin at
-     * /dashboard/printing/thesis. A color without a photo shows the plain color placeholder.
+     * Cloth tiles cut from the photos of the blank covers, keyed by cover color code. They are
+     * made when an admin uploads a photo at /dashboard/printing/thesis. A color without a tile
+     * shows its plain colour.
      *
      * @param  array<string, array{photo?: string|null}>  $coverColors
      * @return array<string, string>
      */
-    private function photos(array $coverColors): array
+    private function textures(array $coverColors): array
     {
-        $photos = [];
+        $disk = Storage::disk('public');
+        $textures = [];
 
         foreach ($coverColors as $colorKey => $color) {
             $photoPath = $color['photo'] ?? null;
 
-            if (is_string($photoPath) && $photoPath !== '') {
-                $photos[$colorKey] = Storage::disk('public')->url($photoPath);
+            if (! is_string($photoPath) || $photoPath === '') {
+                continue;
+            }
+
+            $texturePath = CoverTextureExtractor::texturePath($photoPath);
+
+            if ($disk->exists($texturePath)) {
+                $textures[$colorKey] = $disk->url($texturePath).'?v='.$disk->lastModified($texturePath);
             }
         }
 
-        return $photos;
+        return $textures;
     }
 
     /** URL of a file under public/, with its modification time so a replaced file is not served stale. */

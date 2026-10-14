@@ -30,12 +30,17 @@
                         @endif
                         @if($group === 'cover_colors')
                             <div class="text-sm sm:col-span-2">
-                                <template x-if="row.photo_url">
-                                    <img :src="row.photo_url" class="mb-2 h-20 w-20 rounded object-cover" alt="">
-                                </template>
+                                <div class="mb-2 flex gap-2">
+                                    <template x-if="row.photo_url">
+                                        <img :src="row.photo_url" class="h-20 w-20 rounded object-cover" alt="Zdjęcie okładki">
+                                    </template>
+                                    <template x-if="row.texture_url">
+                                        <img :src="row.texture_url" class="h-20 w-20 rounded object-cover" alt="Tekstura w podglądzie">
+                                    </template>
+                                </div>
                                 <label>Zdjęcie czystej okładki<input class="mt-1 block w-full rounded border p-2 text-sm" type="file" accept=".jpg,.jpeg,.png,.webp" :name="'{{ $group }}[' + index + '][photo]'"></label>
                                 <input type="hidden" :name="'{{ $group }}[' + index + '][existing_photo]'" x-model="row.photo">
-                                <p class="mt-1 text-xs text-slate-400">JPG, PNG lub WEBP, maks. 5 MB. Po wgraniu, po wybraniu tego koloru w konfiguratorze pokaże się całe to zdjęcie zamiast generowanego podglądu.</p>
+                                <p class="mt-1 text-xs text-slate-400">JPG, PNG lub WEBP, maks. 5 MB. Po zapisaniu kolor tego wariantu i teksturę podglądu (drugi kwadrat) ustawiamy automatycznie ze środka okładki na zdjęciu, więc kolor wpisany ręcznie przy wgrywaniu zostanie zastąpiony. Kolor możesz poprawić później, a tekstura dopasuje się do niego po zapisie.</p>
                             </div>
                         @endif
                         <button type="button" class="text-left text-sm text-red-400" @click="rows.splice(index, 1)" :disabled="rows.length <= 1">Usuń wariant</button>

@@ -4,17 +4,21 @@ namespace Tests\Feature;
 
 use App\Services\ThesisCoverPreview;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ThesisCoverPreviewTest extends TestCase
 {
-    public function test_it_lists_only_the_logos_font_and_photos_that_exist(): void
+    public function test_it_lists_only_the_logos_font_and_textures_that_exist(): void
     {
+        Storage::fake('public');
+        Storage::disk('public')->put('thesis-cover-textures/granat.jpg', 'tile');
         $this->usePublicDirectoryWith(['images/uczelnie/us.svg', 'images/uczelnie/ue.png', 'fonts/okladka.ttf']);
         $printing = [
             'universities' => ['us' => 'Uniwersytet Śląski', 'ue' => 'Uniwersytet Ekonomiczny', 'polsl' => 'Politechnika Śląska'],
             'cover_colors' => [
                 'granat' => ['label' => 'Granat', 'hex' => '#063A60', 'photo' => 'thesis-cover-photos/granat.jpg'],
+                'zielony' => ['label' => 'Zielony', 'hex' => '#7FBF45', 'photo' => 'thesis-cover-photos/zielony.jpg'],
                 'magenta' => ['label' => 'Magenta', 'hex' => '#D51A70'],
             ],
         ];
@@ -26,11 +30,13 @@ class ThesisCoverPreviewTest extends TestCase
         $this->assertStringContainsString('images/uczelnie/ue.png', $preview['logos']['ue']);
         $this->assertSame('truetype', $preview['font']['format']);
         $this->assertStringContainsString('fonts/okladka.ttf', $preview['font']['url']);
-        $this->assertSame(['granat'], array_keys($preview['photos']));
+        $this->assertSame(['granat'], array_keys($preview['textures']));
+        $this->assertStringContainsString('thesis-cover-textures/granat.jpg', $preview['textures']['granat']);
     }
 
-    public function test_it_falls_back_to_placeholders_when_no_files_have_been_added(): void
+    public function test_it_falls_back_to_plain_colours_when_no_files_have_been_added(): void
     {
+        Storage::fake('public');
         $this->usePublicDirectoryWith([]);
 
         $preview = app(ThesisCoverPreview::class)->build([
@@ -40,7 +46,7 @@ class ThesisCoverPreviewTest extends TestCase
 
         $this->assertSame([], $preview['logos']);
         $this->assertNull($preview['font']);
-        $this->assertSame([], $preview['photos']);
+        $this->assertSame([], $preview['textures']);
     }
 
     public function test_it_never_looks_for_logos_outside_the_logos_directory(): void

@@ -444,7 +444,7 @@
         spineEngraving: 'false',
         spineEngravingName: '',
         coverColors: Object.entries(pricing.cover_colors || {}).map(function ([id, value]) { return { id: id, hex: value.hex, label: value.label }; }),
-        coverPhotos: coverPreview.photos || {},
+        coverTextures: coverPreview.textures || {},
         coverLogos: coverPreview.logos || {},
         coverMapping: !!coverPreview.mapping,
         coverOverflow: false,
@@ -598,8 +598,8 @@
           this.print.color = detail.colored > 0 ? 'mixed' : 'bw';
         },
 
-        coverPhotoUrl: function () {
-          return this.coverPhotos[this.coverColor] || null;
+        coverTextureUrl: function () {
+          return this.coverTextures[this.coverColor] || null;
         },
 
         coverLogoUrl: function () {

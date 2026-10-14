@@ -7,9 +7,12 @@ use App\Models\OrderFile;
 use App\Models\Product;
 use App\Models\QuoteRequest;
 use App\Models\User;
+use App\Services\CoverTextureExtractor;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -99,6 +102,56 @@ class ConfiguratorManagementTest extends TestCase
             return in_array('wizytowki', $slugs, true)
                 && array_intersect(['projektowanie', 'druk', 'ksero', 'skanowanie'], $slugs) === [];
         });
+    }
+
+    public function test_uploading_a_cover_photo_sets_the_colour_and_builds_the_preview_texture(): void
+    {
+        Storage::fake('public');
+        $this->seed(ProductSeeder::class);
+        $product = Product::query()->where('slug', 'praca-dyplomowa')->firstOrFail();
+        $payload = $this->printingPayload($product);
+        $payload['cover_colors'][0]['photo'] = UploadedFile::fake()->createWithContent('granat.jpg', $this->plainJpeg([200, 100, 50]));
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->put(route('admin.printing.update', 'thesis'), $payload)->assertSessionHasNoErrors();
+
+        $row = $product->fresh()->configuration['printing']['cover_colors']['granat'];
+        $texturePath = CoverTextureExtractor::texturePath($row['photo']);
+
+        Storage::disk('public')->assertExists([$row['photo'], $texturePath]);
+        $this->assertEqualsWithDelta(200, hexdec(substr($row['hex'], 1, 2)), 4);
+        $this->assertEqualsWithDelta(100, hexdec(substr($row['hex'], 3, 2)), 4);
+        $this->assertEqualsWithDelta(50, hexdec(substr($row['hex'], 5, 2)), 4);
+        $this->assertEqualsWithDelta(200, $this->averageColor(Storage::disk('public')->get($texturePath))[0], 6);
+        $this->get(route('services.diploma'))->assertViewHas('coverPreview', fn (array $preview): bool => isset($preview['textures']['granat']));
+    }
+
+    public function test_changing_the_colour_of_a_cover_repaints_its_texture_and_removing_it_deletes_the_files(): void
+    {
+        Storage::fake('public');
+        $this->seed(ProductSeeder::class);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $product = Product::query()->where('slug', 'praca-dyplomowa')->firstOrFail();
+        $payload = $this->printingPayload($product);
+        $payload['cover_colors'][0]['photo'] = UploadedFile::fake()->createWithContent('granat.jpg', $this->plainJpeg([200, 100, 50]));
+        $this->actingAs($admin)->put(route('admin.printing.update', 'thesis'), $payload)->assertSessionHasNoErrors();
+        $photo = $product->fresh()->configuration['printing']['cover_colors']['granat']['photo'];
+        $texturePath = CoverTextureExtractor::texturePath($photo);
+
+        $payload = $this->printingPayload($product->fresh());
+        $payload['cover_colors'][0]['existing_photo'] = $payload['cover_colors'][0]['photo'];
+        unset($payload['cover_colors'][0]['photo']);
+        $payload['cover_colors'][0]['hex'] = '#112233';
+        $this->put(route('admin.printing.update', 'thesis'), $payload)->assertSessionHasNoErrors();
+
+        $this->assertSame('#112233', $product->fresh()->configuration['printing']['cover_colors']['granat']['hex']);
+        $this->assertEqualsWithDelta(17, $this->averageColor(Storage::disk('public')->get($texturePath))[0], 6);
+        $this->assertEqualsWithDelta(51, $this->averageColor(Storage::disk('public')->get($texturePath))[2], 6);
+
+        $payload['cover_colors'] = array_slice($payload['cover_colors'], 1);
+        $this->put(route('admin.printing.update', 'thesis'), $payload)->assertSessionHasNoErrors();
+
+        Storage::disk('public')->assertMissing([$photo, $texturePath]);
     }
 
     public function test_pdf_prices_and_new_finishes_can_be_managed_in_products(): void
@@ -219,6 +272,28 @@ class ConfiguratorManagementTest extends TestCase
         }
 
         return $printing;
+    }
+
+    /** @param  array{int, int, int}  $rgb */
+    private function plainJpeg(array $rgb): string
+    {
+        $image = imagecreatetruecolor(400, 500);
+        imagefill($image, 0, 0, ($rgb[0] << 16) | ($rgb[1] << 8) | $rgb[2]);
+        ob_start();
+        imagejpeg($image, null, 95);
+
+        return (string) ob_get_clean();
+    }
+
+    /** @return array{int, int, int} */
+    private function averageColor(string $jpeg): array
+    {
+        $image = imagecreatefromstring($jpeg);
+        $single = imagecreatetruecolor(1, 1);
+        imagecopyresampled($single, $image, 0, 0, 0, 0, 1, 1, imagesx($image), imagesy($image));
+        $pixel = imagecolorat($single, 0, 0);
+
+        return [($pixel >> 16) & 255, ($pixel >> 8) & 255, $pixel & 255];
     }
 
     /** @return array<string, mixed> */

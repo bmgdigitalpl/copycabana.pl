@@ -16,15 +16,11 @@
 
 <div class="cc-cover-preview cc-cover-preview--{{ $variant }}" style="--cc-cover-aspect: {{ round($aspect, 4) }}">
   <div class="cc-cover-stage"
-       style="--cc-cover-font: {{ $fontStack }}"
-       :class="{ 'is-placeholder': !coverPhotoUrl(), 'is-mapping': coverMapping }"
-       :style="{ backgroundColor: coverColorHex() }"
+       style="--cc-cover-font: {{ $fontStack }}; background-size: {{ $preview['textureSize'] }}% auto"
+       :class="{ 'is-mapping': coverMapping }"
+       :style="{ backgroundColor: coverColorHex(), backgroundImage: coverTextureUrl() ? 'url(' + coverTextureUrl() + ')' : 'none' }"
        role="img"
        :aria-label="'Podgląd okładki, kolor: ' + coverColorName()">
-    <template x-if="coverPhotoUrl()">
-      <img class="cc-cover-photo" :src="coverPhotoUrl()" alt="">
-    </template>
-
     <div class="cc-cover-zone cc-cover-zone--logo" data-zone="logo" style="{{ $zones['logo']['style'] ?? '' }}" x-show="coverMapping || cover === 'standard'">
       @if ($zones['logo']['tint'] ?? false)
         <template x-if="coverLogoUrl()">
