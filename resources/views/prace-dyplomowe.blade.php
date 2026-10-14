@@ -6,7 +6,7 @@
 @section('content')
 <script>
   window.copyCabanaThesisPricing = @js($thesisPricing);
-  window.copyCabanaThesisCoverPhotos = @js($coverPhotos);
+  window.copyCabanaThesisCoverPreview = @js($coverPreview);
 </script>
 <main class="cc-page">
   {{-- Hero --}}
@@ -214,6 +214,7 @@
           <div class="cc-field" x-show="cover === 'custom'" x-transition.opacity.duration.200ms>
             <label for="okladka-tekst">Treść napisu na okładce</label>
             <input id="okladka-tekst" type="text" x-model="coverText" placeholder="np. tytuł pracy · imię i nazwisko">
+            <p class="cc-warning" x-show="coverOverflow" x-transition.opacity.duration.200ms>Ten napis nie mieści się w polu na okładce, więc w podglądzie jest ucięty. Skróć go, żeby zmieścił się w całości.</p>
           </div>
 
           <div class="cc-field-grid" x-show="cover === 'standard' || cover === 'custom'" x-transition.opacity.duration.200ms>
@@ -226,6 +227,22 @@
               </select>
             </div>
           </div>
+
+          <p class="cc-step-label">Kolor okładki</p>
+          <div class="cc-swatches" role="group" aria-label="Kolor okładki">
+            <template x-for="c in coverColors" :key="c.id">
+              <button type="button"
+                      class="cc-swatch"
+                      :class="{ 'is-active': coverColor === c.id }"
+                      :style="{ background: c.hex }"
+                      :aria-label="c.label"
+                      :aria-pressed="coverColor === c.id"
+                      :title="c.label"
+                      @click="coverColor = c.id"></button>
+            </template>
+          </div>
+
+          <x-concept.cover-preview variant="inline" :preview="$coverPreview" />
 
           <p class="cc-step-label">{{ $thesisPricing['cd']['label'] }}</p>
           <div class="cc-step-grid">
@@ -281,7 +298,9 @@
     </div>
 
     {{-- Sticky summary (desktop) --}}
-    <aside class="cc-summary" aria-label="Podsumowanie zamówienia">
+    <aside class="cc-summary cc-summary--with-preview" aria-label="Podsumowanie zamówienia">
+      <x-concept.cover-preview variant="aside" :preview="$coverPreview" />
+
       <div class="cc-summary-card">
         <div class="cc-summary-head">
           <strong><i class="fas fa-file-pdf mr-2 text-magenta" aria-hidden="true"></i>Twoja praca</strong>

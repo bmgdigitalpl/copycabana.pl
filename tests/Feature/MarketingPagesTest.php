@@ -626,9 +626,13 @@ class MarketingPagesTest extends TestCase
         $this->seed(ProductSeeder::class);
         $this->get(route('services.diploma'))
             ->assertOk()
-            ->assertDontSee('cc-thesis-preview', false)
-            ->assertDontSee('cc-swatch', false)
-            ->assertDontSee('Kolor okładki', false)
+            ->assertSee('cc-cover-preview--aside', false)
+            ->assertSee('cc-cover-preview--inline', false)
+            ->assertSee('cc-swatch', false)
+            ->assertSee('Kolor okładki', false)
+            ->assertSee('copyCabanaThesisCoverPreview', false)
+            ->assertDontSee('cc-thesis', false)
+            ->assertViewHas('coverPreview', fn (array $preview): bool => $preview['mapping'] === false)
             ->assertSee('Uczelnia', false)
             ->assertSee('Uniwersytet Śląski w Katowicach', false)
             ->assertSee('Napis na okładce', false)
@@ -641,12 +645,19 @@ class MarketingPagesTest extends TestCase
             ->assertSee('Imię i nazwisko na grzbiecie', false)
             ->assertSee('30,00 zł', false)
             ->assertSee('spineEngravingName', false)
-            ->assertDontSee('coverHeading()', false)
-            ->assertDontSee('cc-thesis-photo', false)
             ->assertSee('images/produkty/graduation.png', false)
             ->assertSee('cc-hero-card--single', false)
             ->assertDontSee('cc-hero-mini-report', false)
             ->assertDontSee('cc-hero-card--tag', false);
+    }
+
+    public function test_diploma_cover_preview_can_show_the_mapping_frames(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $this->get(route('services.diploma', ['mapa' => 1]))
+            ->assertOk()
+            ->assertViewHas('coverPreview', fn (array $preview): bool => $preview['mapping'] === true);
     }
 
     public function test_diploma_binding_options_render_image_placeholders(): void

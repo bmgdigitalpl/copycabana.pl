@@ -3052,172 +3052,17 @@
 
 .cc-mt { margin-top: 0; }
 
-/* --- Live thesis binding preview (Krok 04) ----- */
-.cc-thesis-preview {
-  display: grid;
-  gap: 1.4rem;
-  margin-top: 1.4rem;
-  padding: 1.6rem;
-  border-radius: var(--cc-radius-sm);
-  background: #fdfdfd;
-  border: 1px solid var(--cc-border);
-}
-
-@media (min-width: 820px) {
-  .cc-thesis-preview {
-    grid-template-columns: minmax(0, 320px) 1fr;
-    align-items: center;
-    gap: 2rem;
-  }
-}
-
-.cc-thesis {
-  position: relative;
-  width: 100%;
-  max-width: 280px;
-  aspect-ratio: 10 / 14.2;
-  margin-inline: auto;
-}
-
-.cc-thesis-spine {
-  position: absolute;
-  inset: 0 auto 0 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.22);
-  border-radius: 3px 0 0 3px;
-  overflow: hidden;
-}
-
-.cc-thesis-spine-name {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-family: 'Archivo', sans-serif;
-  font-size: 0.48rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  line-height: 1;
-  max-height: 86%;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.cc-thesis--soft .cc-thesis-spine { width: 7px; }
-.cc-thesis--channel .cc-thesis-spine { width: 12px; }
-.cc-thesis--hard .cc-thesis-spine {
-  width: 18px;
-  background:
-    repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255, 237, 0, 0.3) 4px, rgba(255, 237, 0, 0.3) 6px),
-    rgba(0, 0, 0, 0.3);
-}
-
-.cc-thesis-cover {
-  position: absolute;
-  inset: 0 9% 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.7rem 1.2rem 1.5rem;
-  border-radius: 2px 8px 8px 2px;
-  color: #fff;
-  text-align: center;
-  box-shadow: 0 18px 50px rgba(6, 58, 96, 0.25);
-}
-
-.cc-thesis--granat .cc-thesis-cover { background: var(--donkerblauw); }
-.cc-thesis--magenta .cc-thesis-cover { background: var(--magenta); }
-
-.cc-thesis--zolty .cc-thesis-cover {
-  background: var(--geel);
-  color: var(--donkerblauw);
-}
-
-.cc-thesis--zielony .cc-thesis-cover { background: var(--groen); }
-.cc-thesis--niebieski .cc-thesis-cover { background: var(--blauw); }
-
-.cc-thesis-degree {
-  font-family: 'Archivo', sans-serif;
-  font-style: normal;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.92;
-}
-
-.cc-thesis-center {
-  display: grid;
-  gap: 0.75rem;
-  justify-items: center;
-}
-
-.cc-thesis-title {
-  font-family: 'Archivo', sans-serif;
-  font-size: 1.02rem;
-  font-weight: 700;
-  line-height: 1.18;
-  hyphens: auto;
-}
-
-.cc-thesis-rule {
-  width: 3rem;
-  height: 2px;
-  background: var(--geel);
-}
-
-.cc-thesis--zolty .cc-thesis-rule { background: var(--magenta); }
-
-.cc-thesis-author {
-  font-family: 'Archivo', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  opacity: 0.95;
-}
-
-.cc-thesis-pages {
-  position: absolute;
-  inset: 2% 0 2% auto;
-  width: 8%;
-  z-index: 1;
-  border-radius: 0 4px 4px 0;
-  background:
-    linear-gradient(90deg, #fbfbf8 0 30%, #dfe1da 30% 32%, #fbfbf8 32% 60%, #dfe1da 60% 62%, #fbfbf8 62% 100%);
-  box-shadow: 0 18px 44px rgba(6, 58, 96, 0.18);
-}
-
-.cc-thesis-controls {
-  display: grid;
-  gap: 1.1rem;
-}
-
-.cc-thesis-control {
-  display: grid;
-  gap: 0.55rem;
-}
-
-.cc-thesis-label {
-  color: var(--donkerblauw);
-  font-family: 'Archivo', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
+/* --- Cover colour swatches (Krok 04) ------------ */
 .cc-swatches {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
 }
 
 .cc-swatch {
-  width: 3.1rem;
-  height: 3.1rem;
+  width: 2.5rem;
+  height: 2.5rem;
   padding: 0;
   border: 3px solid transparent;
   border-radius: 9999px;
@@ -3239,16 +3084,154 @@
   outline-offset: 2px;
 }
 
-/* Real photo of the blank cover, shown instead of the code-generated .cc-thesis
-   mockup once a photo exists for the selected color (see ThesisController). */
-.cc-thesis-photo {
+/* --- Cover preview ------------------------------- */
+/* The stage is the cover photo (or a plain colour placeholder of the same proportions) with
+   the university logo and the napis laid over it. Zone positions come from
+   config/cover_preview.php as inline percentages; text sizes are cqw, a share of the stage
+   width, so the whole cover scales together. The same markup is rendered in the right-hand
+   column (desktop) and inside step 04 (below 1024px). */
+.cc-cover-preview {
+  --cc-cover-aspect: 0.75;
+  --cc-cover-h: 22rem;
+}
+
+.cc-cover-preview--aside { display: none; }
+
+.cc-cover-preview--inline { margin-top: 1.4rem; }
+
+@media (min-width: 1024px) {
+  .cc-cover-preview--inline { display: none; }
+
+  /* Preview + summary are taller than most laptop screens, so the sticky column scrolls
+     inside itself. The side padding (cancelled by the negative margin) keeps the card
+     shadows from being clipped by that scroll box. */
+  .cc-summary--with-preview {
+    width: auto;
+    max-height: calc(100vh - 7rem);
+    margin-inline: -1.5rem;
+    padding: 0.25rem 1.5rem 2rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .cc-summary--with-preview .cc-summary-card { box-shadow: 0 12px 32px rgba(6, 58, 96, 0.14); }
+
+  /* Grows to 22rem on tall screens; the 15rem floor keeps the napis readable on laptops. */
+  .cc-cover-preview--aside {
+    --cc-cover-h: clamp(15rem, calc(100vh - 50rem), 22rem);
+    display: block;
+    margin-bottom: 1rem;
+    padding: 1.1rem 1.1rem 0.9rem;
+    border-radius: var(--cc-radius-lg);
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(6, 58, 96, 0.14);
+  }
+}
+
+.cc-cover-stage {
+  position: relative;
+  width: min(100%, calc(var(--cc-cover-h) * var(--cc-cover-aspect)));
+  aspect-ratio: var(--cc-cover-aspect);
+  margin-inline: auto;
+  overflow: hidden;
+  container-type: inline-size;
+  border-radius: 6px;
+  background-color: #d0d7de;
+  box-shadow: 0 18px 40px rgba(6, 58, 96, 0.22);
+}
+
+/* Stands in for the photo until one is uploaded: a hint of the spine and the board edge. */
+.cc-cover-stage.is-placeholder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 7%, rgba(0, 0, 0, 0) 93%, rgba(255, 255, 255, 0.12));
+}
+
+.cc-cover-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cc-cover-zone {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cc-cover-zone > img,
+.cc-cover-logo,
+.cc-cover-logo-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.cc-cover-zone > img { object-fit: contain; }
+
+/* The logo is painted in the imprint colour through its own shape (foil on the real cover). */
+.cc-cover-logo {
+  display: block;
+  -webkit-mask: var(--cc-logo) center / contain no-repeat;
+  mask: var(--cc-logo) center / contain no-repeat;
+}
+
+.cc-cover-logo-placeholder {
+  display: grid;
+  box-sizing: border-box;
+  place-items: center;
+  border: 0.4cqw dashed;
+  border-radius: 4cqw;
+  font-size: 9cqw;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* Wins over the site-wide `body.concept-site … *` Roboto rule, which also reaches the span. */
+body.concept-site:not(.font-test-root) .cc-cover-stage .cc-cover-text,
+body.concept-site:not(.font-test-root) .cc-cover-stage .cc-cover-text > span {
+  font-family: var(--cc-cover-font);
+}
+
+.cc-cover-text > span {
   display: block;
   width: 100%;
-  max-width: 280px;
-  margin-inline: auto;
-  border-radius: var(--cc-radius-sm);
-  box-shadow: 0 18px 50px rgba(6, 58, 96, 0.25);
-  object-fit: contain;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.cc-cover-caption {
+  margin: 0.8rem 0 0;
+  color: #5e6772;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.cc-cover-caption strong { color: var(--donkerblauw); }
+
+/* /prace-dyplomowe?mapa=1 — frames of all zones, for lining them up with the real photos. */
+.cc-cover-stage.is-mapping .cc-cover-zone {
+  outline: 2px dashed #ff00c8;
+  outline-offset: -2px;
+  background: rgba(255, 0, 200, 0.14);
+}
+
+.cc-cover-stage.is-mapping .cc-cover-zone::before {
+  content: attr(data-zone);
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.1rem 0.35rem;
+  background: #ff00c8;
+  color: #fff;
+  font: 700 0.65rem/1.3 monospace;
 }
 
 /* Keep the selected pairing consistent across concept-based public pages. */

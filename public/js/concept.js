@@ -416,6 +416,7 @@
       var universities = pricing.universities || {};
       var coverTitles = pricing.cover_titles || {};
       var imprintColors = pricing.imprint_colors || {};
+      var coverPreview = window.copyCabanaThesisCoverPreview || {};
       var cdOption = pricing.cd || {};
       var spineEngravingOption = pricing.spine_engraving || {};
       var deliveryPrices = pricing.shipping || {};
@@ -443,7 +444,10 @@
         spineEngraving: 'false',
         spineEngravingName: '',
         coverColors: Object.entries(pricing.cover_colors || {}).map(function ([id, value]) { return { id: id, hex: value.hex, label: value.label }; }),
-        coverPhotos: window.copyCabanaThesisCoverPhotos || {},
+        coverPhotos: coverPreview.photos || {},
+        coverLogos: coverPreview.logos || {},
+        coverMapping: !!coverPreview.mapping,
+        coverOverflow: false,
         delivery: null,
         byDate: '',
 
@@ -598,9 +602,36 @@
           return this.coverPhotos[this.coverColor] || null;
         },
 
+        coverLogoUrl: function () {
+          return this.coverLogos[this.university] || null;
+        },
+
+        selectedCoverColor: function () {
+          return this.coverColors.find(function (x) { return x.id === this.coverColor; }.bind(this)) || null;
+        },
+
         coverColorName: function () {
-          var c = this.coverColors.find(function (x) { return x.id === this.coverColor; }.bind(this));
+          var c = this.selectedCoverColor();
           return c ? c.label : '';
+        },
+
+        coverColorHex: function () {
+          var c = this.selectedCoverColor();
+          return c ? c.hex : '#d0d7de';
+        },
+
+        /**
+         * Sets coverOverflow when the typed napis is taller than its frame on the cover. Only a
+         * visible zone can be measured: the preview is rendered twice (right column on desktop,
+         * inside step 04 below that), and the hidden copy must not overwrite the result.
+         */
+        measureCoverOverflow: function (zone) {
+          var self = this;
+          this.$nextTick(function () {
+            var text = zone.firstElementChild;
+            if (!text || zone.offsetWidth === 0) return;
+            self.coverOverflow = text.offsetHeight > zone.clientHeight + 1;
+          });
         },
 
         universityName: function () {
@@ -609,15 +640,6 @@
 
         coverTitleName: function () {
           return coverTitles[this.coverTitle] || '';
-        },
-
-        coverHeading: function () {
-          if (this.cover === 'custom') return this.coverText || 'Własny napis';
-          return this.coverTitleName();
-        },
-
-        coverSubheading: function () {
-          return this.cover === 'standard' ? this.universityName() : '';
         },
 
         coverSummary: function () {
@@ -630,9 +652,8 @@
           return (imprintColors[this.imprintColor] && imprintColors[this.imprintColor].label) || '';
         },
 
-        imprintStyle: function () {
-          var color = imprintColors[this.imprintColor] && imprintColors[this.imprintColor].hex;
-          return color ? 'color:' + color : '';
+        imprintHex: function () {
+          return (imprintColors[this.imprintColor] && imprintColors[this.imprintColor].hex) || '#ffffff';
         },
 
         printTotal: function () {

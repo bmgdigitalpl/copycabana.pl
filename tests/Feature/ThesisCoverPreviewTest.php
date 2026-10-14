@@ -1,0 +1,112 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Services\ThesisCoverPreview;
+use Illuminate\Support\Facades\File;
+use Tests\TestCase;
+
+class ThesisCoverPreviewTest extends TestCase
+{
+    public function test_it_lists_only_the_logos_font_and_photos_that_exist(): void
+    {
+        $this->usePublicDirectoryWith(['images/uczelnie/us.svg', 'images/uczelnie/ue.png', 'fonts/okladka.ttf']);
+        $printing = [
+            'universities' => ['us' => 'Uniwersytet Śląski', 'ue' => 'Uniwersytet Ekonomiczny', 'polsl' => 'Politechnika Śląska'],
+            'cover_colors' => [
+                'granat' => ['label' => 'Granat', 'hex' => '#063A60', 'photo' => 'thesis-cover-photos/granat.jpg'],
+                'magenta' => ['label' => 'Magenta', 'hex' => '#D51A70'],
+            ],
+        ];
+
+        $preview = app(ThesisCoverPreview::class)->build($printing);
+
+        $this->assertSame(['us', 'ue'], array_keys($preview['logos']));
+        $this->assertStringContainsString('images/uczelnie/us.svg', $preview['logos']['us']);
+        $this->assertStringContainsString('images/uczelnie/ue.png', $preview['logos']['ue']);
+        $this->assertSame('truetype', $preview['font']['format']);
+        $this->assertStringContainsString('fonts/okladka.ttf', $preview['font']['url']);
+        $this->assertSame(['granat'], array_keys($preview['photos']));
+    }
+
+    public function test_it_falls_back_to_placeholders_when_no_files_have_been_added(): void
+    {
+        $this->usePublicDirectoryWith([]);
+
+        $preview = app(ThesisCoverPreview::class)->build([
+            'universities' => ['us' => 'Uniwersytet Śląski'],
+            'cover_colors' => ['granat' => ['label' => 'Granat', 'hex' => '#063A60']],
+        ]);
+
+        $this->assertSame([], $preview['logos']);
+        $this->assertNull($preview['font']);
+        $this->assertSame([], $preview['photos']);
+    }
+
+    public function test_it_never_looks_for_logos_outside_the_logos_directory(): void
+    {
+        $this->usePublicDirectoryWith(['secret.svg']);
+
+        $preview = app(ThesisCoverPreview::class)->build(['universities' => ['../secret' => 'Poza katalogiem']]);
+
+        $this->assertSame([], $preview['logos']);
+    }
+
+    public function test_zone_positions_become_percentage_styles(): void
+    {
+        config(['cover_preview.zones' => [
+            'logo' => ['left' => 30, 'top' => 12.5, 'width' => 40, 'height' => 22, 'tint' => true],
+            'title' => [
+                'left' => 8, 'top' => 44, 'width' => 84, 'height' => 14,
+                'font_size' => 6.2, 'line_height' => 1.2, 'letter_spacing' => 0.04,
+                'align' => 'right', 'valign' => 'end', 'uppercase' => true,
+            ],
+        ]]);
+
+        $zones = app(ThesisCoverPreview::class)->build([])['zones'];
+
+        $this->assertSame('left:30%;top:12.5%;width:40%;height:22%;', $zones['logo']['style']);
+        $this->assertTrue($zones['logo']['tint']);
+        $this->assertSame(
+            'left:8%;top:44%;width:84%;height:14%;font-size:6.2cqw;line-height:1.2;letter-spacing:0.04em;text-align:right;align-items:safe flex-end;text-transform:uppercase;',
+            $zones['title']['style'],
+        );
+        $this->assertFalse($zones['title']['tint']);
+    }
+
+    public function test_configured_zones_stay_inside_the_cover(): void
+    {
+        $zones = config('cover_preview.zones');
+
+        $this->assertEqualsCanonicalizing(['logo', 'title', 'custom'], array_keys($zones));
+
+        foreach ($zones as $name => $zone) {
+            $this->assertGreaterThanOrEqual(0, $zone['left'], "{$name}: left");
+            $this->assertGreaterThanOrEqual(0, $zone['top'], "{$name}: top");
+            $this->assertGreaterThan(0, $zone['width'], "{$name}: width");
+            $this->assertGreaterThan(0, $zone['height'], "{$name}: height");
+            $this->assertLessThanOrEqual(100, $zone['left'] + $zone['width'], "{$name}: left + width");
+            $this->assertLessThanOrEqual(100, $zone['top'] + $zone['height'], "{$name}: top + height");
+        }
+    }
+
+    /**
+     * Points public_path() at an empty temporary directory holding only the given files, so the
+     * test neither depends on nor touches the real logos and fonts in public/.
+     *
+     * @param  list<string>  $files  paths relative to the public directory
+     */
+    private function usePublicDirectoryWith(array $files): void
+    {
+        $directory = sys_get_temp_dir().DIRECTORY_SEPARATOR.'cover-preview-'.uniqid();
+
+        foreach ($files as $file) {
+            File::ensureDirectoryExists(dirname($directory.DIRECTORY_SEPARATOR.$file));
+            File::put($directory.DIRECTORY_SEPARATOR.$file, 'x');
+        }
+
+        File::ensureDirectoryExists($directory);
+        $this->app->usePublicPath($directory);
+        $this->beforeApplicationDestroyed(fn () => File::deleteDirectory($directory));
+    }
+}
