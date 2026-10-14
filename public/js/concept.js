@@ -283,57 +283,11 @@
       ccEasyPackQueue = [];
     };
 
-    /**
-     * The small "pick a point" popup the widget shows on marker click has no photo — that
-     * only appears in the separate "Szczegóły" panel. Points do carry a photo though, at a
-     * predictable static.easypack24.net URL keyed by point code (confirmed against the point
-     * payloads the widget's own selection callback returns), so this adds it straight into
-     * the popup instead of making the customer click through for it. Leaflet reuses one popup
-     * DOM node and swaps its content per marker, so watch for the ".point-wrapper" it renders
-     * fresh into that content each time rather than the (stable) popup container itself.
-     */
-    function ccEnhanceInpostPopup(wrapper) {
-      /* Leaflet builds the popup as a detached tree and attaches it level by level, so this
-         observer sees several ancestors "added" in the same content swap — guard against
-         enhancing the same wrapper more than once per render. */
-      if (wrapper.dataset.ccPhotoAdded) return;
-
-      var heading = wrapper.querySelector('h1');
-      var codeEl = heading ? heading.nextElementSibling : null;
-      var code = codeEl ? codeEl.textContent.trim() : '';
-      if (!code) return;
-
-      wrapper.dataset.ccPhotoAdded = '1';
-
-      var img = document.createElement('img');
-      img.className = 'cc-inpost-popup-photo';
-      img.loading = 'lazy';
-      img.alt = 'Zdjęcie paczkomatu ' + code;
-      img.src = 'https://static.easypack24.net/points/pl/images/' + encodeURIComponent(code) + '.jpg';
-      img.onerror = function () { img.remove(); };
-      wrapper.insertBefore(img, heading);
-    }
-
-    function ccObserveInpostPopups(container) {
-      new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-          mutation.addedNodes.forEach(function (node) {
-            if (node.nodeType !== 1) return;
-            var wrapper = node.classList && node.classList.contains('point-wrapper')
-              ? node
-              : (node.querySelector ? node.querySelector('.point-wrapper') : null);
-            if (wrapper) ccEnhanceInpostPopup(wrapper);
-          });
-        });
-      }).observe(container, { childList: true, subtree: true });
-    }
-
     function ccMountInpostMap(elementId, prefix) {
       var mount = function () {
         window.easyPack.mapWidget(elementId, function (point) {
           window.dispatchEvent(new CustomEvent('cc-inpost:point-selected', { detail: { prefix: prefix, point: point } }));
         });
-        ccObserveInpostPopups(document.getElementById(elementId));
       };
 
       if (ccEasyPackReady) mount(); else ccEasyPackQueue.push(mount);

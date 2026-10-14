@@ -247,7 +247,7 @@ class ThesisOrderingTest extends TestCase
             'copies' => 1,
             'shipping_method' => 'pickup',
         ])->assertOk()
-            ->assertJsonPath('quote.total', 60.2);
+            ->assertJsonPath('quote.total', 70.2);
     }
 
     public function test_spine_engraving_requires_name_and_adds_price_per_copy(): void

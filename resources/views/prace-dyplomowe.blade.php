@@ -244,47 +244,6 @@
             <input id="grzbiet-imie-nazwisko" type="text" x-model="spineEngravingName" placeholder="np. Jan Kowalski">
           </div>
 
-          <div class="cc-thesis-preview" x-transition.opacity.duration.200ms>
-            <template x-if="coverPhotoUrl()">
-              <img class="cc-thesis-photo" :src="coverPhotoUrl()" :alt="'Podgląd okładki: ' + coverColorName()">
-            </template>
-
-            <template x-if="!coverPhotoUrl()">
-              <div class="cc-thesis"
-                :class="['cc-thesis--' + coverColor, 'cc-thesis--' + binding]"
-                aria-hidden="true">
-                <span class="cc-thesis-spine">
-                  <span class="cc-thesis-spine-name" x-show="spineEngraving === 'true'" :style="imprintStyle()" x-text="spineEngravingName || 'Imię Nazwisko'"></span>
-                </span>
-                <span class="cc-thesis-cover">
-                  <em class="cc-thesis-degree" x-show="cover !== 'none'" :style="imprintStyle()" x-text="coverHeading()"></em>
-                  <span class="cc-thesis-center" x-show="cover !== 'none'">
-                    <span class="cc-thesis-rule"></span>
-                    <span class="cc-thesis-author" :style="imprintStyle()" x-text="coverSubheading()"></span>
-                  </span>
-                </span>
-                <span class="cc-thesis-pages"></span>
-              </div>
-            </template>
-
-            <div class="cc-thesis-controls">
-              <div class="cc-thesis-control">
-                <p class="cc-thesis-label">Kolor okładki</p>
-                <div class="cc-swatches" role="group" aria-label="Kolor okładki">
-                  <template x-for="c in coverColors" :key="c.id">
-                    <button type="button"
-                            class="cc-swatch"
-                            :class="{ 'is-active': coverColor === c.id }"
-                            :style="'background:' + c.hex"
-                            :aria-label="'Kolor okładki: ' + c.id"
-                            @click="coverColor = c.id"></button>
-                  </template>
-                </div>
-              </div>
-
-              <p class="cc-step-micro">Podgląd poglądowy — pokazuje, jak wygląda gotowa praca. Grubość i ułożenie grzbietu zmieniają się razem z wybraną oprawą w kroku 03.</p>
-            </div>
-          </div>
         </section>
 
         {{-- Step 05 — Odbiór --}}

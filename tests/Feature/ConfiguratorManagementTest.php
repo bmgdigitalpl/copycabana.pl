@@ -89,6 +89,18 @@ class ConfiguratorManagementTest extends TestCase
         Mail::assertQueued(B2bQuoteRequestConfirmation::class);
     }
 
+    public function test_business_catalog_excludes_basic_services(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $this->get(route('services.business'))->assertViewHas('b2bCatalog', function (array $catalog): bool {
+            $slugs = array_column($catalog, 'id');
+
+            return in_array('wizytowki', $slugs, true)
+                && array_intersect(['projektowanie', 'druk', 'ksero', 'skanowanie'], $slugs) === [];
+        });
+    }
+
     public function test_pdf_prices_and_new_finishes_can_be_managed_in_products(): void
     {
         $this->seed(ProductSeeder::class);

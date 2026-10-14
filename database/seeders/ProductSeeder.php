@@ -77,15 +77,6 @@ class ProductSeeder extends Seeder
                     ['key' => 'qty', 'label' => 'Liczba sztuk', 'type' => 'chips', 'required' => true, 'values' => $chips(['1', '2', '5'])],
                 ],
             ],
-            'druk' => [
-                'icon' => 'fa-file-lines',
-                'fields' => [
-                    ['key' => 'color', 'label' => 'Kolor', 'type' => 'chips', 'required' => true, 'values' => $chips(['czarno-biały', 'kolor'])],
-                    ['key' => 'sided', 'label' => 'Strony kartki', 'type' => 'chips', 'required' => true, 'values' => $chips(['jednostronnie', 'dwustronnie'])],
-                    $quantity('Egzemplarze', 50),
-                    ['key' => 'finish', 'label' => 'Wykończenie', 'type' => 'chips', 'required' => true, 'values' => $chips(['bez', 'spinanie', 'oprawa kanałowa', 'teczka'])],
-                ],
-            ],
             'billboardy' => $generic('fa-rectangle-ad'),
             'fotoobrazy' => $generic('fa-image'),
             'fototapety' => $generic('fa-expand'),
@@ -93,11 +84,8 @@ class ProductSeeder extends Seeder
             'naklejki' => $generic('fa-note-sticky'),
             'tabliczki' => $generic('fa-sign'),
             'rysunki-cad' => $generic('fa-compass-drafting'),
-            'ksero' => $generic('fa-copy'),
-            'skanowanie' => $generic('fa-file-arrow-up'),
             'zdjecia-dokumenty' => $generic('fa-id-card'),
             'pieczatki' => $generic('fa-stamp'),
-            'projektowanie' => $generic('fa-pen-ruler'),
         ];
         $products = [
             ['wizytowki', 'Wizytówki', 'druk', 'Profesjonalne wizytówki w różnych formatach i wykończeniach.', 'wizytowki.png', 'options', 25],

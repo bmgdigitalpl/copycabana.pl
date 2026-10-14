@@ -35,7 +35,9 @@
 <body class="concept-dynamic concept-site {{ request()->routeIs('test.fonts') ? 'font-test-root' : '' }}" x-data="{ mobileNav: false }">
   <header class="cc-header">
     <div class="cc-container cc-header-inner">
-      <a href="{{ route('home') }}" class="font-logo no-underline cc-logo">CopyCabana</a>
+      <a href="{{ route('home') }}" class="no-underline cc-logo" aria-label="CopyCabana">
+        <img src="{{ asset('images/logo.svg') }}" alt="CopyCabana" class="cc-logo-image">
+      </a>
       <nav class="cc-nav" aria-label="Główna nawigacja">
         <a href="{{ route('home') }}">Start</a>
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>

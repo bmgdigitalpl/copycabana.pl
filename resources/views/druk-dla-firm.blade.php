@@ -252,7 +252,7 @@
     <aside class="cc-summary" aria-label="Podsumowanie zamówienia">
       <div class="cc-summary-card">
         <div class="cc-summary-head">
-          <strong><i class="fas fa-clipboard-list mr-2 text-magenta" aria-hidden="true"></i>Twoje zamówienie</strong>
+          <strong><i class="fas fa-clipboard-list mr-2 text-magenta" aria-hidden="true"></i>Twoja wycena</strong>
           <ul>
              <li x-text="items.length + (items.length === 1 ? ' pozycja' : items.length > 1 && items.length < 5 ? ' pozycje' : ' pozycji')"></li>
              <li x-text="deliveryName() || 'odbiór nie wybrany'"></li>
@@ -269,7 +269,6 @@
           </div>
         </template>
         <div class="cc-summary-term"><span>Produkcja</span><strong>po wycenie</strong></div>
-        <div class="cc-summary-total"><span>Razem</span><strong>wyceny po kontakcie</strong></div>
         <div class="cc-summary-actions">
           <div class="cc-field-grid">
             <div class="cc-field">

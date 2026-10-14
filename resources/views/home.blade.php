@@ -127,9 +127,6 @@
               </a>
               <div class="cc-gallery-actions">
                 <a class="btn-magenta cc-gallery-order" href="{{ $item['url'] }}"><i class="fas fa-cart-shopping mr-2" aria-hidden="true"></i>Zamów <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
-                <button type="button" class="cc-gallery-help" aria-label="Zapytaj o {{ $item['accusative'] ?? $item['title'] }}" @click="$dispatch('open-service-chat', { title: @js($item['title']), topic: @js($item['accusative'] ?? $item['title']), questions: @js($item['questions'] ?? []) })">
-                  <i class="fas fa-question" aria-hidden="true"></i>
-                </button>
               </div>
             </div>
           @else
@@ -141,8 +138,6 @@
         @endforeach
       </div>
     </div>
-
-    <x-concept.chat-widget />
   </section>
 
   {{-- 06 FAQ --}}
