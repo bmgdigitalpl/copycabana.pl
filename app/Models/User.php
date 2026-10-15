@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\AdminResetPassword;
 use App\Notifications\CustomerResetPassword;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -69,7 +70,31 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             return;
         }
 
-        parent::sendPasswordResetNotification($token);
+        $this->notify(new AdminResetPassword($token));
+    }
+
+    /**
+     * The password reset link carries the user id in front of the token, so the
+     * address is not exposed in the query string.
+     */
+    public function adminPasswordResetUrl(string $token): string
+    {
+        return url(route('password.reset', ['token' => $this->getKey().'.'.$token], false));
+    }
+
+    /**
+     * @return array{email: string|null, token: string}
+     */
+    public static function resolvePasswordResetToken(string $routeToken): array
+    {
+        [$userId, $token] = array_pad(explode('.', $routeToken, 2), 2, '');
+
+        return [
+            'email' => ctype_digit($userId) && $token !== ''
+                ? static::query()->whereKey((int) $userId)->value('email')
+                : null,
+            'token' => $token,
+        ];
     }
 
     /** @return BelongsTo<Client, $this> */

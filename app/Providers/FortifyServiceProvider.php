@@ -6,6 +6,7 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Http\Responses\LoginResponse;
+use App\Http\Responses\PasswordResetResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\View\View;
@@ -16,6 +17,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\PasswordResetResponse as PasswordResetResponseContract;
 use Laravel\Fortify\Fortify;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
@@ -29,6 +31,7 @@ class FortifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
+        $this->app->singleton(PasswordResetResponseContract::class, PasswordResetResponse::class);
     }
 
     /**
@@ -42,7 +45,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
         Fortify::loginView(fn (): View => view('customer.auth.login'));
         Fortify::requestPasswordResetLinkView(fn (): View => view('auth.forgot-password'));
-        Fortify::resetPasswordView(fn (Request $request): View => view('auth.reset-password', ['request' => $request]));
+        Fortify::resetPasswordView(fn (Request $request): View => view('auth.reset-password', User::resolvePasswordResetToken((string) $request->route('token'))));
         Passkeys::authorizeLoginUsing(
             fn (Request $request, PasskeyUser $user, Passkey $passkey): bool => $user instanceof User && $user->isAdmin(),
         );

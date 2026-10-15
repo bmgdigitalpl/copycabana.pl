@@ -3179,6 +3179,12 @@
   mask: var(--cc-logo) center / contain no-repeat;
 }
 
+/* A title picture keeps the size of its matrix (set inline) and sits in the middle of its zone. */
+.cc-cover-text > .cc-cover-title-art {
+  margin-inline: auto;
+  max-width: 100%;
+}
+
 .cc-cover-logo-placeholder {
   display: grid;
   box-sizing: border-box;
@@ -3194,6 +3200,7 @@
 body.concept-site:not(.font-test-root) .cc-cover-stage .cc-cover-text,
 body.concept-site:not(.font-test-root) .cc-cover-stage .cc-cover-text > span {
   font-family: var(--cc-cover-font);
+  font-weight: 700;
 }
 
 .cc-cover-text > span {

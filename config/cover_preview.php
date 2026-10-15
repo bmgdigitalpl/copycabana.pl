@@ -45,26 +45,47 @@ return [
     'logos_path' => 'images/uczelnie',
 
     /*
+     | Standard cover titles drawn as artwork: public/images/tytuly/<title key>.svg, keys as in
+     | the "Tytuły prac" list, e.g. master_thesis.svg. A title without a file is typeset as text
+     | in the imprint font. The artwork is shown at the size of the matrix: "title_art_scale" is
+     | the % of the cover width one SVG unit takes (100 / 595.28 = 1 unit is 1 pt on an A4 cover).
+     */
+    'titles_path' => 'images/tytuly',
+    'title_art_scale' => 0.168,
+
+    /*
+     | Metallic foils: an imprint colour key (as in "Kolory nadruku") listed here is painted with
+     | a sheen, a diagonal gradient through these stops, instead of its flat colour. The flat
+     | hex in the admin panel stays the colour of the swatch and of the order.
+     */
+    'foils' => [
+        'gold' => ['#8a6712', '#e6c35a', '#fff1ab', '#c79d2b', '#7a590d', '#dcb548', '#f8e28c', '#a67f1d'],
+        'silver' => ['#7b7f85', '#e4e7ea', '#ffffff', '#a8acb2', '#6c7075', '#d2d5d9', '#f4f5f6', '#979ba1'],
+    ],
+
+    /*
      | left/top/width/height: the frame of the zone. font_size: % of the cover width.
      | align: left|center|right, valign: start|center|end. tint: paint the logo in the
      | selected imprint color (true) or show it as it is in the file (false).
      */
     'zones' => [
-        // University logo, shown for the "Standardowy napis" cover.
+        // University logo at the bottom, shown for the "Standardowy napis" cover.
         'logo' => [
-            'left' => 30, 'top' => 12, 'width' => 40, 'height' => 22,
+            'left' => 22, 'top' => 80, 'width' => 56, 'height' => 12,
             'tint' => true,
         ],
-        // Cover title (e.g. "Praca Magisterska"), shown for the "Standardowy napis" cover.
+        // Cover title (e.g. "Praca Magisterska"), a little above the middle, shown for the
+        // "Standardowy napis" cover. A title with artwork (see "titles_path") is a picture
+        // tinted like the logo, at the same lettering size as the custom text.
         'title' => [
-            'left' => 8, 'top' => 44, 'width' => 84, 'height' => 14,
-            'font_size' => 6.2, 'line_height' => 1.2, 'letter_spacing' => 0.04,
+            'left' => 8, 'top' => 30, 'width' => 84, 'height' => 28,
+            'font_size' => 8.5, 'line_height' => 1.2, 'letter_spacing' => 0.02,
             'align' => 'center', 'valign' => 'center', 'uppercase' => false,
         ],
         // Text typed by the customer, shown for the "Własny napis" cover.
         'custom' => [
-            'left' => 8, 'top' => 36, 'width' => 84, 'height' => 28,
-            'font_size' => 5.5, 'line_height' => 1.25, 'letter_spacing' => 0.02,
+            'left' => 8, 'top' => 30, 'width' => 84, 'height' => 28,
+            'font_size' => 8.5, 'line_height' => 1.2, 'letter_spacing' => 0.02,
             'align' => 'center', 'valign' => 'center', 'uppercase' => false,
         ],
     ],

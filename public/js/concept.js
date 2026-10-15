@@ -446,6 +446,9 @@
         coverColors: Object.entries(pricing.cover_colors || {}).map(function ([id, value]) { return { id: id, hex: value.hex, label: value.label }; }),
         coverTextures: coverPreview.textures || {},
         coverLogos: coverPreview.logos || {},
+        coverTitleArt: coverPreview.titles || {},
+        coverTitleScale: coverPreview.titleScale || 0,
+        coverFoils: coverPreview.foils || {},
         coverMapping: !!coverPreview.mapping,
         coverOverflow: false,
         delivery: null,
@@ -638,6 +641,18 @@
           return universities[this.university] || '';
         },
 
+        coverTitleUrl: function () {
+          var art = this.coverTitleArt[this.coverTitle];
+          return art && this.coverTitleScale > 0 ? art.url : null;
+        },
+
+        /* The picture is as big as the matrix: the same lettering size for every title. */
+        coverTitleArtSize: function () {
+          var art = this.coverTitleArt[this.coverTitle];
+          if (!art) { return {}; }
+          return { width: art.width * this.coverTitleScale + 'cqw', height: art.height * this.coverTitleScale + 'cqw', flex: 'none' };
+        },
+
         coverTitleName: function () {
           return coverTitles[this.coverTitle] || '';
         },
@@ -654,6 +669,40 @@
 
         imprintHex: function () {
           return (imprintColors[this.imprintColor] && imprintColors[this.imprintColor].hex) || '#ffffff';
+        },
+
+        /* Paint of a logo or a title picture: the colour, with the sheen of the foil on metallic ones. */
+        imprintFill: function () {
+          return { backgroundColor: this.imprintHex(), backgroundImage: this.coverFoils[this.imprintColor] || 'none' };
+        },
+
+        /* Paint of the cover text: the colour, or the foil's gradient clipped to the letters. */
+        imprintTextStyle: function () {
+          var foil = this.coverFoils[this.imprintColor];
+          var edge = this.imprintEdge();
+          if (!foil) { return { color: this.imprintHex(), backgroundImage: 'none', filter: edge }; }
+          return { color: 'transparent', backgroundImage: foil, backgroundClip: 'text', webkitBackgroundClip: 'text', filter: edge };
+        },
+
+        /*
+         * When the imprint is close to the cover in brightness (gold on yellow) it gets a barely
+         * visible edge: a soft dark one on a light cover, a soft light one on a dark cover.
+         */
+        imprintEdge: function () {
+          var luminance = function (hex) {
+            var channels = [1, 3, 5].map(function (start) {
+              var value = parseInt(hex.slice(start, start + 2), 16) / 255;
+              return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+          };
+          var cover = luminance(this.coverColorHex());
+          var imprint = luminance(this.imprintHex());
+          var ratio = (Math.max(cover, imprint) + 0.05) / (Math.min(cover, imprint) + 0.05);
+          if (ratio >= 3) { return 'none'; }
+          return cover > 0.3
+            ? 'drop-shadow(0 0 0.1cqw rgba(60, 38, 0, 0.95)) drop-shadow(0 0.15cqw 0.2cqw rgba(40, 24, 0, 0.55))'
+            : 'drop-shadow(0 0 0.1cqw rgba(255, 255, 255, 0.9)) drop-shadow(0 0 0.3cqw rgba(255, 255, 255, 0.4))';
         },
 
         printTotal: function () {

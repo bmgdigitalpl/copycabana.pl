@@ -24,7 +24,7 @@ class ConfiguratorManagementTest extends TestCase
     {
         $this->seed(ProductSeeder::class);
         $admin = User::factory()->create(['role' => 'admin']);
-        $product = Product::query()->where('slug', 'praca-dyplomowa')->firstOrFail();
+        $product = $this->thesisProductWithGranat();
         $payload = $this->printingPayload($product);
         $payload['bindings'] = [['key' => 'premium', 'label' => 'Oprawa premium', 'price' => 70, 'hint' => 'Nowa oprawa']];
         $payload['page_prices'] = ['bw' => 0.30, 'color' => 0.80];
@@ -108,7 +108,7 @@ class ConfiguratorManagementTest extends TestCase
     {
         Storage::fake('public');
         $this->seed(ProductSeeder::class);
-        $product = Product::query()->where('slug', 'praca-dyplomowa')->firstOrFail();
+        $product = $this->thesisProductWithGranat();
         $payload = $this->printingPayload($product);
         $payload['cover_colors'][0]['photo'] = UploadedFile::fake()->createWithContent('granat.jpg', $this->plainJpeg([200, 100, 50]));
 
@@ -131,7 +131,7 @@ class ConfiguratorManagementTest extends TestCase
         Storage::fake('public');
         $this->seed(ProductSeeder::class);
         $admin = User::factory()->create(['role' => 'admin']);
-        $product = Product::query()->where('slug', 'praca-dyplomowa')->firstOrFail();
+        $product = $this->thesisProductWithGranat();
         $payload = $this->printingPayload($product);
         $payload['cover_colors'][0]['photo'] = UploadedFile::fake()->createWithContent('granat.jpg', $this->plainJpeg([200, 100, 50]));
         $this->actingAs($admin)->put(route('admin.printing.update', 'thesis'), $payload)->assertSessionHasNoErrors();
@@ -148,7 +148,7 @@ class ConfiguratorManagementTest extends TestCase
         $this->assertEqualsWithDelta(17, $this->averageColor(Storage::disk('public')->get($texturePath))[0], 6);
         $this->assertEqualsWithDelta(51, $this->averageColor(Storage::disk('public')->get($texturePath))[2], 6);
 
-        $payload['cover_colors'] = array_slice($payload['cover_colors'], 1);
+        $payload['cover_colors'] = [['key' => 'magenta', 'label' => 'Magenta', 'hex' => '#D51A70']];
         $this->put(route('admin.printing.update', 'thesis'), $payload)->assertSessionHasNoErrors();
 
         Storage::disk('public')->assertMissing([$photo, $texturePath]);
@@ -257,6 +257,17 @@ class ConfiguratorManagementTest extends TestCase
         $this->get(route('services.diploma'))->assertNotFound();
         $this->postJson(route('api.thesis.quote'), $this->thesisQuotePayload())
             ->assertUnprocessable()->assertJsonValidationErrors('configuration');
+    }
+
+    /** The seeded thesis product with one cover colour, "granat", which has no photo yet. */
+    private function thesisProductWithGranat(): Product
+    {
+        $product = Product::query()->where('slug', 'praca-dyplomowa')->firstOrFail();
+        $configuration = $product->configuration;
+        $configuration['printing']['cover_colors'] = ['granat' => ['label' => 'Granat', 'hex' => '#063A60']];
+        $product->update(['configuration' => $configuration]);
+
+        return $product->fresh();
     }
 
     /** @return array<string, mixed> */

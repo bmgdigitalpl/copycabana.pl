@@ -23,6 +23,6 @@ class OrderStatusChangedMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        return new Content(view: 'emails.order-status-changed');
+        return new Content(markdown: 'emails.order-status-changed');
     }
 }

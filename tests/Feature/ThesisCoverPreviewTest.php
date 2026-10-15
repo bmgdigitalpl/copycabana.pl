@@ -34,6 +34,37 @@ class ThesisCoverPreviewTest extends TestCase
         $this->assertStringContainsString('thesis-cover-textures/granat.jpg', $preview['textures']['granat']);
     }
 
+    public function test_it_lists_only_the_title_artwork_that_exists(): void
+    {
+        Storage::fake('public');
+        $this->usePublicDirectoryWith(['images/uczelnie/master_thesis.svg']);
+        File::ensureDirectoryExists(public_path('images/tytuly'));
+        File::put(public_path('images/tytuly/master_thesis.svg'), '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="264.5" height="96.3" viewBox="0 0 264.5 96.3"></svg>');
+        File::put(public_path('images/tytuly/magisterska.svg'), 'not an svg');
+
+        $preview = app(ThesisCoverPreview::class)->build([
+            'cover_titles' => ['master_thesis' => 'Master Thesis', 'magisterska' => 'Praca Magisterska', 'doktorska' => 'Praca Doktorska', '../secret' => 'Poza katalogiem'],
+        ]);
+
+        $this->assertSame(['master_thesis'], array_keys($preview['titles']));
+        $this->assertStringContainsString('images/tytuly/master_thesis.svg', $preview['titles']['master_thesis']['url']);
+        $this->assertSame(264.5, $preview['titles']['master_thesis']['width']);
+        $this->assertSame(96.3, $preview['titles']['master_thesis']['height']);
+        $this->assertGreaterThan(0, $preview['titleScale']);
+    }
+
+    public function test_metallic_imprint_colours_become_gradients(): void
+    {
+        config(['cover_preview.foils' => [
+            'gold' => ['#8a6712', '#fff1ab', 'not a colour', '#7a590d'],
+            'silver' => ['#999999'],
+        ]]);
+
+        $foils = app(ThesisCoverPreview::class)->build([])['foils'];
+
+        $this->assertSame(['gold' => 'linear-gradient(110deg, #8a6712, #fff1ab, #7a590d)'], $foils);
+    }
+
     public function test_it_falls_back_to_plain_colours_when_no_files_have_been_added(): void
     {
         Storage::fake('public');

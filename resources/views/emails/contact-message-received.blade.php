@@ -1,7 +1,15 @@
-<h1>Nowa wiadomość z formularza kontaktowego</h1>
-<p>Kontakt: {{ $name }} &lt;{{ $email }}&gt;</p>
+<x-mail::message>
+# Nowa wiadomość z formularza kontaktowego
+
+Kontakt: {{ $name }} <{{ $email }}>
 @if ($phone)
-<p>Telefon: {{ $phone }}</p>
+
+Telefon: {{ $phone }}
 @endif
-<h2>Wiadomość</h2>
-<p>{!! nl2br(e($body)) !!}</p>
+
+## Wiadomość
+
+<x-mail::panel>
+{!! str_replace("\n", "  \n", e(str_replace("\r\n", "\n", $body))) !!}
+</x-mail::panel>
+</x-mail::message>

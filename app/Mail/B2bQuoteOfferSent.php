@@ -30,6 +30,6 @@ class B2bQuoteOfferSent extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        return new Content(view: 'emails.b2b-quote-offer-sent');
+        return new Content(markdown: 'emails.b2b-quote-offer-sent');
     }
 }

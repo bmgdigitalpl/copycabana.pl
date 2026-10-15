@@ -4,13 +4,13 @@
 @php
   $zones = $preview['zones'];
   $font = $preview['font'];
-  $fontStack = ($font ? "'".$font['family']."', " : '')."'Roboto Slab', serif";
+  $fontStack = ($font ? "'".$font['family']."', " : '')."'Century Schoolbook', 'Roboto Slab', serif";
   $aspect = $preview['aspect']['width'] / $preview['aspect']['height'];
 @endphp
 
 @if ($font && $variant === 'aside')
   @push('head')
-    <style>@font-face { font-family: '{{ $font['family'] }}'; src: url('{{ $font['url'] }}') format('{{ $font['format'] }}'); font-display: swap; }</style>
+    <style>@font-face { font-family: '{{ $font['family'] }}'; src: url('{{ $font['url'] }}') format('{{ $font['format'] }}'); font-weight: 700; font-display: swap; }</style>
   @endpush
 @endif
 
@@ -21,10 +21,10 @@
        :style="{ backgroundColor: coverColorHex(), backgroundImage: coverTextureUrl() ? 'url(' + coverTextureUrl() + ')' : 'none' }"
        role="img"
        :aria-label="'Podgląd okładki, kolor: ' + coverColorName()">
-    <div class="cc-cover-zone cc-cover-zone--logo" data-zone="logo" style="{{ $zones['logo']['style'] ?? '' }}" x-show="coverMapping || cover === 'standard'">
+    <div class="cc-cover-zone cc-cover-zone--logo" data-zone="logo" style="{{ $zones['logo']['style'] ?? '' }}" :style="{ filter: imprintEdge() }" x-show="coverMapping || cover === 'standard'">
       @if ($zones['logo']['tint'] ?? false)
         <template x-if="coverLogoUrl()">
-          <span class="cc-cover-logo" :style="{ '--cc-logo': 'url(' + coverLogoUrl() + ')', backgroundColor: imprintHex() }"></span>
+          <span class="cc-cover-logo" :style="{ '--cc-logo': 'url(' + coverLogoUrl() + ')', ...imprintFill() }"></span>
         </template>
       @else
         <template x-if="coverLogoUrl()">
@@ -36,11 +36,16 @@
       </template>
     </div>
 
-    <div class="cc-cover-zone cc-cover-text" data-zone="title" style="{{ $zones['title']['style'] ?? '' }}" :style="{ color: imprintHex() }" x-show="coverMapping || cover === 'standard'">
-      <span x-text="coverTitleName()"></span>
+    <div class="cc-cover-zone cc-cover-text" data-zone="title" style="{{ $zones['title']['style'] ?? '' }}" :style="imprintTextStyle()" x-show="coverMapping || cover === 'standard'">
+      <template x-if="coverTitleUrl()">
+        <span class="cc-cover-logo cc-cover-title-art" :style="{ '--cc-logo': 'url(' + coverTitleUrl() + ')', ...imprintFill(), ...coverTitleArtSize() }"></span>
+      </template>
+      <template x-if="!coverTitleUrl()">
+        <span x-text="coverTitleName()"></span>
+      </template>
     </div>
 
-    <div class="cc-cover-zone cc-cover-text" data-zone="custom" style="{{ $zones['custom']['style'] ?? '' }}" :style="{ color: imprintHex() }" x-show="coverMapping || cover === 'custom'" x-effect="measureCoverOverflow($el, coverText, cover)">
+    <div class="cc-cover-zone cc-cover-text" data-zone="custom" style="{{ $zones['custom']['style'] ?? '' }}" :style="imprintTextStyle()" x-show="coverMapping || cover === 'custom'" x-effect="measureCoverOverflow($el, coverText, cover)">
       <span x-text="coverText || 'Własny napis'"></span>
     </div>
   </div>

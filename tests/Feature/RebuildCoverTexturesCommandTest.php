@@ -45,7 +45,7 @@ class RebuildCoverTexturesCommandTest extends TestCase
     }
 
     /**
-     * Gives the seeded "granat" cover colour a stored photo of the given colour.
+     * Adds a "granat" cover colour with a stored photo of the given colour.
      *
      * @param  array{int, int, int}  $rgb
      * @return string path of the photo on the public disk
@@ -63,7 +63,7 @@ class RebuildCoverTexturesCommandTest extends TestCase
 
         $product = Product::query()->where('slug', 'praca-dyplomowa')->firstOrFail();
         $configuration = $product->configuration;
-        $configuration['printing']['cover_colors']['granat']['photo'] = 'thesis-cover-photos/granat.jpg';
+        $configuration['printing']['cover_colors'] = ['granat' => ['label' => 'Granat', 'hex' => '#063A60', 'photo' => 'thesis-cover-photos/granat.jpg']];
         $product->update(['configuration' => $configuration]);
 
         return 'thesis-cover-photos/granat.jpg';

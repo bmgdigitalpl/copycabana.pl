@@ -25,6 +25,6 @@ class B2bQuoteRequestStatusChanged extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        return new Content(view: 'emails.b2b-quote-request-status-changed');
+        return new Content(markdown: 'emails.b2b-quote-request-status-changed');
     }
 }

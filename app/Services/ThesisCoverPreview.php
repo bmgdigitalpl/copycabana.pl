@@ -23,6 +23,9 @@ class ThesisCoverPreview
      *     zones: array<string, array{style: string, tint: bool}>,
      *     font: array{family: string, url: string, format: string}|null,
      *     logos: array<string, string>,
+     *     titles: array<string, array{url: string, width: float, height: float}>,
+     *     titleScale: float,
+     *     foils: array<string, string>,
      *     textures: array<string, string>,
      *     mapping: bool
      * }
@@ -38,9 +41,32 @@ class ThesisCoverPreview
             'zones' => $this->zones(),
             'font' => $this->font(),
             'logos' => $this->logos(array_keys($printing['universities'] ?? [])),
+            'titles' => $this->titles(array_keys($printing['cover_titles'] ?? [])),
+            'titleScale' => max(0.0, (float) config('cover_preview.title_art_scale')),
+            'foils' => $this->foils(),
             'textures' => $this->textures($printing['cover_colors'] ?? []),
             'mapping' => $mapping,
         ];
+    }
+
+    /**
+     * CSS gradients of the metallic imprint colours, keyed by imprint colour key.
+     *
+     * @return array<string, string>
+     */
+    private function foils(): array
+    {
+        $foils = [];
+
+        foreach ((array) config('cover_preview.foils') as $key => $stops) {
+            $stops = array_values(array_filter((array) $stops, fn (mixed $stop): bool => is_string($stop) && preg_match('/^#[0-9a-fA-F]{6}$/', $stop) === 1));
+
+            if (count($stops) >= 2) {
+                $foils[(string) $key] = 'linear-gradient(110deg, '.implode(', ', $stops).')';
+            }
+        }
+
+        return $foils;
     }
 
     /** @return array<string, array{style: string, tint: bool}> */
@@ -119,10 +145,52 @@ class ThesisCoverPreview
      */
     private function logos(array $universityKeys): array
     {
-        $directory = trim((string) config('cover_preview.logos_path'), '/');
+        return $this->artwork((string) config('cover_preview.logos_path'), $universityKeys);
+    }
+
+    /**
+     * SVG pictures of the standard cover titles found in the titles directory, keyed by title
+     * key. They are drawn at the size of the matrices (1 SVG unit = 1 pt on an A4 cover), so
+     * every title gets the same lettering size, like the custom text; hence the dimensions.
+     *
+     * @param  list<string|int>  $titleKeys
+     * @return array<string, array{url: string, width: float, height: float}>
+     */
+    private function titles(array $titleKeys): array
+    {
+        $directory = trim((string) config('cover_preview.titles_path'), '/');
+        $titles = [];
+
+        foreach ($titleKeys as $key) {
+            $key = (string) $key;
+            $file = public_path($directory.'/'.$key.'.svg');
+
+            if (preg_match('/^[A-Za-z0-9_-]+$/', $key) !== 1 || ! is_file($file)) {
+                continue;
+            }
+
+            $head = (string) file_get_contents($file, false, null, 0, 1024);
+
+            if (preg_match('/<svg[^>]*\swidth="([0-9.]+)"[^>]*\sheight="([0-9.]+)"/', $head, $size) !== 1) {
+                continue;
+            }
+
+            $titles[$key] = ['url' => $this->publicFileUrl($directory.'/'.$key.'.svg'), 'width' => (float) $size[1], 'height' => (float) $size[2]];
+        }
+
+        return $titles;
+    }
+
+    /**
+     * @param  list<string|int>  $keys
+     * @return array<string, string> key => URL of the picture named after it in the directory
+     */
+    private function artwork(string $directory, array $keys): array
+    {
+        $directory = trim($directory, '/');
         $logos = [];
 
-        foreach ($universityKeys as $key) {
+        foreach ($keys as $key) {
             $key = (string) $key;
 
             if (preg_match('/^[A-Za-z0-9_-]+$/', $key) !== 1) {

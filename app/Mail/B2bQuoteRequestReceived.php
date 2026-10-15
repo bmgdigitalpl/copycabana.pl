@@ -25,6 +25,6 @@ class B2bQuoteRequestReceived extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        return new Content(view: 'emails.b2b-quote-request-received');
+        return new Content(markdown: 'emails.b2b-quote-request-received');
     }
 }

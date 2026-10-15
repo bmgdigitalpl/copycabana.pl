@@ -23,6 +23,6 @@ class OrderReceivedMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        return new Content(view: 'emails.order-received');
+        return new Content(markdown: 'emails.order-received');
     }
 }
