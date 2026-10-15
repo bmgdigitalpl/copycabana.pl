@@ -135,14 +135,13 @@
             <x-concept.option-card group="druk-strony" value="duplex" model="print.sided" label="dwustronnie" hint="Druk po obu stronach kartki. Oszczędza papier i objętość." />
           </div>
 
-          <p class="cc-step-micro">Potrzebujesz różnych opraw do każdego egzemplarza? Zgłoś to wcześniej — w konfiguratorze ustawiamy jedną oprawę dla całego nakładu.</p>
         </section>
 
         {{-- Step 03 — Oprawa --}}
         <section class="cc-step" id="oprawa">
           <div class="cc-step-head">
             <span class="cc-step-num">03</span>
-            <div><h2>Tak będzie wyglądała gotowa praca.</h2><p>Porównaj dostępne oprawy i wybierz wariant zgodny z wymaganiami wydziału.</p></div>
+            <div><h2>Wybierz swoją oprawę.</h2><p>Porównaj dostępne oprawy i wybierz wariant zgodny z wymaganiami wydziału.</p></div>
           </div>
 
           <div class="cc-step-grid cc-step-grid--3">
@@ -191,7 +190,7 @@
             @endforeach
           </div>
 
-          <div class="cc-field-grid" x-show="cover === 'standard'" x-transition.opacity.duration.200ms>
+          <div class="cc-field-grid" x-show="cover === 'standard' || cover === 'custom'" x-transition.opacity.duration.200ms>
             <div class="cc-field">
               <label for="uczelnia">Uczelnia</label>
               <select id="uczelnia" x-model="university">
@@ -201,7 +200,7 @@
               </select>
             </div>
 
-            <div class="cc-field">
+            <div class="cc-field" x-show="cover === 'standard'">
               <label for="napis-okladka">Napis na okładce</label>
               <select id="napis-okladka" x-model="coverTitle">
                 @foreach ($thesisPricing['cover_titles'] as $value => $label)
@@ -309,7 +308,7 @@
             <template x-if="file.pages"><li><template x-text="file.pages"></template> stron</li></template>
             <li><template x-text="print.copies"></template> egzemplarz(e) · <span x-text="bindingName() || 'oprawa?'"></span></li>
             <li x-show="cover !== 'none'" x-text="coverSummary() + ' · ' + imprintColorName()"></li>
-            <li x-show="cover === 'standard'" x-text="universityName()"></li>
+            <li x-show="cover === 'standard' || cover === 'custom'" x-text="universityName()"></li>
             <li x-show="spineEngraving === 'true'" x-text="'Grawer grzbietu: ' + (spineEngravingName || 'uzupełnij imię i nazwisko')"></li>
             <li x-text="burnCd === 'true' ? 'CD: tak' : 'CD: nie'"></li>
             <li x-show="delivery === 'parcel' && parcelLocker" x-text="lockerSummary()"></li>

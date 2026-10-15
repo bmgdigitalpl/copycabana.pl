@@ -21,7 +21,7 @@
        :style="{ backgroundColor: coverColorHex(), backgroundImage: coverTextureUrl() ? 'url(' + coverTextureUrl() + ')' : 'none' }"
        role="img"
        :aria-label="'Podgląd okładki, kolor: ' + coverColorName()">
-    <div class="cc-cover-zone cc-cover-zone--logo" data-zone="logo" style="{{ $zones['logo']['style'] ?? '' }}" :style="{ filter: imprintEdge() }" x-show="coverMapping || cover === 'standard'">
+    <div class="cc-cover-zone cc-cover-zone--logo" data-zone="logo" style="{{ $zones['logo']['style'] ?? '' }}" :style="{ filter: imprintEdge() }" x-show="coverMapping || cover === 'standard' || cover === 'custom'">
       @if ($zones['logo']['tint'] ?? false)
         <template x-if="coverLogoUrl()">
           <span class="cc-cover-logo" :style="{ '--cc-logo': 'url(' + coverLogoUrl() + ')', ...imprintFill() }"></span>

@@ -28,7 +28,7 @@ class ThesisPricingService
         $coverText = $cover === 'custom' ? ($data['cover_text'] ?? null) : null;
         $coverTitle = $cover === 'standard' ? ($data['cover_title'] ?? null) : null;
         $imprintColor = $cover !== 'none' ? ($data['imprint_color'] ?? null) : null;
-        $university = $cover === 'standard' ? ($data['university'] ?? null) : null;
+        $university = in_array($cover, ['standard', 'custom'], true) ? ($data['university'] ?? null) : null;
         $burnCd = (bool) $data['burn_cd'];
         $spineEngraving = (bool) ($data['spine_engraving'] ?? false);
         $spineEngravingName = $spineEngraving ? ($data['spine_engraving_name'] ?? null) : null;

@@ -44,7 +44,7 @@ class ThesisOrderRequest extends FormRequest
             'cover_color' => ['nullable', 'string', Rule::in(array_keys($settings['cover_colors']))],
             'cover_title' => ['nullable', 'required_if:cover,standard', 'string', Rule::in($coverTitles)],
             'imprint_color' => ['nullable', 'required_if:cover,standard,custom', 'string', Rule::in($imprintColors)],
-            'university' => ['nullable', 'required_if:cover,standard', 'string', Rule::in($universities)],
+            'university' => ['nullable', 'required_if:cover,standard,custom', 'string', Rule::in($universities)],
             'burn_cd' => ['required', 'boolean'],
             'spine_engraving' => ['required', 'boolean'],
             'spine_engraving_name' => ['nullable', Rule::requiredIf(fn (): bool => $this->boolean('spine_engraving')), 'string', 'max:150'],

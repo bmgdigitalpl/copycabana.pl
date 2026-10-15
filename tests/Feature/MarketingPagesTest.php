@@ -660,13 +660,14 @@ class MarketingPagesTest extends TestCase
             ->assertViewHas('coverPreview', fn (array $preview): bool => $preview['mapping'] === true);
     }
 
-    public function test_diploma_binding_options_render_image_placeholders(): void
+    public function test_diploma_binding_options_render_without_images(): void
     {
         $this->seed(ProductSeeder::class);
         $content = $this->get(route('services.diploma'))->getContent();
 
-        $this->assertSame(3, substr_count($content, 'class="cc-binding-image-placeholder"'));
-        $this->assertStringContainsString('Miejsce na zdjęcie', $content);
+        $this->assertStringContainsString('Wybierz swoją oprawę.', $content);
+        $this->assertStringNotContainsString('cc-binding-image-placeholder', $content);
+        $this->assertStringNotContainsString('Miejsce na zdjęcie', $content);
         $this->assertStringNotContainsString('cc-book', $content);
     }
 

@@ -78,15 +78,15 @@ return [
         // "Standardowy napis" cover. A title with artwork (see "titles_path") is a picture
         // tinted like the logo, at the same lettering size as the custom text.
         'title' => [
-            'left' => 8, 'top' => 30, 'width' => 84, 'height' => 28,
-            'font_size' => 8.5, 'line_height' => 1.2, 'letter_spacing' => 0.02,
-            'align' => 'center', 'valign' => 'center', 'uppercase' => false,
+            'left' => 8, 'top' => 24, 'width' => 84, 'height' => 28,
+            'font_size' => 7.5, 'line_height' => 1.2, 'letter_spacing' => 0.02,
+            'align' => 'center', 'valign' => 'center', 'uppercase' => true,
         ],
         // Text typed by the customer, shown for the "Własny napis" cover.
         'custom' => [
-            'left' => 8, 'top' => 30, 'width' => 84, 'height' => 28,
-            'font_size' => 8.5, 'line_height' => 1.2, 'letter_spacing' => 0.02,
-            'align' => 'center', 'valign' => 'center', 'uppercase' => false,
+            'left' => 8, 'top' => 24, 'width' => 84, 'height' => 28,
+            'font_size' => 7.5, 'line_height' => 1.2, 'letter_spacing' => 0.02,
+            'align' => 'center', 'valign' => 'center', 'uppercase' => true,
         ],
     ],
 ];

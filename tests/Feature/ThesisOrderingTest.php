@@ -218,7 +218,7 @@ class ThesisOrderingTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors(['cover_title', 'imprint_color', 'university']);
     }
 
-    public function test_custom_cover_requires_text_and_color_without_university(): void
+    public function test_custom_cover_requires_text_color_and_university(): void
     {
         $this->seed(ProductSeeder::class);
         Storage::fake('local');
@@ -233,7 +233,7 @@ class ThesisOrderingTest extends TestCase
             'burn_cd' => false,
             'copies' => 1,
             'shipping_method' => 'pickup',
-        ])->assertUnprocessable()->assertJsonValidationErrors(['cover_text', 'imprint_color']);
+        ])->assertUnprocessable()->assertJsonValidationErrors(['cover_text', 'imprint_color', 'university']);
 
         $this->postJson('/api/v1/thesis/quote', [
             'upload_token' => $upload->json('upload_token'),
@@ -243,6 +243,7 @@ class ThesisOrderingTest extends TestCase
             'cover' => 'custom',
             'cover_text' => 'Moja praca',
             'imprint_color' => 'silver',
+            'university' => 'us',
             'burn_cd' => false,
             'copies' => 1,
             'shipping_method' => 'pickup',
