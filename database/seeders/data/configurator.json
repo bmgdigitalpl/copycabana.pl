@@ -1,0 +1,92 @@
+{
+    "druk": {
+        "page_prices": {"bw": 0.2, "color": 0.5},
+        "finishes": {
+            "none": {"label": "Bez wykończenia", "price": 0},
+            "staples": {"label": "Spinanie zeszytowe", "price": 4},
+            "folder": {"label": "Teczka", "price": 8},
+            "channel": {"label": "Oprawa kanałowa", "price": 18}
+        },
+        "max_copies": 50
+    },
+    "praca-dyplomowa": {
+        "page_prices": {"bw": 0.2, "color": 0.5},
+        "bindings": {
+            "soft": {"label": "Oprawa miękka", "price": 0, "hint": "Klasyczna broszura. Częsty standard wydziałów."},
+            "channel": {"label": "Oprawa kanałowa", "price": 25, "hint": "Klejony blok, równy grzbiet."},
+            "hard": {"label": "Oprawa twarda", "price": 50, "hint": "Sztywna oprawa. Premium w obronie."}
+        },
+        "covers": {
+            "none": {"label": "Bez napisu", "price": 0},
+            "standard": {"label": "Standardowy napis", "price": 15},
+            "custom": {"label": "Własny napis", "price": 20}
+        },
+        "universities": {
+            "us": "Uniwersytet Śląski w Katowicach",
+            "ue": "Uniwersytet Ekonomiczny w Katowicach",
+            "polsl": "Politechnika Śląska",
+            "awf": "Akademia Wychowania Fizycznego w Katowicach",
+            "asp": "Akademia Sztuk Pięknych w Katowicach",
+            "am": "Akademia Muzyczna im. Karola Szymanowskiego w Katowicach",
+            "sum": "Śląski Uniwersytet Medyczny w Katowicach",
+            "wszop": "Wyższa Szkoła Zarządzania Ochroną Pracy w Katowicach",
+            "wsb": "Uniwersytet WSB Merito Chorzów",
+            "ag": "Akademia Górnośląska im. Wojciecha Korfantego w Katowicach"
+        },
+        "cover_titles": {
+            "licencjacka": "Praca Licencjacka",
+            "magisterska": "Praca Magisterska",
+            "inzynierska": "Praca Inżynierska",
+            "dyplomowa": "Praca Dyplomowa",
+            "doktorska": "Praca Doktorska",
+            "projekt_inzynierski": "Projekt Inżynierski",
+            "rozprawa_doktorska": "Rozprawa Doktorska",
+            "master_thesis": "Master Thesis",
+            "bachelor_thesis": "Bachelor Thesis",
+            "projekt_dyplomowy": "Projekt Dyplomowy"
+        },
+        "imprint_colors": {
+            "gold": {"label": "Złoty", "hex": "#D4AF37"},
+            "silver": {"label": "Srebrny", "hex": "#C0C0C0"},
+            "white": {"label": "Biały", "hex": "#FFFFFF"},
+            "black": {"label": "Czarny", "hex": "#111827"},
+            "ruby": {"label": "Rubinowy", "hex": "#9B111E"}
+        },
+        "cover_colors": {
+            "fiolet": {"label": "Fiolet", "hex": "#513173", "photo": "thesis-cover-photos/fiolet.jpg"},
+            "blekit": {"label": "Błękit", "hex": "#627B91", "photo": "thesis-cover-photos/blekit.jpg"},
+            "indygo": {"label": "Indygo", "hex": "#54527C", "photo": "thesis-cover-photos/indygo.jpg"},
+            "lawenda": {"label": "Lawenda", "hex": "#7A728A", "photo": "thesis-cover-photos/lawenda.jpg"},
+            "niebieski-jasny": {"label": "Niebieski jasny", "hex": "#5B7795", "photo": "thesis-cover-photos/niebieski-jasny.jpg"},
+            "granat-metalik": {"label": "Granat metalik", "hex": "#2E4160", "photo": "thesis-cover-photos/granat-metalik.jpg"},
+            "bezowy": {"label": "Beżowy", "hex": "#AC9478", "photo": "thesis-cover-photos/bezowy.jpg"},
+            "turkus": {"label": "Turkus", "hex": "#0F6781", "photo": "thesis-cover-photos/turkus.jpg"},
+            "chabrowy": {"label": "Chabrowy", "hex": "#4A5A7D", "photo": "thesis-cover-photos/chabrowy.jpg"},
+            "czarny": {"label": "Czarny", "hex": "#1A1B20", "photo": "thesis-cover-photos/czarny.jpg"},
+            "bordowy": {"label": "Bordowy", "hex": "#542226", "photo": "thesis-cover-photos/bordowy.jpg"},
+            "granat-ciemny": {"label": "Granat ciemny", "hex": "#21263A", "photo": "thesis-cover-photos/granat-ciemny.jpg"},
+            "zielen-metalik": {"label": "Zieleń metalik", "hex": "#3A453E", "photo": "thesis-cover-photos/zielen-metalik.jpg"},
+            "liliowy": {"label": "Liliowy", "hex": "#6F5A85", "photo": "thesis-cover-photos/liliowy.jpg"},
+            "granat-klasyczny": {"label": "Granat klasyczny", "hex": "#303549", "photo": "thesis-cover-photos/granat-klasyczny.jpg"},
+            "zielen-butelkowa": {"label": "Zieleń butelkowa", "hex": "#243735", "photo": "thesis-cover-photos/zielen-butelkowa.jpg"},
+            "grafit-metalik": {"label": "Grafit metalik", "hex": "#55575A", "photo": "thesis-cover-photos/grafit-metalik.jpg"},
+            "bialy": {"label": "Biały", "hex": "#999894", "photo": "thesis-cover-photos/bialy.jpg"},
+            "szary-jasny": {"label": "Szary jasny", "hex": "#8B847B", "photo": "thesis-cover-photos/szary-jasny.jpg"},
+            "srebrny-metalik": {"label": "Srebrny metalik", "hex": "#8D8C8A", "photo": "thesis-cover-photos/srebrny-metalik.jpg"},
+            "perlowy": {"label": "Perłowy", "hex": "#9B9996", "photo": "thesis-cover-photos/perlowy.jpg"},
+            "czerwony": {"label": "Czerwony", "hex": "#87282F", "photo": "thesis-cover-photos/czerwony.jpg"},
+            "braz": {"label": "Brąz", "hex": "#3F2620", "photo": "thesis-cover-photos/braz.jpg"},
+            "kremowy": {"label": "Kremowy", "hex": "#988975", "photo": "thesis-cover-photos/kremowy.jpg"},
+            "zloty-metalik": {"label": "Złoty metalik", "hex": "#876A3F", "photo": "thesis-cover-photos/zloty-metalik.jpg"},
+            "czerwony-jasny": {"label": "Czerwony jasny", "hex": "#930D17", "photo": "thesis-cover-photos/czerwony-jasny.jpg"},
+            "sliwkowy": {"label": "Śliwkowy", "hex": "#884068", "photo": "thesis-cover-photos/sliwkowy.jpg"},
+            "karmelowy": {"label": "Karmelowy", "hex": "#886D57", "photo": "thesis-cover-photos/karmelowy.jpg"},
+            "rozowy": {"label": "Różowy", "hex": "#A97582", "photo": "thesis-cover-photos/rozowy.jpg"},
+            "malinowy": {"label": "Malinowy", "hex": "#9A183F", "photo": "thesis-cover-photos/malinowy.jpg"},
+            "limonkowy": {"label": "Limonkowy", "hex": "#8D8921", "photo": "thesis-cover-photos/limonkowy.jpg"}
+        },
+        "cd": {"label": "Nagranie pracy na CD", "price": 20},
+        "spine_engraving": {"label": "Grawerowanie imienia i nazwiska na grzbiecie", "price": 30},
+        "max_copies": 10
+    }
+}
