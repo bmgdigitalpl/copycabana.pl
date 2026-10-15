@@ -110,6 +110,30 @@ class MarketingPagesTest extends TestCase
             ->assertSee('font-test.css', false);
     }
 
+    public function test_homepage_hero_and_trust_photo_have_the_cmyk_tab_with_four_columns(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $content = $this->get(route('home'))->assertOk()->getContent();
+
+        $this->assertSame(2, substr_count($content, 'class="cc-hero-cmyk"'));
+        $this->assertStringContainsString('<span></span><span></span><span></span><span></span>', $content);
+    }
+
+    public function test_homepage_gallery_cards_have_four_cmyk_dots(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $content = $this->get(route('home'))->assertOk()->getContent();
+
+        $cards = substr_count($content, 'cc-gallery-card');
+        $this->assertGreaterThan(0, $cards);
+        $this->assertSame(
+            substr_count($content, 'class="cc-gallery-card'),
+            substr_count($content, '<span class="cc-cmyk-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'),
+        );
+    }
+
     public function test_homepage_uses_the_main_layout_and_exposes_the_three_order_paths(): void
     {
         $this->seed(ProductSeeder::class);

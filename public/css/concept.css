@@ -302,6 +302,21 @@
   background: transparent;
 }
 
+/* Full-width CMYK tab along the top edge of the hero, the same four colours as the mail header. */
+.cc-hero-cmyk {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: 0.6rem;
+}
+
+.cc-hero-cmyk span:nth-child(1) { background: #00a0df; }
+.cc-hero-cmyk span:nth-child(2) { background: var(--magenta); }
+.cc-hero-cmyk span:nth-child(3) { background: var(--geel); }
+.cc-hero-cmyk span:nth-child(4) { background: #333333; }
+
 .cc-hero-grid {
   display: grid;
   gap: 2.5rem;
@@ -983,9 +998,51 @@
 }
 
 .cc-gallery-media {
+  position: relative;
   display: block;
   color: inherit;
   text-decoration: none;
+}
+
+/* Four small CMYK dots in the corner of a gallery image; they hop one after another on hover. */
+.cc-gallery-card:not(:has(.cc-gallery-media)) { position: relative; }
+
+.cc-cmyk-dots {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: flex;
+  gap: 0.35rem;
+  pointer-events: none;
+}
+
+.cc-cmyk-dots i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  opacity: 0.75;
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.cc-cmyk-dots i:nth-child(1) { background: #00a0df; }
+.cc-cmyk-dots i:nth-child(2) { background: var(--magenta); }
+.cc-cmyk-dots i:nth-child(3) { background: var(--geel); box-shadow: 0 0 0 1px rgba(6, 58, 96, 0.12); }
+.cc-cmyk-dots i:nth-child(4) { background: #333333; }
+
+@keyframes cc-cmyk-hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-0.35rem) scale(1.25); }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .cc-gallery-card:hover .cc-cmyk-dots i {
+    opacity: 1;
+    animation: cc-cmyk-hop 650ms ease-in-out;
+  }
+
+  .cc-gallery-card:hover .cc-cmyk-dots i:nth-child(2) { animation-delay: 90ms; }
+  .cc-gallery-card:hover .cc-cmyk-dots i:nth-child(3) { animation-delay: 180ms; }
+  .cc-gallery-card:hover .cc-cmyk-dots i:nth-child(4) { animation-delay: 270ms; }
 }
 
 .cc-gallery-card figcaption,

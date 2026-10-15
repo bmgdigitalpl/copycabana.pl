@@ -7,6 +7,7 @@
 <main class="cc-page">
   {{-- 01 Hero --}}
   <section class="cc-hero">
+    <div class="cc-hero-cmyk" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
     <div class="cc-container cc-hero-grid">
       <div class="cc-hero-copy">
         <h1 class="cc-hero-title reveal reveal-delay-1">{{ $cms['hero']['title_before'] }}<br><em>{{ $cms['hero']['title_emphasis'] }}</em></h1>
@@ -62,6 +63,7 @@
 
       <div class="cc-trust-layout">
         <figure class="cc-trust-photo reveal reveal-delay-1">
+          <div class="cc-hero-cmyk" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
           <img src="{{ asset('images/jarek-jacek.png') }}" alt="Jarek i Jacek z CopyCabana w drukarni w Katowicach">
         </figure>
 
@@ -123,6 +125,7 @@
             <div class="cc-gallery-card reveal">
               <a class="cc-gallery-media" href="{{ $item['url'] }}">
                 <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}">
+                <span class="cc-cmyk-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                 <span class="cc-gallery-title"><i class="fas {{ $item['icon'] ?? 'fa-print' }}" aria-hidden="true"></i>{{ $item['title'] }}</span>
               </a>
               <div class="cc-gallery-actions">
@@ -132,6 +135,7 @@
           @else
             <figure class="cc-gallery-card reveal">
               <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}">
+              <span class="cc-cmyk-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
               <figcaption><span><i class="fas {{ $item['icon'] ?? 'fa-print' }}" aria-hidden="true"></i>{{ $item['title'] }}</span></figcaption>
             </figure>
           @endif
