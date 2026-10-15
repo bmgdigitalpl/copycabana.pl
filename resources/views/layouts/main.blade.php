@@ -4,8 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'CopyCabana — drukarnia w Katowicach')</title>
-  <meta name="description" content="@yield('description', 'CopyCabana — druk cyfrowy i oprawa prac w Katowicach. Prace dyplomowe i materiały dla firm.')">
-  <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
+  @include('layouts.partials.seo')
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&amp;family=Roboto:wght@400;500;700&amp;family=Roboto+Slab:wght@500;600;700&amp;display=swap" rel="stylesheet">
@@ -44,7 +43,7 @@
         <a href="{{ route('services.business') }}">Dla firm</a>
       </nav>
       <div class="cc-header-actions">
-        <a href="{{ route('cart') }}" class="cc-header-icon" aria-label="Koszyk">
+        <a href="{{ route('cart') }}" class="cc-header-icon" aria-label="Koszyk" data-cart-link hidden>
           <i class="fas fa-cart-shopping" aria-hidden="true"></i>
           <span class="cart-badge cc-cart-badge" aria-live="polite" style="display:none">0</span>
         </a>
@@ -69,7 +68,7 @@
       <a href="{{ route('home') }}">Start</a>
         <a href="{{ route('services.diploma') }}">Prace dyplomowe</a>
         <a href="{{ route('services.business') }}">Druk dla firm</a>
-        <a href="{{ route('cart') }}">Koszyk</a>
+        <a href="{{ route('cart') }}" data-cart-link hidden>Koszyk</a>
       @auth
         @if(auth()->user()->isCustomer())
           <a href="{{ route('customer.dashboard') }}">Moje konto</a>

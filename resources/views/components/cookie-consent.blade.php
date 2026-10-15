@@ -8,7 +8,7 @@
 >
   <div class="cc-cookie-consent__text">
     <p class="cc-cookie-consent__eyebrow">Prywatność</p>
-    <h2>Spokojnie, tylko cookies.</h2>
+    <h2>Spokojnie, tylko cookies</h2>
     <p>Używamy niezbędnych cookies do działania strony. Analityczne włączymy tylko, jeśli się zgodzisz.</p>
     <a href="{{ route('cookies') }}">Polityka cookies</a>
   </div>

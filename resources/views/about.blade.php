@@ -3,10 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>O nas — CopyCabana Drukarnia Katowice</title>
-  <meta name="description" content="Poznaj CopyCabana — drukarnia w Katowicach z ponad 20-letnim doświadczeniem w poligrafii.">
-
-  <link rel="icon" href="images/favicon.png" type="image/png">
+  <title>O nas — drukarnia w Katowicach od 2002 roku | CopyCabana</title>
+  @include('layouts.partials.seo', ['seoTitleOverride' => 'O nas — drukarnia w Katowicach od 2002 roku | CopyCabana', 'seoDescriptionOverride' => 'CopyCabana to drukarnia w centrum Katowic działająca od 2002 roku: od punktu ksero po druk offsetowy i wielkoformatowy dla studentów, firm i agencji.'])
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

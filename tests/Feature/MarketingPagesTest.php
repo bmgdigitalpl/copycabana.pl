@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\CmsSection;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\CmsContent;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class MarketingPagesTest extends TestCase
@@ -38,7 +40,8 @@ class MarketingPagesTest extends TestCase
             ->assertSee('Testowy nagłówek')
             ->assertSee('z CMS.')
             ->assertSee('Zamawiam pracę')
-            ->assertSee('Opis zapisany w CMS.');
+            ->assertSee('Opis zapisany w CMS.')
+            ->assertDontSee('cc-hero-hint', false);
     }
 
     public function test_staff_cannot_update_cms_sections(): void
@@ -110,14 +113,106 @@ class MarketingPagesTest extends TestCase
             ->assertSee('font-test.css', false);
     }
 
+    public function test_homepage_thesis_cta_comes_before_the_gallery_and_the_process_after_it(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $response = $this->get(route('home'))->assertOk()
+            ->assertSee('Skonfiguruj swoją pracę dyplomową')
+            ->assertSee('Loga najpopularniejszych uczelni na okładce')
+            ->assertSee('Oprawa twarda, kanałowa lub miękka')
+            ->assertSee(asset('images/produkty/graduation.png'), false)
+            ->assertDontSee('cc-cover-preview--home', false)
+            ->assertSee('href="'.route('services.diploma').'" class="btn-magenta inline-block">Przejdź do konfiguratora', false);
+        $content = $response->getContent();
+
+        $cta = strpos($content, 'cc-thesis-cta-grid');
+        $gallery = strpos($content, 'class="cc-gallery"');
+        $process = strpos($content, 'data-cc-process');
+        $this->assertLessThan($gallery, $cta);
+        $this->assertLessThan($process, $gallery);
+    }
+
+    public function test_homepage_thesis_cta_shows_a_cover_with_colour_swatches_when_the_configurator_is_set_up(): void
+    {
+        $this->seed(ProductSeeder::class);
+        Storage::fake('public');
+        $this->artisan('configurator:sync')->assertSuccessful();
+
+        $response = $this->get(route('home'))->assertOk()->assertSee('cc-cover-preview--home', false)->assertSee('cc-home-swatches', false);
+
+        $this->assertStringContainsString('Granat klasyczny', $response->getContent());
+        $this->assertStringNotContainsString('width="600" height="600"', $response->getContent());
+    }
+
+    public function test_homepage_hero_lists_three_selling_points_with_checkmarks(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $content = $this->get(route('home'))->assertOk()
+            ->assertSee('Konfigurator online')
+            ->assertSee('Wysyłka do całej Polski')
+            ->assertSee('Wieloletnie doświadczenie')
+            ->getContent();
+
+        $hero = substr($content, 0, (int) strpos($content, 'cc-thesis-cta-grid'));
+        $this->assertSame(3, substr_count($hero, '<i class="fas fa-check" aria-hidden="true"></i>'));
+    }
+
     public function test_homepage_hero_and_trust_photo_have_the_cmyk_tab_with_four_columns(): void
     {
         $this->seed(ProductSeeder::class);
 
         $content = $this->get(route('home'))->assertOk()->getContent();
 
-        $this->assertSame(2, substr_count($content, 'class="cc-hero-cmyk"'));
+        $this->assertSame(3, substr_count($content, 'class="cc-hero-cmyk"'));
         $this->assertStringContainsString('<span></span><span></span><span></span><span></span>', $content);
+    }
+
+    public function test_years_of_experience_count_from_2002_with_the_polish_plural(): void
+    {
+        $cases = ['2026-06-01' => '24 lata', '2027-06-01' => '25 lat', '2031-06-01' => '29 lat', '2014-06-01' => '12 lat', '2024-06-01' => '22 lata'];
+
+        foreach ($cases as $date => $expected) {
+            $this->travelTo($date);
+
+            $this->assertSame($expected, app(CmsContent::class)->yearsOfExperience());
+        }
+    }
+
+    public function test_saved_cms_titles_lose_their_trailing_dots_and_the_stale_years_in_the_migration(): void
+    {
+        CmsSection::query()->create(['key' => 'why', 'name' => 'Dlaczego CopyCabana', 'payload' => [
+            'heading' => 'Dlaczego CopyCabana.',
+            'items' => [
+                ['title' => '22 lata doświadczenia', 'body' => 'Od 2002 roku.'],
+                ['title' => 'Klienci z całej Polski', 'body' => 'Realizujemy druk cyfrowy, offsetowy i wielkoformatowy: od dokumentów po materiały reklamowe.'],
+            ],
+        ]]);
+        CmsSection::query()->create(['key' => 'contact', 'name' => 'Kontakt', 'payload' => ['title_before' => 'Jesteśmy w Katowicach.', 'title_emphasis' => 'Napisz albo zadzwoń.']]);
+        CmsSection::query()->create(['key' => 'hero', 'name' => 'Hero', 'payload' => ['secondary_label' => 'Wyceń druk dla firmy']]);
+        CmsSection::query()->create(['key' => 'hero-cards', 'name' => 'Kafelki hero', 'payload' => ['items' => [['title' => 'Druk', 'body' => 'Prześlij plik mailem. Podaj liczbę egzemplarzy oraz druk kolorowy lub czarno-biały.']]]]);
+
+        (require database_path('migrations/2026_10_15_183116_update_cms_sections_titles_without_trailing_dots.php'))->up();
+
+        $why = CmsSection::query()->where('key', 'why')->firstOrFail()->payload;
+        $contact = CmsSection::query()->where('key', 'contact')->firstOrFail()->payload;
+        $this->assertSame('Dlaczego CopyCabana', $why['heading']);
+        $this->assertSame('{years_of_experience} doświadczenia', $why['items'][0]['title']);
+        $this->assertSame('Napisz albo zadzwoń', $contact['title_emphasis']);
+        $this->assertStringEndsWith('na terenie całej Polski.', $why['items'][1]['body']);
+        $this->assertStringStartsWith('Dodaj plik w konfiguratorze', CmsSection::query()->where('key', 'hero-cards')->firstOrFail()->payload['items'][0]['body']);
+        $this->assertSame('Oferta dla firm', CmsSection::query()->where('key', 'hero')->firstOrFail()->payload['secondary_label']);
+    }
+
+    public function test_cart_links_in_the_navigation_start_hidden_until_the_cart_has_items(): void
+    {
+        $this->seed(ProductSeeder::class);
+
+        $content = $this->get(route('home'))->assertOk()->getContent();
+
+        $this->assertSame(2, substr_count($content, 'data-cart-link hidden'));
+        $this->assertStringContainsString("querySelectorAll('[data-cart-link]')", file_get_contents(public_path('js/cart.js')));
     }
 
     public function test_homepage_gallery_cards_have_four_cmyk_dots(): void
@@ -143,10 +238,11 @@ class MarketingPagesTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Od pliku do')
-            ->assertSee('gotowego wydruku.')
+            ->assertSee('gotowego wydruku')
             ->assertDontSee('CopyCabana · Drukarnia w Katowicach')
             ->assertDontSee('Prace dyplomowe, dokumenty PDF oraz materiały dla firm i agencji.')
-            ->assertSee('Dlaczego CopyCabana.')
+            ->assertSee('Dlaczego CopyCabana')
+            ->assertDontSee('Dlaczego CopyCabana.')
             ->assertDontSee('Dlaczego my?')
             ->assertDontSee('Możesz nam zaufać.')
             ->assertDontSee('Doświadczenie, zaufanie i lokalna drukarnia, do której możesz przyjść osobiście.')
@@ -154,8 +250,10 @@ class MarketingPagesTest extends TestCase
             ->assertSee('Dbamy o jasną komunikację, realne terminy i efekt, który możesz odebrać albo wysłać dalej bez poprawek.')
             ->assertSee(asset('images/jarek-jacek.png'), false)
             ->assertSee('Jarek i Jacek z CopyCabana w drukarni w Katowicach')
-            ->assertSee('22 lata doświadczenia')
+            ->assertSee(app(CmsContent::class)->yearsOfExperience().' doświadczenia')
+            ->assertDontSee('22 lata doświadczenia')
             ->assertSee('Klienci z całej Polski')
+            ->assertSee('od dokumentów po materiały reklamowe na terenie całej Polski.')
             ->assertSee('Drukarnia na miejscu')
             ->assertSee('cc-trust-layout', false)
             ->assertSee('cc-trust-list', false)
@@ -163,8 +261,9 @@ class MarketingPagesTest extends TestCase
             ->assertSee('Skonfiguruj swoją pracę')
             ->assertSee('fa-graduation-cap', false)
             ->assertSee('fa-building', false)
-            ->assertSee('Wyceń druk dla firmy')
-            ->assertSee('Jak zamienić plik w gotowy wydruk.')
+            ->assertSee('Oferta dla firm')
+            ->assertDontSee('Wyceń druk dla firmy')
+            ->assertSee('Jak zamienić plik w gotowy wydruk')
             ->assertDontSee('Jak to działa')
             ->assertDontSee('Od pliku do gotowego wydruku. Wybierasz, my dbamy o resztę.')
             ->assertSee('cc-section-head--left', false)
@@ -267,8 +366,9 @@ class MarketingPagesTest extends TestCase
 
         $response
             ->assertSee('Kontakt')
-            ->assertSee('Jesteśmy w Katowicach.')
-            ->assertSee('Napisz albo zadzwoń.')
+            ->assertSee('Jesteśmy w Katowicach')
+            ->assertSee('Napisz albo zadzwoń')
+            ->assertDontSee('Napisz albo zadzwoń.')
             ->assertSee('Masz plik, pytanie o termin albo niestandardowe zlecenie?')
             ->assertSee('href="tel:502293849"', false)
             ->assertSee('502 293 849')
@@ -326,9 +426,9 @@ class MarketingPagesTest extends TestCase
     {
         $this->seed(ProductSeeder::class);
         $pages = [
-            'services.diploma' => 'Praca napisana.',
+            'services.diploma' => 'Praca napisana',
             'services.business' => 'Wiele produktów,',
-            'contact' => 'Jesteśmy w Katowicach.',
+            'contact' => 'Jesteśmy w Katowicach',
             'portfolio' => 'Realizacje',
             'faq' => 'Najczęstsze pytania',
             'delivery' => 'Dostawa i odbiór',
@@ -406,7 +506,7 @@ class MarketingPagesTest extends TestCase
             ->assertSee('data-cookie-accept', false)
             ->assertSee('data-cookie-reject', false)
             ->assertSee('data-cookie-customize', false)
-            ->assertSee('Spokojnie, tylko cookies.')
+            ->assertSee('Spokojnie, tylko cookies')
             ->assertSee('data-analytics-id=""', false)
             ->assertDontSee('https://www.googletagmanager.com/gtag/js', false);
     }
@@ -689,7 +789,7 @@ class MarketingPagesTest extends TestCase
         $this->seed(ProductSeeder::class);
         $content = $this->get(route('services.diploma'))->getContent();
 
-        $this->assertStringContainsString('Wybierz swoją oprawę.', $content);
+        $this->assertStringContainsString('Wybierz swoją oprawę', $content);
         $this->assertStringNotContainsString('cc-binding-image-placeholder', $content);
         $this->assertStringNotContainsString('Miejsce na zdjęcie', $content);
         $this->assertStringNotContainsString('cc-book', $content);

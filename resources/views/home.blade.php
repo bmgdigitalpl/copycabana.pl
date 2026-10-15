@@ -1,7 +1,11 @@
 @extends('layouts.main')
 
-@section('title', 'Drukarnia CopyCabana w Katowicach — prace dyplomowe, druk dla firm')
-@section('description', 'Prace dyplomowe z oprawą i materiały dla firm. Konfigurator online — CopyCabana, Katowice, ul. Bankowa 11.')
+@section('title', 'CopyCabana — drukarnia w Katowicach: prace dyplomowe i druk')
+@section('description', 'Drukarnia w centrum Katowic: druk i oprawa prac dyplomowych oraz wizytówki, ulotki, plakaty i banery dla firm. Zamów online w konfiguratorze.')
+
+@push('structured-data')
+  @include('layouts.partials.schema-local-business')
+@endpush
 
 @section('content')
 <main class="cc-page">
@@ -12,8 +16,13 @@
       <div class="cc-hero-copy">
         <h1 class="cc-hero-title reveal reveal-delay-1">{{ $cms['hero']['title_before'] }}<br><em>{{ $cms['hero']['title_emphasis'] }}</em></h1>
         @if(! empty($cms['hero']['semantic_intro']))
-          <p class="cc-hero-hint reveal reveal-delay-2"><i class="fas fa-circle-info" aria-hidden="true"></i> {{ $cms['hero']['semantic_intro'] }}</p>
+          <p class="reveal reveal-delay-2">{{ $cms['hero']['semantic_intro'] }}</p>
         @endif
+        <ul class="cc-hero-checks reveal reveal-delay-2">
+          <li><i class="fas fa-check" aria-hidden="true"></i>Konfigurator online</li>
+          <li><i class="fas fa-check" aria-hidden="true"></i>Wysyłka do całej Polski</li>
+          <li><i class="fas fa-check" aria-hidden="true"></i>Wieloletnie doświadczenie</li>
+        </ul>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="{{ $cms['hero']['primary_url'] }}" class="btn-magenta inline-block"><i class="fas {{ $cms['hero']['primary_icon'] }} mr-2" aria-hidden="true"></i>{{ $cms['hero']['primary_label'] }} <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
           <a href="{{ $cms['hero']['secondary_url'] }}" class="btn-geel inline-block"><i class="fas {{ $cms['hero']['secondary_icon'] }} mr-2" aria-hidden="true"></i>{{ $cms['hero']['secondary_label'] }}</a>
@@ -55,7 +64,7 @@
   ]" />
 
   {{-- 03 Trust --}}
-  <section class="cc-section cc-section--light">
+  <section class="cc-section cc-section--muted">
     <div class="cc-container">
       <x-concept.section-heading>
         {{ $cms['why']['heading'] }}
@@ -64,7 +73,7 @@
       <div class="cc-trust-layout">
         <figure class="cc-trust-photo reveal reveal-delay-1">
           <div class="cc-hero-cmyk" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-          <img src="{{ asset('images/jarek-jacek.png') }}" alt="Jarek i Jacek z CopyCabana w drukarni w Katowicach">
+          <img src="{{ asset('images/jarek-jacek.png') }}" alt="Jarek i Jacek z CopyCabana w drukarni w Katowicach" width="1086" height="1448" loading="lazy" decoding="async">
         </figure>
 
         <div class="cc-trust-copy reveal reveal-delay-2">
@@ -97,17 +106,32 @@
     </div>
   </section>
 
-  {{-- 04 Animated process --}}
-  <section class="cc-section cc-section--dark cc-process" data-cc-process>
-    <div class="cc-container">
-      <x-concept.section-heading dark>
-        {{ $cms['process']['heading'] }}
-      </x-concept.section-heading>
+  {{-- 04 Thesis configurator CTA --}}
+  <section class="cc-section cc-section--light cc-thesis-cta">
+    <div class="cc-container cc-thesis-cta-grid">
+      <div class="cc-thesis-cta-copy">
+        <x-concept.section-heading label="Prace dyplomowe">
+          <x-slot:lead>Dodaj PDF, wybierz oprawę i okładkę, zobacz cenę oraz termin i zamów z odbiorem w Katowicach lub wysyłką.</x-slot:lead>
+          Skonfiguruj swoją pracę dyplomową
+        </x-concept.section-heading>
 
-      <div class="cc-process-steps">
-        @foreach($cms['process']['items'] as $step)
-          <article class="cc-process-step"><span class="num">{{ $step['number'] }}</span><h3>{{ $step['title'] }}</h3><p>{{ $step['body'] }}</p></article>
-        @endforeach
+        <ul class="cc-hero-checks reveal reveal-delay-1">
+          <li><i class="fas fa-check" aria-hidden="true"></i>Loga najpopularniejszych uczelni na okładce</li>
+          <li><i class="fas fa-check" aria-hidden="true"></i>Standardowy lub własny napis na okładce</li>
+          <li><i class="fas fa-check" aria-hidden="true"></i>Oprawa twarda, kanałowa lub miękka</li>
+        </ul>
+        <div class="cc-hero-actions reveal reveal-delay-2">
+          <a href="{{ route('services.diploma') }}" class="btn-magenta inline-block">Przejdź do konfiguratora <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div class="cc-thesis-cta-media reveal reveal-delay-1">
+        <div class="cc-hero-cmyk" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        @if($homeCover)
+          <x-concept.home-cover-preview :preview="$homeCover['preview']" :colors="$homeCover['colors']" />
+        @else
+          <img src="{{ $thesisImage }}" alt="Oprawiona praca dyplomowa" width="600" height="600" loading="lazy" decoding="async">
+        @endif
       </div>
     </div>
   </section>
@@ -124,7 +148,7 @@
           @if(! empty($item['url']))
             <div class="cc-gallery-card reveal">
               <a class="cc-gallery-media" href="{{ $item['url'] }}">
-                <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}">
+                <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}" loading="lazy" decoding="async">
                 <span class="cc-cmyk-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                 <span class="cc-gallery-title"><i class="fas {{ $item['icon'] ?? 'fa-print' }}" aria-hidden="true"></i>{{ $item['title'] }}</span>
               </a>
@@ -134,7 +158,7 @@
             </div>
           @else
             <figure class="cc-gallery-card reveal">
-              <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}">
+              <img src="{{ $item['image_url'] }}" alt="{{ $item['alt'] ?? $item['title'] }}" loading="lazy" decoding="async">
               <span class="cc-cmyk-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
               <figcaption><span><i class="fas {{ $item['icon'] ?? 'fa-print' }}" aria-hidden="true"></i>{{ $item['title'] }}</span></figcaption>
             </figure>
@@ -144,7 +168,22 @@
     </div>
   </section>
 
-  {{-- 06 FAQ --}}
+  {{-- 06 Animated process --}}
+  <section class="cc-section cc-section--dark cc-process" data-cc-process>
+    <div class="cc-container">
+      <x-concept.section-heading dark>
+        {{ $cms['process']['heading'] }}
+      </x-concept.section-heading>
+
+      <div class="cc-process-steps">
+        @foreach($cms['process']['items'] as $step)
+          <article class="cc-process-step"><span class="num">{{ $step['number'] }}</span><h3>{{ $step['title'] }}</h3><p>{{ $step['body'] }}</p></article>
+        @endforeach
+      </div>
+    </div>
+  </section>
+
+  {{-- 07 FAQ --}}
   <section class="cc-section cc-section--muted">
     <div class="cc-container">
       <x-concept.section-heading :label="$cms['faq']['label']" align="center">
@@ -156,7 +195,7 @@
     </div>
   </section>
 
-  {{-- 07 Contact hero --}}
+  {{-- 08 Contact hero --}}
   <section class="cc-hero">
     <div class="cc-container cc-hero-grid">
       <div class="cc-hero-copy">
@@ -181,7 +220,7 @@
     </div>
   </section>
 
-  {{-- 08 Final CTA --}}
+  {{-- 09 Final CTA --}}
   <x-concept.closing-cta heading="Masz już plik?"
     :items="[
       ['href' => route('services.diploma'), 'title' => 'Praca dyplomowa', 'note' => 'druk + oprawa + odbiór', 'icon' => 'fa-graduation-cap'],

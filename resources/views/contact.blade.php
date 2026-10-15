@@ -1,7 +1,11 @@
 @extends('layouts.main')
 
-@section('title', 'Kontakt — CopyCabana Drukarnia Katowice')
-@section('description', 'Skontaktuj się z drukarnią CopyCabana w Katowicach. Telefon, email, mapa — ul. Bankowa 11.')
+@section('title', 'Kontakt — drukarnia CopyCabana, ul. Bankowa 11 Katowice')
+@section('description', 'Zadzwoń lub napisz: 502 293 849, 504 939 094, biuro@copycabana.pl. Drukarnia CopyCabana, ul. Bankowa 11, Katowice. Pn–Pt 8–16, sob. 9–15.')
+
+@push('structured-data')
+  @include('layouts.partials.schema-local-business')
+@endpush
 
 @section('content')
 <main class="cc-page">
@@ -9,7 +13,7 @@
     <div class="cc-container cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Kontakt</p>
-        <h1 class="cc-hero-title reveal reveal-delay-1">Jesteśmy w Katowicach.<em>Napisz albo zadzwoń.</em></h1>
+        <h1 class="cc-hero-title reveal reveal-delay-1">Jesteśmy w Katowicach<em>Napisz albo zadzwoń</em></h1>
         <p class="reveal reveal-delay-2">Masz plik, pytanie o termin albo niestandardowe zlecenie? Odezwij się do drukarni przy ul. Bankowej 11.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="tel:502293849" class="btn-magenta inline-block"><i class="fas fa-phone mr-2" aria-hidden="true"></i>502 293 849</a>
@@ -33,7 +37,7 @@
     <div class="cc-container">
       <x-concept.section-heading label="Dane kontaktowe">
         <x-slot:lead>Najważniejsze informacje w jednym miejscu. Jeśli piszesz o zamówieniu, dodaj format, nakład i termin.</x-slot:lead>
-        Skontaktuj się z pracownią.
+        Skontaktuj się z pracownią
       </x-concept.section-heading>
 
       <div class="cc-local-grid">

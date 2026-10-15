@@ -1,4 +1,4 @@
-@props(['heading' => 'Wybierz ścieżkę.', 'items' => [], 'subheading' => 'Wybierz, co drukujemy.'])
+@props(['heading' => 'Wybierz ścieżkę', 'items' => [], 'subheading' => 'Wybierz, co drukujemy'])
 
 <section class="cc-closing">
   <div class="cc-container">

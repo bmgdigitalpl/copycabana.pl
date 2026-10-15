@@ -24,7 +24,7 @@ class CmsController extends Controller
             'section' => $section,
             'sections' => $content->sections(),
             'label' => $content->label($section),
-            'payload' => $content->section($section),
+            'payload' => $content->section($section, expandPlaceholders: false),
         ]);
     }
 

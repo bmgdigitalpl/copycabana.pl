@@ -27,14 +27,34 @@ class CmsContent
     }
 
     /** @return array<string, mixed> */
-    public function section(string $section): array
+    public function section(string $section, bool $expandPlaceholders = true): array
     {
         $payload = CmsSection::query()->where('key', $section)->value('payload');
 
-        return array_replace_recursive(
+        $content = array_replace_recursive(
             $this->defaults()[$section] ?? [],
             is_array($payload) ? $payload : [],
         );
+
+        if ($expandPlaceholders) {
+            array_walk_recursive($content, function (mixed &$value): void {
+                if (is_string($value)) {
+                    $value = str_replace('{years_of_experience}', $this->yearsOfExperience(), $value);
+                }
+            });
+        }
+
+        return $content;
+    }
+
+    /** The years since the printshop opened in 2002 with the Polish plural, e.g. "24 lata", "26 lat". */
+    public function yearsOfExperience(): string
+    {
+        $years = now()->year - 2002;
+        $lastDigit = $years % 10;
+        $isFew = $lastDigit >= 2 && $lastDigit <= 4 && ! ($years % 100 >= 12 && $years % 100 <= 14);
+
+        return $years.' '.($isFew ? 'lata' : 'lat');
     }
 
     /** @return array<string, array<string, mixed>> */
@@ -72,11 +92,11 @@ class CmsContent
         return [
             'hero' => [
                 'title_before' => 'Od pliku do',
-                'title_emphasis' => 'gotowego wydruku.',
+                'title_emphasis' => 'gotowego wydruku',
                 'primary_label' => 'Skonfiguruj swoją pracę',
                 'primary_link' => 'services.diploma',
                 'primary_icon' => 'fa-graduation-cap',
-                'secondary_label' => 'Wyceń druk dla firmy',
+                'secondary_label' => 'Oferta dla firm',
                 'secondary_link' => 'services.business',
                 'secondary_icon' => 'fa-building',
                 'semantic_intro' => 'W CopyCabana szybko zamówisz druk i oprawę pracy dyplomowej albo materiały firmowe: wizytówki, ulotki, plakaty, banery i rollupy z odbiorem w Katowicach lub wysyłką.',
@@ -84,27 +104,27 @@ class CmsContent
             'hero-cards' => [
                 'items' => [
                     ['title' => '24h', 'body' => 'Druk i oprawa prac dyplomowych. Dostępność terminu potwierdzamy dla Twojego pliku i wybranej oprawy.', 'variant' => 'cyan', 'link' => 'services.diploma'],
-                    ['title' => 'Druk', 'body' => 'Prześlij plik mailem. Podaj liczbę egzemplarzy oraz druk kolorowy lub czarno-biały.', 'variant' => 'magenta', 'link' => 'services.business?product=druk#produkty'],
+                    ['title' => 'Druk', 'body' => 'Dodaj plik w konfiguratorze, wybierz liczbę egzemplarzy oraz druk kolorowy lub czarno-biały.', 'variant' => 'magenta', 'link' => 'services.business?product=druk#produkty'],
                     ['title' => 'Katowice', 'body' => 'Odbiór w centrum miasta przy ul. Bankowej 11.', 'variant' => 'yellow', 'link' => 'contact'],
                     ['title' => 'Dla firm', 'body' => 'Wizytówki, ulotki, plakaty, rollupy, banery i więcej.', 'variant' => 'black', 'link' => 'services.business'],
                 ],
             ],
             'why' => [
-                'heading' => 'Dlaczego CopyCabana.',
+                'heading' => 'Dlaczego CopyCabana',
                 'lead_1' => 'To, co zaczęło się od pojedynczych punktów ksero, urosło w jedną z <em>najlepszych</em> drukarni w Katowicach — dziś drukujemy dla studentów, klientów indywidualnych, firm i agencji z całej Polski.',
                 'lead_2' => 'Łączymy lokalne podejście z produkcją gotową na większą skalę. Jasna komunikacja, <strong>realne terminy</strong> i efekt gotowy do odbioru albo wysyłki bez poprawek.',
                 'cta_primary_label' => 'Skonfiguruj pracę dyplomową',
                 'cta_primary_link' => 'services.diploma',
-                'cta_secondary_label' => 'Wyceń druk dla firmy',
+                'cta_secondary_label' => 'Oferta dla firm',
                 'cta_secondary_link' => 'services.business',
                 'items' => [
-                    ['title' => '22 lata doświadczenia', 'body' => 'Od 2002 roku pomagamy drukować, oprawiać i przygotowywać materiały, które muszą wyglądać profesjonalnie.', 'icon' => 'fa-calendar-check', 'variant' => ''],
-                    ['title' => 'Klienci z całej Polski', 'body' => 'Realizujemy druk cyfrowy, offsetowy i wielkoformatowy: od dokumentów po materiały reklamowe.', 'icon' => 'fa-users', 'variant' => 'yellow'],
+                    ['title' => '{years_of_experience} doświadczenia', 'body' => 'Od 2002 roku pomagamy drukować, oprawiać i przygotowywać materiały, które muszą wyglądać profesjonalnie.', 'icon' => 'fa-calendar-check', 'variant' => ''],
+                    ['title' => 'Klienci z całej Polski', 'body' => 'Realizujemy druk cyfrowy, offsetowy i wielkoformatowy: od dokumentów po materiały reklamowe na terenie całej Polski.', 'icon' => 'fa-users', 'variant' => 'yellow'],
                     ['title' => 'Drukarnia na miejscu', 'body' => 'Znajdziesz nas przy ul. Bankowej 11 w Katowicach. Odbierz zamówienie osobiście albo wybierz wysyłkę.', 'icon' => 'fa-location-dot', 'variant' => 'blue'],
                 ],
             ],
             'process' => [
-                'heading' => 'Jak zamienić plik w gotowy wydruk.',
+                'heading' => 'Jak zamienić plik w gotowy wydruk',
                 'items' => [
                     ['number' => '01', 'title' => 'Wybierasz usługę', 'body' => 'Zaczynasz od pracy dyplomowej, dokumentu PDF albo materiałów firmowych i ustawiasz najważniejsze parametry.'],
                     ['number' => '02', 'title' => 'Dodajesz plik i termin', 'body' => 'Przesyłasz projekt, wybierasz odbiór lub dostawę i widzisz, co jest potrzebne do realizacji.'],
@@ -117,7 +137,7 @@ class CmsContent
             ],
             'faq' => [
                 'label' => 'FAQ',
-                'heading' => 'Zanim wyślesz plik.',
+                'heading' => 'Zanim wyślesz plik',
                 'lead' => 'Najczęstsze pytania przed drukiem. Odpowiadamy prosto, tak jak przy ladzie w drukarni.',
                 'items' => [
                     ['q' => 'W jakim formacie wysłać plik?', 'a' => 'Najbezpieczniej kompletny PDF. Przed zamówieniem sprawdź stronnicowanie, kolejność i numerację stron.'],
@@ -131,8 +151,8 @@ class CmsContent
             ],
             'contact' => [
                 'overline' => 'Kontakt',
-                'title_before' => 'Jesteśmy w Katowicach.',
-                'title_emphasis' => 'Napisz albo zadzwoń.',
+                'title_before' => 'Jesteśmy w Katowicach',
+                'title_emphasis' => 'Napisz albo zadzwoń',
                 'body' => 'Masz plik, pytanie o termin albo niestandardowe zlecenie? Odezwij się do drukarni przy ul. Bankowej 11.',
                 'phone_label' => '502 293 849',
                 'phone_link' => 'tel:502293849',

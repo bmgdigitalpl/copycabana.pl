@@ -164,8 +164,8 @@ body {
 
 @media (min-width: 640px) {
   .cc-cookie-consent {
-    right: auto;
-    left: 1.25rem;
+    right: 1.25rem;
+    left: auto;
     bottom: 1.25rem;
   }
 }

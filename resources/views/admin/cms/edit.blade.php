@@ -31,7 +31,7 @@
             <label>Przycisk drugi<input name="payload[secondary_label]" value="{{ old('payload.secondary_label', $payload['secondary_label'] ?? '') }}" class="mt-1 w-full rounded border p-2" required></label>
             <label>Link przycisku drugiego<input name="payload[secondary_link]" value="{{ old('payload.secondary_link', $payload['secondary_link'] ?? '') }}" class="mt-1 w-full rounded border p-2" required></label>
             <label>Ikona przycisku drugiego<input name="payload[secondary_icon]" value="{{ old('payload.secondary_icon', $payload['secondary_icon'] ?? '') }}" class="mt-1 w-full rounded border p-2"></label>
-            <label class="sm:col-span-2">Opis semantyczny<textarea name="payload[semantic_intro]" rows="4" class="mt-1 w-full rounded border p-2">{{ old('payload.semantic_intro', $payload['semantic_intro'] ?? '') }}</textarea></label>
+            <label class="sm:col-span-2">Opis semantyczny<textarea name="payload[semantic_intro]" rows="4" class="mt-1 w-full rounded border p-2">{{ old('payload.semantic_intro', $payload['semantic_intro'] ?? '') }}</textarea></label>        </div>
         </div>
     @elseif($section === 'hero-cards')
         <div class="grid gap-4">

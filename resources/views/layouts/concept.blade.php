@@ -4,9 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'CopyCabana — koncepcja nowej strony')</title>
-  <meta name="description" content="@yield('description', 'Koncepcja nowej strony CopyCabana: konfigurator druku prac dyplomowych i materiałów dla firm.')">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
+  @include('layouts.partials.seo', ['forceRobots' => 'noindex, nofollow'])
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&amp;family=Roboto:wght@400;500;700&amp;family=Roboto+Slab:wght@500;600;700&amp;display=swap" rel="stylesheet">

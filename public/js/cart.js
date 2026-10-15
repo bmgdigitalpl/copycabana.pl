@@ -64,6 +64,10 @@ const Cart = {
       b.textContent = count;
       b.style.display = count > 0 ? 'flex' : 'none';
     });
+    /* The cart link in the navigation shows only while the cart has something in it. */
+    document.querySelectorAll('[data-cart-link]').forEach(link => {
+      link.hidden = count === 0;
+    });
   }
 };
 

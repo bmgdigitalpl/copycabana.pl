@@ -1,7 +1,11 @@
 @extends('layouts.main')
 
-@section('title', 'Druk dla firm — konfigurator zleceń | CopyCabana')
-@section('description', 'Wizytówki, ulotki, plakaty, banery, rollupy i dokumenty w jednym zamówieniu. Konfigurator druku dla firm — CopyCabana, Katowice.')
+@section('title', 'Druk dla firm w Katowicach — wycena online | CopyCabana')
+@section('description', 'Wizytówki, ulotki, plakaty, banery i rollupy w jednym zamówieniu. Skonfiguruj druk dla firmy online i odbierz wycenę — drukarnia CopyCabana, Katowice.')
+
+@push('structured-data')
+  @include('layouts.partials.schema-service', ['name' => 'Druk dla firm', 'description' => 'Wizytówki, ulotki, plakaty, banery, rollupy i inne materiały drukowane dla firm i agencji z wyceną online.', 'path' => 'druk-dla-firm'])
+@endpush
 
 @section('content')
 <script>
@@ -14,7 +18,7 @@
     <div class="cc-container cc-container--wide cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk dla firm</p>
-        <h1 class="cc-hero-title reveal reveal-delay-1">Wiele produktów, <em>jedna wycena.</em></h1>
+        <h1 class="cc-hero-title reveal reveal-delay-1">Wiele produktów, <em>jedna wycena</em></h1>
         <p class="reveal reveal-delay-2">Wizytówki, ulotki, plakaty, banery, rollupy i dokumenty dla firm oraz agencji. Układasz wiele pozycji w jednym zapytaniu, a my wyceniamy całość.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#produkty" @click.prevent="ccGo('#produkty')" class="btn-magenta inline-block">Zacznij od produktu <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i></a>
@@ -41,7 +45,7 @@
         <section class="cc-step" id="produkty">
           <div class="cc-step-head">
             <span class="cc-step-num">01</span>
-            <div><h2>Wybierz pozycje do zamówienia.</h2><p>Zaczyna się od produktu. Dodajemy każdą pozycję osobno, więc nic się nie nadpisze.</p></div>
+            <div><h2>Wybierz pozycje do zamówienia</h2><p>Zaczyna się od produktu. Dodajemy każdą pozycję osobno, więc nic się nie nadpisze.</p></div>
           </div>
 
           <div class="cc-b2b-categories" aria-label="Kategorie usług">
@@ -178,7 +182,7 @@
         <section class="cc-step" id="pozycje">
           <div class="cc-step-head">
             <span class="cc-step-num">02</span>
-            <div><h2>Zobacz, co już masz w zamówieniu.</h2><p>Każda pozycja trzyma własne ustawienia. Usuń, czego nie chcesz.</p></div>
+            <div><h2>Zobacz, co już masz w zamówieniu</h2><p>Każda pozycja trzyma własne ustawienia. Usuń, czego nie chcesz.</p></div>
           </div>
 
           <div x-show="items.length === 0" class="cc-items-empty">

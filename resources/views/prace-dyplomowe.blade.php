@@ -1,7 +1,11 @@
 @extends('layouts.main')
 
-@section('title', 'Prace dyplomowe — druk i oprawa | CopyCabana')
-@section('description', 'Kompletny PDF pracy dyplomowej, wybór oprawy, okładki i odbioru. Konfigurator druku — CopyCabana, Katowice.')
+@section('title', 'Druk i oprawa prac dyplomowych Katowice | CopyCabana')
+@section('description', 'Wydrukuj i oprawij pracę dyplomową w Katowicach: oprawa twarda, kanałowa lub miękka, napis na okładce, odbiór osobisty lub wysyłka. Zamów online.')
+
+@push('structured-data')
+  @include('layouts.partials.schema-service', ['name' => 'Druk i oprawa prac dyplomowych', 'description' => 'Druk, oprawa twarda, kanałowa i miękka oraz napisy na okładkach prac dyplomowych w Katowicach.', 'path' => 'prace-dyplomowe'])
+@endpush
 
 @section('content')
 <script>
@@ -14,7 +18,7 @@
     <div class="cc-container cc-container--wide cc-hero-grid">
       <div class="cc-hero-copy">
         <p class="cc-hero-overline reveal">Druk i oprawa prac dyplomowych</p>
-        <h1 class="cc-hero-title reveal reveal-delay-1">Praca napisana.<em>Teraz druk i oprawa.</em></h1>
+        <h1 class="cc-hero-title reveal reveal-delay-1">Praca napisana<em>Teraz druk i oprawa</em></h1>
         <p class="reveal reveal-delay-2">Dodaj kompletny PDF, wybierz druk oraz oprawę twardą, miękką lub kanałową. Przed zamówieniem sprawdzisz pełną cenę i dostępny termin odbioru lub dostawy.</p>
         <div class="cc-hero-actions reveal reveal-delay-3">
           <a href="#plik" @click.prevent="ccGo('#plik')" class="btn-magenta inline-block">Dodaj pracę w PDF <i class="fas fa-upload ml-2" aria-hidden="true"></i></a>
@@ -40,7 +44,7 @@
         <section class="cc-step" id="plik">
           <div class="cc-step-head">
             <span class="cc-step-num">01</span>
-            <div><h2>Zacznij od swojej pracy.</h2><p>Dodaj jeden kompletny PDF. Sprawdź, czy zawiera wszystkie strony we właściwej kolejności.</p></div>
+            <div><h2>Zacznij od swojej pracy</h2><p>Dodaj jeden kompletny PDF. Sprawdź, czy zawiera wszystkie strony we właściwej kolejności.</p></div>
           </div>
 
           <div x-data="ccDropzone('thesis')"
@@ -120,7 +124,7 @@
         <section class="cc-step" id="druk">
           <div class="cc-step-head">
             <span class="cc-step-num">02</span>
-            <div><h2>Wybierz, jak wydrukujemy strony.</h2><p>Ustaw kolor druku i strony kartki do wydruku.</p></div>
+            <div><h2>Wybierz, jak wydrukujemy strony</h2><p>Ustaw kolor druku i strony kartki do wydruku.</p></div>
           </div>
 
           <p class="cc-step-label">Kolor</p>
@@ -141,7 +145,7 @@
         <section class="cc-step" id="oprawa">
           <div class="cc-step-head">
             <span class="cc-step-num">03</span>
-            <div><h2>Wybierz swoją oprawę.</h2><p>Porównaj dostępne oprawy i wybierz wariant zgodny z wymaganiami wydziału.</p></div>
+            <div><h2>Wybierz swoją oprawę</h2><p>Porównaj dostępne oprawy i wybierz wariant zgodny z wymaganiami wydziału.</p></div>
           </div>
 
           <div class="cc-step-grid cc-step-grid--3">
@@ -175,7 +179,7 @@
         <section class="cc-step" id="okladka">
           <div class="cc-step-head">
             <span class="cc-step-num">04</span>
-            <div><h2>Dodaj napis na okładce.</h2><p>Napis dotyczy zewnętrznej okładki. Nie zmienia strony tytułowej w PDF.</p></div>
+            <div><h2>Dodaj napis na okładce</h2><p>Napis dotyczy zewnętrznej okładki. Nie zmienia strony tytułowej w PDF.</p></div>
           </div>
 
           <div class="cc-step-grid cc-step-grid--3">

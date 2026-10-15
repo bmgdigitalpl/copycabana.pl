@@ -25,9 +25,14 @@ use App\Http\Controllers\Customer\VerificationController as CustomerVerification
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocalPaymentController;
 use App\Http\Controllers\QuoteOfferAcceptanceController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ThesisController;
 use App\Http\Middleware\OwnerMiddleware;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/favicon.ico', [SeoController::class, 'favicon'])->name('favicon');
 
 Route::get('/', HomeController::class)->name('home');
 Route::redirect('/index.html', '/', 301)->name('home.legacy');
