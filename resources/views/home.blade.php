@@ -107,7 +107,7 @@
   </section>
 
   {{-- 04 Thesis configurator CTA --}}
-  <section class="cc-section cc-section--light cc-thesis-cta">
+  <!-- <section class="cc-section cc-section--light cc-thesis-cta">
     <div class="cc-container cc-thesis-cta-grid">
       <div class="cc-thesis-cta-copy">
         <x-concept.section-heading label="Prace dyplomowe">
@@ -134,7 +134,7 @@
         @endif
       </div>
     </div>
-  </section>
+  </section> -->
 
   {{-- 05 Gallery --}}
   <section class="cc-section cc-section--muted">
