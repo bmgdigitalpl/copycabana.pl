@@ -10,9 +10,11 @@
  |
  | Where the pieces come from (all optional, the preview falls back to a plain colour):
  |  - colour and texture: the photo of the blank cover uploaded per cover colour in the admin
- |    panel (Produkty -> praca dyplomowa). A tile of the cloth is cut out of the "sample"
- |    region of the photo and its average colour becomes the colour of that cover.
- |    After changing "sample" or "texture" run: php artisan covers:rebuild-textures
+ |    panel (Produkty -> praca dyplomowa). The biggest square of the "sample" region is cut
+ |    out of the photo as it is (only the colours in "white_reference" are brightened), and
+ |    its average colour becomes the colour of that cover.
+ |    After changing "sample", "white_reference" or "texture" run:
+ |    php artisan db:seed --class=ThesisCoverColorSeeder --force
  |  - university logos: public/images/uczelnie/<university key>.svg (also .png or .webp),
  |    keys as in the "Uczelnie" list, e.g. us.svg, ue.svg, polsl.svg
  |  - imprint font: public/fonts/okladka.woff2 (also .woff, .ttf or .otf)
@@ -22,19 +24,36 @@ return [
     'cover' => ['width' => 210, 'height' => 297],
 
     /*
-     | The part of the cover photo the cloth is sampled from, in % of the photo. It has to lie
-     | on the flat cover only, clear of the spine, the edges and the shadow. The photos are
-     | taken in the same frame, so one region fits all of them.
+     | The front of the cover in the photo, in % of the photo: on the flat cover only, clear of
+     | the spine (on the right), the edges and the shadow. The biggest square that fits in it
+     | becomes the tile. The photos are taken in the same frame, so one region fits all of them.
      */
-    'sample' => ['left' => 30, 'top' => 25, 'width' => 37, 'height' => 45],
+    'sample' => ['left' => 28, 'top' => 22, 'width' => 42, 'height' => 49],
+
+    /*
+     | The white paper the covers lie on, in % of the photo: bands above and below the cover.
+     | The photos of the cover colours listed in "colors" (keys as in "Kolory okładki") are
+     | brightened towards this paper reaching "level" (0-255) in each channel, which undoes the
+     | exposure the phone picked: without it a white cover comes out grey. The number is how far:
+     | 1 = the paper becomes fully white, 0.5 = half of that brightening (on a log scale).
+     | A photo whose background is not light grey-white is left as it is.
+     */
+    'white_reference' => [
+        'colors' => ['bialy' => 1, 'limonkowy' => 0.5],
+        'regions' => [
+            ['left' => 2, 'top' => 2, 'width' => 96, 'height' => 10],
+            ['left' => 2, 'top' => 88, 'width' => 96, 'height' => 10],
+        ],
+        'level' => 250,
+    ],
 
     'texture' => [
-        /** Side of the generated tile in pixels. */
-        'tile' => 384,
-        /** Width of one tile as % of the cover width. A bigger tile shows the weave more clearly. */
+        /** Side of the cut square in the tile, in pixels (the tile is twice as tall). */
+        'tile' => 768,
+        /** Width of one tile as % of the cover width. */
         'size' => 100,
-        /** 1 = the texture as photographed, more = a stronger weave. */
-        'contrast' => 1.5,
+        /** Side in pixels of the small picture of the cloth in the colour swatches. */
+        'swatch' => 96,
     ],
 
     'font' => [

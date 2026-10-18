@@ -38,7 +38,7 @@ class RebuildCoverTextures extends Command
             }
 
             try {
-                $result = $textures->extract($photo, $this->option('measure') ? null : $color['hex']);
+                $result = $textures->extract($photo, $this->option('measure') ? null : $color['hex'], CoverTextureExtractor::whitePaperStrength((string) $key));
             } catch (RuntimeException $exception) {
                 $this->warn("{$key}: {$exception->getMessage()}");
 
@@ -46,6 +46,7 @@ class RebuildCoverTextures extends Command
             }
 
             $disk->put(CoverTextureExtractor::texturePath($photoPath), $result['texture']);
+            $disk->put(CoverTextureExtractor::swatchPath($photoPath), $result['swatch']);
             $colors[$key]['hex'] = $result['hex'];
             $this->line("{$key}: {$result['hex']}");
             $rebuilt++;

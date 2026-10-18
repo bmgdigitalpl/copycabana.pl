@@ -445,6 +445,7 @@
         spineEngravingName: '',
         coverColors: Object.entries(pricing.cover_colors || {}).map(function ([id, value]) { return { id: id, hex: value.hex, label: value.label }; }),
         coverTextures: coverPreview.textures || {},
+        coverSwatches: coverPreview.swatches || {},
         coverLogos: coverPreview.logos || {},
         coverTitleArt: coverPreview.titles || {},
         coverTitleScale: coverPreview.titleScale || 0,

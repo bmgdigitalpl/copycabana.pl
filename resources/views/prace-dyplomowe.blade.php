@@ -237,7 +237,7 @@
               <button type="button"
                       class="cc-swatch"
                       :class="{ 'is-active': coverColor === c.id }"
-                      :style="{ background: c.hex }"
+                      :style="{ backgroundColor: c.hex, backgroundImage: coverSwatches[c.id] ? 'url(' + coverSwatches[c.id] + ')' : 'none' }"
                       :aria-label="c.label"
                       :aria-pressed="coverColor === c.id"
                       :title="c.label"

@@ -8,11 +8,21 @@ use RuntimeException;
 
 /**
  * Turns a photo of a blank cover into what the live preview paints the cover with: the
- * average colour of the cloth and a small seamless tile of its texture in that colour.
+ * average colour of the cloth, a tile cut straight out of the photo and a small picture of the
+ * same cloth for the colour swatch.
  *
- * The tile is taken from the middle of the cover (config/cover_preview.php, "sample"),
- * flattened so the light and shadow of the photo do not show, and cross-faded with itself
- * so it repeats without visible seams.
+ * The tile is the biggest square that fits in the front of the cover (config/cover_preview.php,
+ * "sample"), with the texture and light of the photo and its colour profile. Below it comes the
+ * same square flipped upside down, so the tile repeats down a cover taller than it is wide
+ * without a visible seam.
+ *
+ * The phone picks the exposure of every photo on its own, so the white paper under the cover
+ * comes out grey, and a white cover with it. The eye takes that paper for white when looking at
+ * the photo, so the photos of the colours listed in "white_reference" are brightened until the
+ * paper is white, and the cover gets the colour it seems to have in the photo.
+ *
+ * Phones save photos in Display P3. The colour of the cover is converted from the profile of
+ * the photo to sRGB, which is what a CSS hex colour means.
  */
 class CoverTextureExtractor
 {
@@ -22,35 +32,68 @@ class CoverTextureExtractor
         return 'thesis-cover-textures/'.pathinfo($photoPath, PATHINFO_FILENAME).'.jpg';
     }
 
+    /** Path on the public disk of the swatch picture that belongs to the given cover photo. */
+    public static function swatchPath(string $photoPath): string
+    {
+        return 'thesis-cover-swatches/'.pathinfo($photoPath, PATHINFO_FILENAME).'.jpg';
+    }
+
     /**
-     * @param  string|null  $hex  paint the tile in this colour instead of the one measured in the photo
-     * @return array{hex: string, texture: string} the colour used ("#RRGGBB") and the tile as JPEG bytes
+     * How far the photo of this cover colour is brightened towards the paper around the cover
+     * being white: 0 = not at all, 1 = until the paper is white.
+     */
+    public static function whitePaperStrength(string $colorKey): float
+    {
+        return max(0.0, min(1.0, (float) (((array) config('cover_preview.white_reference.colors'))[$colorKey] ?? 0)));
+    }
+
+    /**
+     * @param  string|null  $hex  shift the tile to this colour instead of the one measured in the photo
+     * @param  float  $whitePaperStrength  see whitePaperStrength()
+     * @return array{hex: string, texture: string, swatch: string} the colour used ("#RRGGBB"), the tile and the swatch picture as JPEG bytes
      *
      * @throws RuntimeException when the bytes are not an image GD can read
      */
-    public function extract(string $imageBytes, ?string $hex = null): array
+    public function extract(string $imageBytes, ?string $hex = null, float $whitePaperStrength = 0.0): array
     {
         if ($hex !== null && preg_match('/^#[0-9a-fA-F]{6}$/', $hex) !== 1) {
             throw new InvalidArgumentException('Colour must be written as #RRGGBB.');
         }
 
         $size = max(64, (int) config('cover_preview.texture.tile'));
-        $contrast = (float) config('cover_preview.texture.contrast');
+        $space = IccColorSpace::fromJpeg($imageBytes);
+        $photo = $this->decode($imageBytes);
+        $gains = $whitePaperStrength > 0
+            ? array_map(fn (float $gain): float => $gain ** $whitePaperStrength, $this->whiteBalanceGains($photo))
+            : [1.0, 1.0, 1.0];
+        $square = $this->sampleSquare($photo, $size);
+        $mean = array_map(fn (float $channel, float $gain): float => min(255.0, $channel * $gain), $this->averageColor($square, $size), $gains);
+        $offsets = [0.0, 0.0, 0.0];
 
-        $sample = $this->sampleSquare($imageBytes, $size);
-        $detail = $this->detail($sample, $size, $mean);
-        $color = $hex !== null
-            ? [hexdec(substr($hex, 1, 2)), hexdec(substr($hex, 3, 2)), hexdec(substr($hex, 5, 2))]
-            : array_map(fn (float $channel): int => (int) round($channel), $mean);
+        if ($hex === null) {
+            $color = $space?->toSrgb($mean) ?? array_map(fn (float $channel): int => (int) round($channel), $mean);
+        } else {
+            $color = [hexdec(substr($hex, 1, 2)), hexdec(substr($hex, 3, 2)), hexdec(substr($hex, 5, 2))];
+            $target = $space?->fromSrgb($color) ?? $color;
+            $offsets = array_map(fn (float|int $wanted, float $measured): float => $wanted - $measured, $target, $mean);
+        }
+
+        if ($gains !== [1.0, 1.0, 1.0] || $offsets !== [0.0, 0.0, 0.0]) {
+            $this->adjust($square, $size, $gains, $offsets);
+        }
+
+        $swatchSize = max(16, (int) config('cover_preview.texture.swatch'));
+        $swatch = $this->encode(imagescale($square, $swatchSize, $swatchSize, IMG_BICUBIC));
+        $texture = $this->encode($this->mirroredBelow($square, $size));
 
         return [
             'hex' => sprintf('#%02X%02X%02X', ...$color),
-            'texture' => $this->encode($this->seamless($detail, $size, $color, $contrast)),
+            'texture' => $space?->embedInto($texture) ?? $texture,
+            'swatch' => $space?->embedInto($swatch) ?? $swatch,
         ];
     }
 
-    /** The configured part of the photo, as a square of $size pixels. */
-    private function sampleSquare(string $imageBytes, int $size): GdImage
+    private function decode(string $imageBytes): GdImage
     {
         $dimensions = @getimagesizefromstring($imageBytes);
 
@@ -58,14 +101,63 @@ class CoverTextureExtractor
             throw new RuntimeException('The file is not an image.');
         }
 
-        [$width, $height] = $dimensions;
-        $this->allowMemoryFor($width * $height);
+        $this->allowMemoryFor($dimensions[0] * $dimensions[1]);
         $photo = @imagecreatefromstring($imageBytes);
 
         if ($photo === false) {
             throw new RuntimeException('The image could not be decoded.');
         }
 
+        return $photo;
+    }
+
+    /**
+     * Per channel, what to multiply the photo by so the paper around the cover comes out at the
+     * configured white level. A background too dark or too coloured to be white paper (e.g. a
+     * close-up of the cloth) leaves the photo as it is.
+     *
+     * @return array{float, float, float}
+     */
+    private function whiteBalanceGains(GdImage $photo): array
+    {
+        $level = (float) config('cover_preview.white_reference.level');
+        $width = imagesx($photo);
+        $height = imagesy($photo);
+        $sums = [0, 0, 0];
+        $count = 0;
+
+        foreach ((array) config('cover_preview.white_reference.regions') as $region) {
+            $left = (int) round($width * (float) ($region['left'] ?? 0) / 100);
+            $top = (int) round($height * (float) ($region['top'] ?? 0) / 100);
+            $right = min($width, $left + (int) round($width * (float) ($region['width'] ?? 0) / 100));
+            $bottom = min($height, $top + (int) round($height * (float) ($region['height'] ?? 0) / 100));
+
+            for ($y = $top; $y < $bottom; $y += 4) {
+                for ($x = $left; $x < $right; $x += 4) {
+                    $pixel = imagecolorat($photo, $x, $y);
+                    $sums[0] += ($pixel >> 16) & 255;
+                    $sums[1] += ($pixel >> 8) & 255;
+                    $sums[2] += $pixel & 255;
+                    $count++;
+                }
+            }
+        }
+
+        if ($level <= 0 || $count === 0) {
+            return [1.0, 1.0, 1.0];
+        }
+
+        $paper = array_map(fn (int $sum): float => $sum / $count, $sums);
+        $isWhitePaper = min($paper) >= 100 && max($paper) / min($paper) <= 1.15;
+
+        return $isWhitePaper ? array_map(fn (float $channel): float => $level / $channel, $paper) : [1.0, 1.0, 1.0];
+    }
+
+    /** The biggest square in the configured part of the photo, scaled to $size pixels. */
+    private function sampleSquare(GdImage $photo, int $size): GdImage
+    {
+        $width = imagesx($photo);
+        $height = imagesy($photo);
         $region = (array) config('cover_preview.sample');
         $left = (int) round($width * (float) ($region['left'] ?? 0) / 100);
         $top = (int) round($height * (float) ($region['top'] ?? 0) / 100);
@@ -86,79 +178,54 @@ class CoverTextureExtractor
         return $sample;
     }
 
-    /**
-     * The sample minus its own large-scale light and shade: per channel, how far each pixel
-     * is from the blurred picture. The blur is the sample squeezed to a few dozen pixels and
-     * stretched back, which keeps everything bigger than a few weave threads out of the detail.
-     *
-     * @param  array<int, float>|null  $mean  receives the average R, G and B of the sample
-     * @return array<int, list<float>> per channel, row by row
-     */
-    private function detail(GdImage $sample, int $size, ?array &$mean): array
+    /** @return array{float, float, float} average R, G and B */
+    private function averageColor(GdImage $square, int $size): array
     {
-        $blurSize = max(4, intdiv($size, 12));
-        $small = imagecreatetruecolor($blurSize, $blurSize);
-        imagecopyresampled($small, $sample, 0, 0, 0, 0, $blurSize, $blurSize, $size, $size);
-        $blurred = imagescale($small, $size, $size, IMG_BICUBIC);
-
-        $detail = [[], [], []];
         $sums = [0, 0, 0];
 
         for ($y = 0; $y < $size; $y++) {
             for ($x = 0; $x < $size; $x++) {
-                $pixel = imagecolorat($sample, $x, $y);
-                $base = imagecolorat($blurred, $x, $y);
-
-                foreach ([16, 8, 0] as $channel => $shift) {
-                    $value = ($pixel >> $shift) & 255;
-                    $sums[$channel] += $value;
-                    $detail[$channel][] = (float) ($value - (($base >> $shift) & 255));
-                }
+                $pixel = imagecolorat($square, $x, $y);
+                $sums[0] += ($pixel >> 16) & 255;
+                $sums[1] += ($pixel >> 8) & 255;
+                $sums[2] += $pixel & 255;
             }
         }
 
-        $mean = array_map(fn (int $sum): float => $sum / ($size * $size), $sums);
-
-        return $detail;
+        return array_map(fn (int $sum): float => $sum / ($size * $size), $sums);
     }
 
     /**
-     * Paints the detail onto a flat colour, cross-fading each pixel with the one half a tile
-     * away. That makes the opposite edges continue into each other, so the tile repeats without
-     * a seam. The fade keeps the texture's strength (it adds the two as independent noise).
+     * Multiplies every pixel by the white balance gains, then moves it by the offsets (towards a
+     * requested colour), per channel. The texture and light of the photo stay.
      *
-     * @param  array<int, list<float>>  $detail
-     * @param  array<int, int>  $color
+     * @param  array<int, float>  $gains
+     * @param  array<int, float>  $offsets
      */
-    private function seamless(array $detail, int $size, array $color, float $contrast): GdImage
+    private function adjust(GdImage $square, int $size, array $gains, array $offsets): void
     {
-        $tile = imagecreatetruecolor($size, $size);
-        $half = intdiv($size, 2);
-        $weights = [];
-
-        for ($i = 0; $i < $size; $i++) {
-            $weights[$i] = 0.5 - 0.5 * cos(2 * M_PI * ($i + 0.5) / $size);
-        }
-
         for ($y = 0; $y < $size; $y++) {
-            $shiftedRow = (($y + $half) % $size) * $size;
-
             for ($x = 0; $x < $size; $x++) {
-                $weight = $weights[$x] * $weights[$y];
-                $scale = 1 / sqrt($weight * $weight + (1 - $weight) * (1 - $weight));
-                $index = $y * $size + $x;
-                $shifted = $shiftedRow + (($x + $half) % $size);
-                $pixel = 0;
+                $pixel = imagecolorat($square, $x, $y);
+                $shifted = 0;
 
-                foreach ([0, 1, 2] as $channel) {
-                    $faded = ($weight * $detail[$channel][$index] + (1 - $weight) * $detail[$channel][$shifted]) * $scale;
-                    $value = (int) round($color[$channel] + $contrast * $faded);
-                    $pixel = ($pixel << 8) | max(0, min(255, $value));
+                foreach ([16, 8, 0] as $channel => $shift) {
+                    $value = (int) round((($pixel >> $shift) & 255) * $gains[$channel] + $offsets[$channel]);
+                    $shifted = ($shifted << 8) | max(0, min(255, $value));
                 }
 
-                imagesetpixel($tile, $x, $y, $pixel);
+                imagesetpixel($square, $x, $y, $shifted);
             }
         }
+    }
+
+    /** The square with its upside-down copy below: a tile that repeats downwards without a seam. */
+    private function mirroredBelow(GdImage $square, int $size): GdImage
+    {
+        $tile = imagecreatetruecolor($size, 2 * $size);
+        imagecopy($tile, $square, 0, 0, 0, 0, $size, $size);
+        imageflip($square, IMG_FLIP_VERTICAL);
+        imagecopy($tile, $square, 0, $size, 0, 0, $size, $size);
 
         return $tile;
     }
@@ -166,7 +233,7 @@ class CoverTextureExtractor
     private function encode(GdImage $tile): string
     {
         ob_start();
-        imagejpeg($tile, null, 85);
+        imagejpeg($tile, null, 90);
 
         return (string) ob_get_clean();
     }

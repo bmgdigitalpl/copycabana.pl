@@ -65,7 +65,7 @@ class PrintingConfigurationController extends Controller
                 unset($row['key']);
 
                 if ($group === 'cover_colors') {
-                    $row = $this->resolveCoverColorPhoto($row, $previousCoverColors->get($key));
+                    $row = $this->resolveCoverColorPhoto((string) $key, $row, $previousCoverColors->get($key));
                 }
 
                 return [$key => in_array($group, ['universities', 'cover_titles'], true) ? $row['label'] : $row];
@@ -98,7 +98,7 @@ class PrintingConfigurationController extends Controller
      *
      * @throws ValidationException when the uploaded photo cannot be read
      */
-    private function resolveCoverColorPhoto(array $row, ?array $previous): array
+    private function resolveCoverColorPhoto(string $key, array $row, ?array $previous): array
     {
         $disk = Storage::disk('public');
         $upload = $row['photo'] ?? null;
@@ -107,7 +107,7 @@ class PrintingConfigurationController extends Controller
 
         if ($upload instanceof UploadedFile) {
             try {
-                $extracted = $this->coverTextures->extract((string) $upload->get());
+                $extracted = $this->coverTextures->extract((string) $upload->get(), whitePaperStrength: CoverTextureExtractor::whitePaperStrength($key));
             } catch (RuntimeException) {
                 throw ValidationException::withMessages(['cover_colors' => 'Nie udało się odczytać wgranego zdjęcia okładki. Wgraj inne zdjęcie.']);
             }
@@ -115,6 +115,7 @@ class PrintingConfigurationController extends Controller
             $row['photo'] = $upload->store('thesis-cover-photos', 'public');
             $row['hex'] = $extracted['hex'];
             $disk->put(CoverTextureExtractor::texturePath($row['photo']), $extracted['texture']);
+            $disk->put(CoverTextureExtractor::swatchPath($row['photo']), $extracted['swatch']);
 
             if (is_string($existingPhoto) && $existingPhoto !== '' && $existingPhoto !== $row['photo']) {
                 $this->deleteCoverPhoto($existingPhoto);
@@ -124,16 +125,16 @@ class PrintingConfigurationController extends Controller
 
             $colorChanged = strcasecmp((string) $row['hex'], (string) ($previous['hex'] ?? '')) !== 0;
 
-            if ($colorChanged || ! $disk->exists(CoverTextureExtractor::texturePath($existingPhoto))) {
-                $this->rebuildCoverTexture($existingPhoto, $row['hex']);
+            if ($colorChanged || ! $disk->exists(CoverTextureExtractor::texturePath($existingPhoto)) || ! $disk->exists(CoverTextureExtractor::swatchPath($existingPhoto))) {
+                $this->rebuildCoverTexture($key, $existingPhoto, $row['hex']);
             }
         }
 
         return $row;
     }
 
-    /** Cut the texture tile out of a stored photo again, painted in the given colour. */
-    private function rebuildCoverTexture(string $photoPath, string $hex): void
+    /** Cut the texture tile and the swatch picture out of a stored photo again, painted in the given colour. */
+    private function rebuildCoverTexture(string $key, string $photoPath, string $hex): void
     {
         $disk = Storage::disk('public');
 
@@ -141,7 +142,9 @@ class PrintingConfigurationController extends Controller
             $photo = $disk->get($photoPath);
 
             if ($photo !== null) {
-                $disk->put(CoverTextureExtractor::texturePath($photoPath), $this->coverTextures->extract($photo, $hex)['texture']);
+                $extracted = $this->coverTextures->extract($photo, $hex, CoverTextureExtractor::whitePaperStrength($key));
+                $disk->put(CoverTextureExtractor::texturePath($photoPath), $extracted['texture']);
+                $disk->put(CoverTextureExtractor::swatchPath($photoPath), $extracted['swatch']);
             }
         } catch (RuntimeException) {
             // The stored photo cannot be read any more; the preview keeps the plain colour.
@@ -150,7 +153,7 @@ class PrintingConfigurationController extends Controller
 
     private function deleteCoverPhoto(string $photoPath): void
     {
-        Storage::disk('public')->delete([$photoPath, CoverTextureExtractor::texturePath($photoPath)]);
+        Storage::disk('public')->delete([$photoPath, CoverTextureExtractor::texturePath($photoPath), CoverTextureExtractor::swatchPath($photoPath)]);
     }
 
     /** Remove uploaded photos (and their textures) belonging to cover colors the admin deleted from the list. */

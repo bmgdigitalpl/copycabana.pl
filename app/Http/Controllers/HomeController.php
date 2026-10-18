@@ -47,7 +47,7 @@ class HomeController extends Controller
      * The cover shown in the thesis call to action: the preview data and a handful of cover colours
      * that have a cloth texture. Null when the thesis configurator is not set up yet.
      *
-     * @return array{preview: array<string, mixed>, colors: list<array{key: string, label: string, hex: string, texture: string|null}>}|null
+     * @return array{preview: array<string, mixed>, colors: list<array{key: string, label: string, hex: string, texture: string|null, swatch: string|null}>}|null
      */
     private function homeCover(ConfiguratorSettings $settings, ThesisCoverPreview $coverPreview): ?array
     {
@@ -64,6 +64,7 @@ class HomeController extends Controller
                 'label' => (string) ($color['label'] ?? $key),
                 'hex' => (string) ($color['hex'] ?? '#d0d7de'),
                 'texture' => $preview['textures'][$key] ?? null,
+                'swatch' => $preview['swatches'][$key] ?? null,
             ])
             ->filter(fn (array $color): bool => $color['texture'] !== null && preg_match('/^#[0-9a-fA-F]{6}$/', $color['hex']) === 1);
         $preferred = $colors->only(self::HOME_COVER_COLORS);

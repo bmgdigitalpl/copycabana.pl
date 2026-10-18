@@ -9,10 +9,11 @@ use Tests\TestCase;
 
 class ThesisCoverPreviewTest extends TestCase
 {
-    public function test_it_lists_only_the_logos_font_and_textures_that_exist(): void
+    public function test_it_lists_only_the_logos_font_textures_and_swatches_that_exist(): void
     {
         Storage::fake('public');
         Storage::disk('public')->put('thesis-cover-textures/granat.jpg', 'tile');
+        Storage::disk('public')->put('thesis-cover-swatches/granat.jpg', 'swatch');
         $this->usePublicDirectoryWith(['images/uczelnie/us.svg', 'images/uczelnie/ue.png', 'fonts/okladka.ttf']);
         $printing = [
             'universities' => ['us' => 'Uniwersytet Śląski', 'ue' => 'Uniwersytet Ekonomiczny', 'polsl' => 'Politechnika Śląska'],
@@ -32,6 +33,8 @@ class ThesisCoverPreviewTest extends TestCase
         $this->assertStringContainsString('fonts/okladka.ttf', $preview['font']['url']);
         $this->assertSame(['granat'], array_keys($preview['textures']));
         $this->assertStringContainsString('thesis-cover-textures/granat.jpg', $preview['textures']['granat']);
+        $this->assertSame(['granat'], array_keys($preview['swatches']));
+        $this->assertStringContainsString('thesis-cover-swatches/granat.jpg', $preview['swatches']['granat']);
     }
 
     public function test_it_lists_only_the_title_artwork_that_exists(): void

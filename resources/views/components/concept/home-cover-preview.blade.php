@@ -69,7 +69,7 @@
       <button type="button"
               class="cc-home-swatch"
               :class="{ 'is-active': index === current }"
-              :style="{ backgroundColor: item.hex }"
+              :style="{ backgroundColor: item.hex, backgroundImage: item.swatch ? 'url(' + item.swatch + ')' : 'none' }"
               :aria-label="item.label"
               :aria-pressed="index === current ? 'true' : 'false'"
               @click="pick(index)"></button>

@@ -456,6 +456,8 @@
   width: 1.55rem;
   height: 1.55rem;
   padding: 0;
+  background-position: center;
+  background-size: cover;
   border: 2px solid #fff;
   border-radius: 9999px;
   box-shadow: 0 0 0 1px rgba(6, 58, 96, 0.22);
@@ -3207,6 +3209,9 @@
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
+  /* The colour, and over it the picture of the cloth cut from the cover photo (set inline). */
+  background-position: center;
+  background-size: cover;
   border: 3px solid transparent;
   border-radius: 9999px;
   cursor: pointer;
@@ -3292,9 +3297,8 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0, rgba(0, 0, 0, 0) 2.5%, rgba(0, 0, 0, 0.2) 4.6%, rgba(255, 255, 255, 0.14) 5.8%, rgba(255, 255, 255, 0) 8%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1));
+  /* Only the hinge groove; the cloth keeps the colour of the photo. */
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0, rgba(0, 0, 0, 0) 2.5%, rgba(0, 0, 0, 0.2) 4.6%, rgba(255, 255, 255, 0.14) 5.8%, rgba(255, 255, 255, 0) 8%);
 }
 
 .cc-cover-zone {

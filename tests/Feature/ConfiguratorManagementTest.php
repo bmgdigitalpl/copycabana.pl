@@ -118,7 +118,7 @@ class ConfiguratorManagementTest extends TestCase
         $row = $product->fresh()->configuration['printing']['cover_colors']['granat'];
         $texturePath = CoverTextureExtractor::texturePath($row['photo']);
 
-        Storage::disk('public')->assertExists([$row['photo'], $texturePath]);
+        Storage::disk('public')->assertExists([$row['photo'], $texturePath, CoverTextureExtractor::swatchPath($row['photo'])]);
         $this->assertEqualsWithDelta(200, hexdec(substr($row['hex'], 1, 2)), 4);
         $this->assertEqualsWithDelta(100, hexdec(substr($row['hex'], 3, 2)), 4);
         $this->assertEqualsWithDelta(50, hexdec(substr($row['hex'], 5, 2)), 4);
@@ -151,7 +151,7 @@ class ConfiguratorManagementTest extends TestCase
         $payload['cover_colors'] = [['key' => 'magenta', 'label' => 'Magenta', 'hex' => '#D51A70']];
         $this->put(route('admin.printing.update', 'thesis'), $payload)->assertSessionHasNoErrors();
 
-        Storage::disk('public')->assertMissing([$photo, $texturePath]);
+        Storage::disk('public')->assertMissing([$photo, $texturePath, CoverTextureExtractor::swatchPath($photo)]);
     }
 
     public function test_pdf_prices_and_new_finishes_can_be_managed_in_products(): void

@@ -27,6 +27,7 @@ class ThesisCoverPreview
      *     titleScale: float,
      *     foils: array<string, string>,
      *     textures: array<string, string>,
+     *     swatches: array<string, string>,
      *     mapping: bool
      * }
      */
@@ -44,7 +45,8 @@ class ThesisCoverPreview
             'titles' => $this->titles(array_keys($printing['cover_titles'] ?? [])),
             'titleScale' => max(0.0, (float) config('cover_preview.title_art_scale')),
             'foils' => $this->foils(),
-            'textures' => $this->textures($printing['cover_colors'] ?? []),
+            'textures' => $this->coverColorFiles($printing['cover_colors'] ?? [], CoverTextureExtractor::texturePath(...)),
+            'swatches' => $this->coverColorFiles($printing['cover_colors'] ?? [], CoverTextureExtractor::swatchPath(...)),
             'mapping' => $mapping,
         ];
     }
@@ -212,17 +214,18 @@ class ThesisCoverPreview
     }
 
     /**
-     * Cloth tiles cut from the photos of the blank covers, keyed by cover color code. They are
-     * made when an admin uploads a photo at /dashboard/printing/thesis. A color without a tile
-     * shows its plain colour.
+     * Cloth tiles or swatch pictures cut from the photos of the blank covers, keyed by cover
+     * color code. They are made when an admin uploads a photo at /dashboard/printing/thesis.
+     * A color without them shows its plain colour.
      *
      * @param  array<string, array{photo?: string|null}>  $coverColors
+     * @param  callable(string): string  $pathOfPhoto  where the file made from a photo is kept
      * @return array<string, string>
      */
-    private function textures(array $coverColors): array
+    private function coverColorFiles(array $coverColors, callable $pathOfPhoto): array
     {
         $disk = Storage::disk('public');
-        $textures = [];
+        $files = [];
 
         foreach ($coverColors as $colorKey => $color) {
             $photoPath = $color['photo'] ?? null;
@@ -231,14 +234,14 @@ class ThesisCoverPreview
                 continue;
             }
 
-            $texturePath = CoverTextureExtractor::texturePath($photoPath);
+            $path = $pathOfPhoto($photoPath);
 
-            if ($disk->exists($texturePath)) {
-                $textures[$colorKey] = $disk->url($texturePath).'?v='.$disk->lastModified($texturePath);
+            if ($disk->exists($path)) {
+                $files[$colorKey] = $disk->url($path).'?v='.$disk->lastModified($path);
             }
         }
 
-        return $textures;
+        return $files;
     }
 
     /** URL of a file under public/, with its modification time so a replaced file is not served stale. */
